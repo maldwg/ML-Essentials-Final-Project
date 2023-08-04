@@ -14,6 +14,5 @@ def setup(self):
 
 def act(agent, game_state: dict):
     agent.logger.info('Pick action at random, but no bombs.')
-    print(game_state)
     agent.logger.info(game_state)
     return np.random.choice(ACTIONS)
