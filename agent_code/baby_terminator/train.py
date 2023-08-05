@@ -6,9 +6,13 @@ from typing import List
 import events as e
 from .callbacks import state_to_features
 
-# This is only an example!
-Transition = namedtuple('Transition',
-                        ('state', 'action', 'next_state', 'reward'))
+from .model import QNetwork
+from .memory import ReplayMemory
+
+import torch
+
+from .utils import ACTIONS, device, Transition
+
 
 # Hyper parameters -- DO modify
 TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
@@ -28,6 +32,7 @@ def setup_training(self):
     """
     # Example: Setup an array that will note transition tuples
     # (s, a, r, s')
+    self.logger.info("Enter train mode")
     self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
 
 
@@ -48,15 +53,24 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
+    self.logger.info("occurred")
     self.logger.debug(f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}')
 
-    # Idea: Add your own events to hand out rewards
-    if ...:
-        events.append(PLACEHOLDER_EVENT)
+    self.logger.info("Game events occurred")
+    if old_game_state is None:
+        return
+    state = state_to_features(old_game_state)
+    if state is not None:
+        action = torch.tensor([ACTIONS.index(self_action)], device=device)
+        reward = reward_from_events(self, events)
+        if new_game_state is None:
+            next_state = None
+        else:
+            next_state = state_to_features(new_game_state)
+        reward = torch.tensor([reward], device=device)
 
-    # state_to_features is defined in callbacks.py
-    self.transitions.append(Transition(state_to_features(old_game_state), self_action, state_to_features(new_game_state), reward_from_events(self, events)))
-
+        self.memory.push(state, action, next_state, reward)
+        optimize_model(self)
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
     """
@@ -87,9 +101,19 @@ def reward_from_events(self, events: List[str]) -> int:
     certain behavior.
     """
     game_rewards = {
-        e.COIN_COLLECTED: 1,
-        e.KILLED_OPPONENT: 5,
-        PLACEHOLDER_EVENT: -.1  # idea: the custom event is bad
+        e.KILLED_OPPONENT: 500,
+        e.INVALID_ACTION: -5,
+        e.CRATE_DESTROYED: 5,
+        e.COIN_FOUND: 5,
+        e.COIN_COLLECTED: 100,
+        e.KILLED_SELF: -300,
+        e.GOT_KILLED: -300,
+        e.MOVED_LEFT: -1,
+        e.MOVED_RIGHT: -1,
+        e.MOVED_UP: -1,
+        e.MOVED_DOWN: -1,
+        e.WAITED: -2,
+        e.BOMB_DROPPED: -1,
     }
     reward_sum = 0
     for event in events:
@@ -97,3 +121,34 @@ def reward_from_events(self, events: List[str]) -> int:
             reward_sum += game_rewards[event]
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
     return reward_sum
+
+
+def optimize_model(self):
+    BATCH_SIZE = 128
+    GAMMA = 0.999
+    if len(self.memory) < BATCH_SIZE:
+        return
+    transitions = self.memory.sample(BATCH_SIZE)
+    batch = Transition(*zip(*transitions))
+    non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
+                                          batch.next_state)), device=device, dtype=torch.bool)
+    non_final_next_states = torch.cat([s for s in batch.next_state
+                                                if s is not None])
+    state_batch = torch.cat(batch.state)
+    action_batch = torch.cat(batch.action)
+    reward_batch = torch.cat(batch.reward)
+
+    state_action_values = self.policy_net(state_batch).gather(1, action_batch)
+
+    next_state_values = torch.zeros(BATCH_SIZE, device=device)
+    next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
+    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+
+    loss = nn.functional.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
+
+    self.optimizer.zero_grad()
+    loss.backward()
+    for param in self.policy_net.parameters():
+        param.grad.data.clamp_(-1, 1)
+    self.optimizer.step()
+
