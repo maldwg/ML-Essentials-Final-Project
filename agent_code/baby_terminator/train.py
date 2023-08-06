@@ -105,19 +105,19 @@ def reward_from_events(self, events: List[str]) -> int:
     certain behavior.
     """
     game_rewards = {
-        e.KILLED_OPPONENT: 50,
+        e.KILLED_OPPONENT: 75,
         e.INVALID_ACTION: -10,
         e.CRATE_DESTROYED: 0,
         e.COIN_FOUND: 1,
-        e.COIN_COLLECTED: 20,
-        e.KILLED_SELF: -50,
+        e.COIN_COLLECTED: 10,
+        e.KILLED_SELF: -100,
         e.GOT_KILLED: -50,
-        e.MOVED_LEFT: 1,
-        e.MOVED_RIGHT: 1,
-        e.MOVED_UP: 1,
-        e.MOVED_DOWN: 1,
+        e.MOVED_LEFT: 0,
+        e.MOVED_RIGHT: 0,
+        e.MOVED_UP: 0,
+        e.MOVED_DOWN: 0,
         e.WAITED: -1,
-        e.BOMB_DROPPED: 1,
+        e.BOMB_DROPPED: 0,
     }
     reward_sum = 0
     for event in events:
@@ -133,9 +133,9 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    BATCH_SIZE = 3
+    BATCH_SIZE = 32
     GAMMA = 0.999
-    UPDATE_FREQUENCY = 3
+    UPDATE_FREQUENCY = 5
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
@@ -153,10 +153,6 @@ def optimize_model(self):
     # Construct Q value for the current state
     state_action_values = self.policy_net(state_batch).gather(1, action_batch)
 
-
-
-
-
     # compute the expected Q values
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
     next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
@@ -173,9 +169,9 @@ def optimize_model(self):
         param.grad.data.clamp_(-1, 1)
     self.optimizer.step()
 
-    # update the target net each C steps to be in synch with the policy net 
-    if len(self.memory) % UPDATE_FREQUENCY:
-        self.logger.info("Update target network")
-        self.target_net.load_state_dict(self.policy_net.state_dict())
-        self.target_net.eval()
+    # # update the target net each C steps to be in synch with the policy net 
+    # if len(self.memory) % UPDATE_FREQUENCY:
+    #     self.logger.info("Update target network")
+    #     self.target_net.load_state_dict(self.policy_net.state_dict())
+    #     self.target_net.eval()
 
