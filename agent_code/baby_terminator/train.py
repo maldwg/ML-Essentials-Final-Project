@@ -19,7 +19,7 @@ TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
 
 # Events
-PLACEHOLDER_EVENT = "PLACEHOLDER"
+NOT_KILLED_BY_OWN_BOMB = "NOT_KILLED_BY_OWN_BOMB"
 
 
 def setup_training(self):
@@ -53,6 +53,8 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
+    if e.BOMB_EXPLODED in events and not e.KILLED_SELF in events:
+        events.append(NOT_KILLED_BY_OWN_BOMB)
     self.logger.info("Game events occurred")
     self.logger.debug(f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}')
     if old_game_state is None:
@@ -92,14 +94,13 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     reward = torch.tensor(reward, device=device)
     self.memory.push(torch.tensor(state), action, None, reward)
 
-    # synch the target network with the policy network 
-    self.target_net.load_state_dict(self.policy_net.state_dict())
-    self.target_net.eval()
+    # # synch the target network with the policy network 
+    # self.target_net.load_state_dict(self.policy_net.state_dict())
+    # self.target_net.eval()
 
     # Store the model
     with open("my-saved-model.pt", "wb") as file:
         pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], file)
-
 
 def reward_from_events(self, events: List[str]) -> int:
     """
@@ -109,21 +110,23 @@ def reward_from_events(self, events: List[str]) -> int:
     certain behavior.
     """
     game_rewards = {
-        e.KILLED_OPPONENT: 100,
-        e.INVALID_ACTION: -25,
-        e.CRATE_DESTROYED: 1,
+        e.KILLED_OPPONENT: 25,
+        e.INVALID_ACTION: -10,
+        e.CRATE_DESTROYED: 5,
         e.COIN_FOUND: 1,
         e.COIN_COLLECTED: 10,
-        e.KILLED_SELF: -100,
-        e.GOT_KILLED: -100,
-        e.MOVED_LEFT: 1,
-        e.MOVED_RIGHT: 1,
-        e.MOVED_UP: 1,
-        e.MOVED_DOWN: 1,
+        e.KILLED_SELF: -150,
+        e.GOT_KILLED: -50,
+        e.MOVED_LEFT: 0,
+        e.MOVED_RIGHT: 0,
+        e.MOVED_UP: 0,
+        e.MOVED_DOWN: 0,
         e.WAITED: -1,
-        e.BOMB_DROPPED: 1,
-        e.SURVIVED_ROUND: 100,
-        e.OPPONENT_ELIMINATED: 20,
+        e.BOMB_DROPPED: 0,
+        e.BOMB_EXPLODED: 2,
+        e.SURVIVED_ROUND: 5,
+        e.OPPONENT_ELIMINATED: 5,
+        NOT_KILLED_BY_OWN_BOMB: 300
     }
     reward_sum = 0
     for event in events:
@@ -139,9 +142,9 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    BATCH_SIZE = 64
+    BATCH_SIZE = 16
     GAMMA = 0.999
-    UPDATE_FREQUENCY = 5
+    UPDATE_FREQUENCY = 20
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
@@ -175,9 +178,9 @@ def optimize_model(self):
         param.grad.data.clamp_(-1, 1)
     self.optimizer.step()
 
-    # # update the target net each C steps to be in synch with the policy net 
-    # if len(self.memory) % UPDATE_FREQUENCY:
-    #     self.logger.info("Update target network")
-    #     self.target_net.load_state_dict(self.policy_net.state_dict())
-    #     self.target_net.eval()
+    # update the target net each C steps to be in synch with the policy net 
+    if len(self.memory) % UPDATE_FREQUENCY:
+        self.logger.info("Update target network")
+        self.target_net.load_state_dict(self.policy_net.state_dict())
+        self.target_net.eval()
 
