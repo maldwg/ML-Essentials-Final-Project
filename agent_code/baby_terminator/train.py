@@ -86,7 +86,11 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     :param self: The same object that is passed to all of your callbacks.
     """
     self.logger.debug(f'Encountered event(s) {", ".join(map(repr, events))} in final step')
-    self.transitions.append(Transition(state_to_features(last_game_state), last_action, None, reward_from_events(self, events)))
+    state = state_to_features(last_game_state)
+    action = torch.tensor([ACTIONS.index(last_action)], device=device)
+    reward = reward_from_events(self, events)
+    reward = torch.tensor(reward, device=device)
+    self.memory.push(torch.tensor(state), action, None, reward)
 
     # synch the target network with the policy network 
     self.target_net.load_state_dict(self.policy_net.state_dict())
@@ -105,19 +109,21 @@ def reward_from_events(self, events: List[str]) -> int:
     certain behavior.
     """
     game_rewards = {
-        e.KILLED_OPPONENT: 75,
-        e.INVALID_ACTION: -10,
-        e.CRATE_DESTROYED: 0,
+        e.KILLED_OPPONENT: 100,
+        e.INVALID_ACTION: -25,
+        e.CRATE_DESTROYED: 1,
         e.COIN_FOUND: 1,
         e.COIN_COLLECTED: 10,
         e.KILLED_SELF: -100,
-        e.GOT_KILLED: -50,
-        e.MOVED_LEFT: 0,
-        e.MOVED_RIGHT: 0,
-        e.MOVED_UP: 0,
-        e.MOVED_DOWN: 0,
+        e.GOT_KILLED: -100,
+        e.MOVED_LEFT: 1,
+        e.MOVED_RIGHT: 1,
+        e.MOVED_UP: 1,
+        e.MOVED_DOWN: 1,
         e.WAITED: -1,
-        e.BOMB_DROPPED: 0,
+        e.BOMB_DROPPED: 1,
+        e.SURVIVED_ROUND: 100,
+        e.OPPONENT_ELIMINATED: 20,
     }
     reward_sum = 0
     for event in events:
@@ -133,7 +139,7 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    BATCH_SIZE = 32
+    BATCH_SIZE = 64
     GAMMA = 0.999
     UPDATE_FREQUENCY = 5
     if len(self.memory) < BATCH_SIZE:
@@ -156,7 +162,7 @@ def optimize_model(self):
     # compute the expected Q values
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
     next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
-    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+    expected_state_action_values = (next_state_values * GAMMA) + reward_batch 
 
     # compute loss
     loss = nn.functional.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))

@@ -29,7 +29,7 @@ def setup(self):
 
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
-
+    self.steps_done = 0
     if self.train:
         self.logger.info("Training mode selected")
         if not os.path.isfile("my-saved-model.pt"):
@@ -40,7 +40,7 @@ def setup(self):
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
             self.optimizer = optim.RMSprop(self.policy_net.parameters())
-            self.memory = ReplayMemory(10000)
+            self.memory = ReplayMemory(1000000)
 
             weights = np.random.rand(len(ACTIONS))
             self.model = weights / weights.sum()
@@ -54,7 +54,7 @@ def setup(self):
             self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
 
 
-steps_done = 0
+
 
 def act(self, game_state: dict) -> str:
     """
@@ -66,7 +66,6 @@ def act(self, game_state: dict) -> str:
     :return: The action to take as a string.
     """
     # Exploration vs exploitation
-    global steps_done
     # self.logger.info(game_state)
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
@@ -75,8 +74,8 @@ def act(self, game_state: dict) -> str:
         EPS_DECAY = 200
         sample = random.random()
         # let the exploration decay 
-        eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * steps_done / EPS_DECAY)
-        steps_done += 1
+        eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.steps_done / EPS_DECAY)
+        self.steps_done += 1
         if sample > eps_threshold:
             self.logger.info("Exploitation")
             with torch.no_grad():
@@ -100,12 +99,9 @@ def act(self, game_state: dict) -> str:
         self.logger.info("Exploitation")
         with torch.no_grad():
             state_features = state_to_features(game_state)
-            self.logger.info(state_features[0])
             state_features = state_features.unsqueeze(0).to(device)
-            self.logger.info("Game state transformed")
-            self.logger.info(state_features)
             # Pass features through policy network
-            self.logger.info(self.policy_net(state_features))
+            self.logger.info(f"Action values: {self.policy_net(state_features)}")
             action = self.policy_net(state_features).max(1)[1].view(1, 1)
             self.logger.info(f"Chose {ACTIONS[action.item()]} as best value ")
             return ACTIONS[action.item()]
@@ -129,25 +125,31 @@ def state_to_features(game_state: dict) -> np.array:
     
     # Get field data
     field = game_state['field']
-    # Transpose the field
+    # Transpose the field, because state is transposed!
     field = np.transpose(field)
+
+    # Create coin map
+    # y,x because the filed is transposed
+    coin_map = np.zeros_like(field)
+    for (x, y) in game_state['coins']:
+        coin_map[y, x] = 3
 
     # Create agent's position channel
     agent_position = np.zeros_like(field)
     x, y = game_state['self'][-1]
-    agent_position[y, x] = 1
+    agent_position[y, x] = 2
 
     # Create other agents' position channels
     other_agents_positions = np.zeros_like(field)
     for _, _, _, (x, y) in game_state['others']:
-        other_agents_positions[y, x] = 1
+        other_agents_positions[y, x] = -2
 
     # Normalize explosion map
     explosion_map = game_state['explosion_map']
-    explosion_map = (explosion_map - np.mean(explosion_map)) / np.std(explosion_map)
+    explosion_map = np.transpose(explosion_map)
 
     # Stack all these features into a multi-channel tensor
-    stacked_features = np.stack([field, agent_position, other_agents_positions, explosion_map], axis=0)
+    stacked_features = np.stack([field, agent_position, other_agents_positions, explosion_map, coin_map], axis=0)
 
     # Convert to PyTorch tensor
     features_tensor = torch.from_numpy(stacked_features).float()
