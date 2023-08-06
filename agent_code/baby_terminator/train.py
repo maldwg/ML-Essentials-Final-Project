@@ -67,7 +67,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
             next_state = None
         else:
             next_state = state_to_features(new_game_state)
-        reward = torch.tensor([reward], device=device)
+        reward = torch.tensor(reward, device=device)
         # push the state to the memory in order to be able to learn from it 
         self.memory.push(torch.tensor(state), action, torch.tensor(next_state), reward)
         optimize_model(self)
@@ -94,7 +94,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     # Store the model
     with open("my-saved-model.pt", "wb") as file:
-        pickle.dump(self.model, file)
+        pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], file)
 
 
 def reward_from_events(self, events: List[str]) -> int:
@@ -105,19 +105,19 @@ def reward_from_events(self, events: List[str]) -> int:
     certain behavior.
     """
     game_rewards = {
-        e.KILLED_OPPONENT: 500,
-        e.INVALID_ACTION: -5,
-        e.CRATE_DESTROYED: 5,
-        e.COIN_FOUND: 5,
-        e.COIN_COLLECTED: 100,
-        e.KILLED_SELF: -300,
-        e.GOT_KILLED: -300,
-        e.MOVED_LEFT: -1,
-        e.MOVED_RIGHT: -1,
-        e.MOVED_UP: -1,
-        e.MOVED_DOWN: -1,
-        e.WAITED: -2,
-        e.BOMB_DROPPED: -1,
+        e.KILLED_OPPONENT: 50,
+        e.INVALID_ACTION: -10,
+        e.CRATE_DESTROYED: 0,
+        e.COIN_FOUND: 1,
+        e.COIN_COLLECTED: 20,
+        e.KILLED_SELF: -50,
+        e.GOT_KILLED: -50,
+        e.MOVED_LEFT: 1,
+        e.MOVED_RIGHT: 1,
+        e.MOVED_UP: 1,
+        e.MOVED_DOWN: 1,
+        e.WAITED: -1,
+        e.BOMB_DROPPED: 1,
     }
     reward_sum = 0
     for event in events:
@@ -152,6 +152,10 @@ def optimize_model(self):
     reward_batch = torch.stack(batch.reward)
     # Construct Q value for the current state
     state_action_values = self.policy_net(state_batch).gather(1, action_batch)
+
+
+
+
 
     # compute the expected Q values
     next_state_values = torch.zeros(BATCH_SIZE, device=device)

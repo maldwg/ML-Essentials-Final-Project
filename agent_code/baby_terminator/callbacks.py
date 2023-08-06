@@ -30,21 +30,26 @@ def setup(self):
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
 
-    if self.train or not os.path.isfile("my-saved-model.pt"):
-        self.logger.info("Setting up model from scratch.")
-        # init policy and target network 
-        self.policy_net = QNetwork(17, 17, 6).to(device)
-        self.target_net = QNetwork(17, 17, 6).to(device)
-        self.target_net.load_state_dict(self.policy_net.state_dict())
-        self.target_net.eval()
-        self.optimizer = optim.RMSprop(self.policy_net.parameters())
-        self.memory = ReplayMemory(10000)
+    if self.train:
+        self.logger.info("Training mode selected")
+        if not os.path.isfile("my-saved-model.pt"):
+            self.logger.info("Setting up model from scratch.")
+            # init policy and target network 
+            self.policy_net = QNetwork(17, 17, 6).to(device)
+            self.target_net = QNetwork(17, 17, 6).to(device)
+            self.target_net.load_state_dict(self.policy_net.state_dict())
+            self.target_net.eval()
+            self.optimizer = optim.RMSprop(self.policy_net.parameters())
+            self.memory = ReplayMemory(10000)
 
-
-        weights = np.random.rand(len(ACTIONS))
-        self.model = weights / weights.sum()
+            weights = np.random.rand(len(ACTIONS))
+            self.model = weights / weights.sum()
+        else:
+            self.logger.info("Using existing model to generate new generation")
+            with open("my-saved-model.pt", "rb") as file:
+                self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
     else:
-        self.logger.info("Loading model from saved state.")
+        self.logger.info("Loading model from saved state, no training")
         with open("my-saved-model.pt", "rb") as file:
             self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
 
