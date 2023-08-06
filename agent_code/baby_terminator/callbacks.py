@@ -32,7 +32,7 @@ def setup(self):
 
     if self.train or not os.path.isfile("my-saved-model.pt"):
         self.logger.info("Setting up model from scratch.")
-        # init policy and target network
+        # init policy and target network 
         self.policy_net = QNetwork(17, 17, 6).to(device)
         self.target_net = QNetwork(17, 17, 6).to(device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
@@ -49,6 +49,7 @@ def setup(self):
             self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
 
 
+steps_done = 0
 
 def act(self, game_state: dict) -> str:
     """
@@ -60,10 +61,11 @@ def act(self, game_state: dict) -> str:
     :return: The action to take as a string.
     """
     # Exploration vs exploitation
+    global steps_done
+    # Use epsilon greedy strategy to determine whether to exploit or explore
     EPS_START = 0.9
     EPS_END = 0.05
     EPS_DECAY = 200
-    steps_done = 0
     sample = random.random()
     # let the exploration decay 
     eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * steps_done / EPS_DECAY)
@@ -76,6 +78,7 @@ def act(self, game_state: dict) -> str:
             self.logger.info("Game state transformed")
             self.logger.info(state_features)
             # Pass features through policy network
+            self.logger.info(self.policy_net(state_features))
             action = self.policy_net(state_features).max(1)[1].view(1, 1)
             self.logger.info(f"Chose {ACTIONS[action.item()]} as best value ")
             return ACTIONS[action.item()]
@@ -102,30 +105,25 @@ def state_to_features(game_state: dict) -> np.array:
     """
     if game_state is None:
         return None
+    
+    # append the channels of the board to get the input shape for the CNN
 
-    # For example, you could construct several channels of equal shape, ...
     channels = []
 
-    # One channel might contain the game board
     channels.append(game_state['field'])
 
-    # Another channel might contain the bomb positions
     bomb_map = np.zeros_like(game_state['field'])
     for bomb in game_state['bombs']:
-        bomb_map[bomb[0]] = bomb[1]  # Position and countdown
+        bomb_map[bomb[0]] = bomb[1] 
     channels.append(bomb_map)
 
-    # We could also add a channel for the coins
     coin_map = np.zeros_like(game_state['field'])
     for coin in game_state['coins']:
         coin_map[coin] = 1
     channels.append(coin_map)
 
-    # And one for the explosion map
     channels.append(game_state['explosion_map'])
 
-    # Stack them as a feature tensor (they must have the same shape)
     stacked_channels = np.stack(channels)
 
-    # The tensor shape should be [C, H, W]
     return stacked_channels

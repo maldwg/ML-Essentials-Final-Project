@@ -10,7 +10,7 @@ from .model import QNetwork
 from .memory import ReplayMemory
 
 import torch
-
+from torch import nn
 from .utils import ACTIONS, device, Transition
 
 
@@ -53,12 +53,12 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
-    self.logger.info("occurred")
-    self.logger.debug(f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}')
-
     self.logger.info("Game events occurred")
+    self.logger.debug(f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}')
     if old_game_state is None:
+        self.logger.info("State is none in game events occurred")
         return
+    # get the input for the CNN
     state = state_to_features(old_game_state)
     if state is not None:
         action = torch.tensor([ACTIONS.index(self_action)], device=device)
@@ -68,8 +68,8 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         else:
             next_state = state_to_features(new_game_state)
         reward = torch.tensor([reward], device=device)
-
-        self.memory.push(state, action, next_state, reward)
+        # push the state to the memory in order to be able to learn from it 
+        self.memory.push(torch.tensor(state), action, torch.tensor(next_state), reward)
         optimize_model(self)
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -87,6 +87,10 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     """
     self.logger.debug(f'Encountered event(s) {", ".join(map(repr, events))} in final step')
     self.transitions.append(Transition(state_to_features(last_game_state), last_action, None, reward_from_events(self, events)))
+
+    # synch the target network with the policy network 
+    self.target_net.load_state_dict(self.policy_net.state_dict())
+    self.target_net.eval()
 
     # Store the model
     with open("my-saved-model.pt", "wb") as file:
@@ -124,31 +128,50 @@ def reward_from_events(self, events: List[str]) -> int:
 
 
 def optimize_model(self):
-    BATCH_SIZE = 128
+    """
+    Method to perform the actual Q-Learning
+    """
+    self.logger.info("Optimizing model")
+    # Adapt the hyper parameters
+    BATCH_SIZE = 3
     GAMMA = 0.999
+    UPDATE_FREQUENCY = 3
     if len(self.memory) < BATCH_SIZE:
+        # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
     transitions = self.memory.sample(BATCH_SIZE)
     batch = Transition(*zip(*transitions))
+
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
                                           batch.next_state)), device=device, dtype=torch.bool)
-    non_final_next_states = torch.cat([s for s in batch.next_state
-                                                if s is not None])
-    state_batch = torch.cat(batch.state)
-    action_batch = torch.cat(batch.action)
-    reward_batch = torch.cat(batch.reward)
+    non_final_next_states = torch.stack([s for s in batch.next_state
+                                                if s is not None]).float()
 
+    state_batch = torch.stack(batch.state).float()
+    action_batch = torch.stack(batch.action)
+    reward_batch = torch.stack(batch.reward)
+    # Construct Q value for the current state
     state_action_values = self.policy_net(state_batch).gather(1, action_batch)
 
+    # compute the expected Q values
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
     next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
+    # compute loss
     loss = nn.functional.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
-
+    self.logger.info(f"Q value of: {expected_state_action_values}")
+    self.logger.info(f"Loss of {loss}")
+    # back propagation
     self.optimizer.zero_grad()
     loss.backward()
     for param in self.policy_net.parameters():
         param.grad.data.clamp_(-1, 1)
     self.optimizer.step()
+
+    # update the target net each C steps to be in synch with the policy net 
+    if len(self.memory) % UPDATE_FREQUENCY:
+        self.logger.info("Update target network")
+        self.target_net.load_state_dict(self.policy_net.state_dict())
+        self.target_net.eval()
 
