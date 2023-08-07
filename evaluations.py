@@ -2,13 +2,14 @@ import pickle
 from matplotlib.pylab import plt
 import numpy as np
 import torch
-
+import gzip
 
 AGENT_NAME = "baby_terminator"
 
-model_path = "agent_code/" + AGENT_NAME + "/my-saved-model.pt"
-with open(model_path, "rb") as file:
-    _, _, _, memory = pickle.load(file)
+model_path = "agent_code/" + AGENT_NAME + "/my-saved-model.pkl.gz"
+
+with gzip.open(model_path, 'rb') as f:
+    _,_,_, memory = pickle.load(f)
 
 # get q_value and calc mean
 q_value_after_episode = memory.q_value_after_episode
@@ -34,12 +35,11 @@ epochs = range(1, len(mean_q_values_after_episode) + 1)
  
 # Plot and label the training and validation loss values
 plt.plot(epochs, mean_q_values_after_episode, label='Mean Q Value after each episode')
-plt.plot(epochs, mean_losses_after_episode, label='Mean Loss after each episode')
  
 # Add in a title and axes labels
-plt.title('Q Value and Loss after Episodes')
+plt.title('Q Value after Episodes')
 plt.xlabel('Episodes')
-plt.ylabel('Loss and Q Value')
+plt.ylabel('Q Value')
  
 # Set the tick locations
 plt.xticks(np.arange(0, len(mean_q_values_after_episode) + 1, 2))
@@ -47,3 +47,22 @@ plt.xticks(np.arange(0, len(mean_q_values_after_episode) + 1, 2))
 # Display the plot
 plt.legend(loc='best')
 plt.show()
+plt.savefig(f"./{AGENT_NAME}-q-values.png")
+plt.clf()
+
+# print loss 
+
+plt.title('Loss after Episodes')
+plt.xlabel('Episodes')
+plt.ylabel('Loss')
+plt.plot(epochs, mean_losses_after_episode, label='Mean Loss after each episode')
+# Set the tick locations
+plt.xticks(np.arange(0, len(mean_q_values_after_episode) + 1, 2))
+
+# Display the plot
+plt.legend(loc='best')
+plt.show()
+plt.savefig(f"./{AGENT_NAME}-loss.png")
+
+
+print(f"Model has remembered {memory.steps_done} steps")

@@ -1,6 +1,7 @@
 from collections import namedtuple, deque
 
 import pickle
+import gzip
 from typing import List
 
 import events as e
@@ -20,6 +21,7 @@ RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
 
 # Events
 NOT_KILLED_BY_OWN_BOMB = "NOT_KILLED_BY_OWN_BOMB"
+LAYED_TWO_BOMBS = "LAYED_TWO_BOMBS"
 
 
 def setup_training(self):
@@ -58,20 +60,22 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
     if e.BOMB_EXPLODED in events and not e.KILLED_SELF in events:
         events.append(NOT_KILLED_BY_OWN_BOMB)
+    if self_action == "BOMB" and e.INVALID_ACTION in events:
+        events.append(LAYED_TWO_BOMBS)
     self.logger.info("Game events occurred")
     self.logger.debug(f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}')
     if old_game_state is None:
         self.logger.info("State is none in game events occurred")
         return
     # get the input for the CNN
-    state = state_to_features(old_game_state)
+    state = state_to_features(self, old_game_state)
     if state is not None:
         action = torch.tensor([ACTIONS.index(self_action)], device=device)
         reward = reward_from_events(self, events)
         if new_game_state is None:
             next_state = None
         else:
-            next_state = state_to_features(new_game_state)
+            next_state = state_to_features(self, new_game_state)
         reward = torch.tensor(reward, device=device)
         # push the state to the memory in order to be able to learn from it 
         self.memory.push(torch.tensor(state), action, torch.tensor(next_state), reward)
@@ -91,7 +95,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     :param self: The same object that is passed to all of your callbacks.
     """
     self.logger.debug(f'Encountered event(s) {", ".join(map(repr, events))} in final step')
-    state = state_to_features(last_game_state)
+    state = state_to_features(self, last_game_state)
     action = torch.tensor([ACTIONS.index(last_action)], device=device)
     reward = reward_from_events(self, events)
     reward = torch.tensor(reward, device=device)
@@ -102,8 +106,11 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     # self.target_net.eval()
 
     # Store the model
-    with open("my-saved-model.pt", "wb") as file:
-        pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], file)
+
+    with gzip.open('my-saved-model.pkl.gz', 'wb') as f:
+        pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], f)
+    # with open("my-saved-model.pt", "wb") as file:
+    #     pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], file)
 
     # Add Q value to memory
     self.memory.q_value_after_episode.append(self.q_value)
@@ -119,23 +126,24 @@ def reward_from_events(self, events: List[str]) -> int:
     certain behavior.
     """
     game_rewards = {
-        e.KILLED_OPPONENT: 25,
-        e.INVALID_ACTION: -10,
-        e.CRATE_DESTROYED: 5,
-        e.COIN_FOUND: 1,
-        e.COIN_COLLECTED: 10,
-        e.KILLED_SELF: -150,
-        e.GOT_KILLED: -50,
-        e.MOVED_LEFT: 0,
-        e.MOVED_RIGHT: 0,
-        e.MOVED_UP: 0,
-        e.MOVED_DOWN: 0,
+        e.KILLED_OPPONENT: 100,
+        e.INVALID_ACTION: -30,
+        e.CRATE_DESTROYED: 20,
+        e.COIN_FOUND: 20,
+        e.COIN_COLLECTED: 100,
+        e.KILLED_SELF: -20,
+        e.GOT_KILLED: -20,
+        e.MOVED_LEFT: 1,
+        e.MOVED_RIGHT: 1,
+        e.MOVED_UP: 1,
+        e.MOVED_DOWN: 1,
         e.WAITED: -1,
-        e.BOMB_DROPPED: 0,
-        e.BOMB_EXPLODED: 2,
-        e.SURVIVED_ROUND: 5,
+        e.BOMB_DROPPED: 1,
+        e.BOMB_EXPLODED: 0,
+        e.SURVIVED_ROUND: 10,
         e.OPPONENT_ELIMINATED: 5,
-        NOT_KILLED_BY_OWN_BOMB: 300
+        NOT_KILLED_BY_OWN_BOMB: 20,
+        LAYED_TWO_BOMBS: -10,
     }
     reward_sum = 0
     for event in events:
@@ -151,9 +159,9 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    BATCH_SIZE = 128
+    BATCH_SIZE = 16
     GAMMA = 0.999
-    UPDATE_FREQUENCY = 100
+    UPDATE_FREQUENCY = 1000
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
