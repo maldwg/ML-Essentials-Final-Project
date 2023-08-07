@@ -34,6 +34,9 @@ def setup_training(self):
     # (s, a, r, s')
     self.logger.info("Enter train mode")
     self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
+    self.q_value = None
+    self.loss = None
+
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
@@ -101,6 +104,12 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     # Store the model
     with open("my-saved-model.pt", "wb") as file:
         pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], file)
+
+    # Add Q value to memory
+    self.memory.q_value_after_episode.append(self.q_value)
+    # Add loss to memory
+    self.memory.loss_after_episode.append(self.loss)
+
 
 def reward_from_events(self, events: List[str]) -> int:
     """
@@ -171,6 +180,12 @@ def optimize_model(self):
     loss = nn.functional.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
     self.logger.info(f"Q value of: {expected_state_action_values}")
     self.logger.info(f"Loss of {loss}")
+
+    # Add Q value to object
+    self.q_value = expected_state_action_values
+    # Add loss to object
+    self.loss = loss
+
     # back propagation
     self.optimizer.zero_grad()
     loss.backward()
