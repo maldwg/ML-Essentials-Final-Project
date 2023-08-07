@@ -142,9 +142,9 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    BATCH_SIZE = 16
+    BATCH_SIZE = 128
     GAMMA = 0.999
-    UPDATE_FREQUENCY = 20
+    UPDATE_FREQUENCY = 100
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return

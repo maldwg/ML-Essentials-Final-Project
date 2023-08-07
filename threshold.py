@@ -2,8 +2,8 @@ import math
 import matplotlib.pyplot as plt
 
 EPS_START = 0.9
-EPS_END = 0.05
-EPS_DECAY = 300
+EPS_END = 0.01
+EPS_DECAY = 350
 steps_done = 0
 eps_threshold_values = []
 
