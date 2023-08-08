@@ -5,7 +5,7 @@ import random
 import numpy as np
 import gzip 
 
-from .model import QNetwork
+from .model import QNetwork, FullyConnectedQNetwork
 import torch
 import torch.optim as optim
 
@@ -41,7 +41,7 @@ def setup(self):
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
             self.optimizer = optim.RMSprop(self.policy_net.parameters())
-            self.memory = ReplayMemory(1000000)
+            self.memory = ReplayMemory(100000)
 
             weights = np.random.rand(len(ACTIONS))
             self.model = weights / weights.sum()
@@ -75,8 +75,8 @@ def act(self, game_state: dict) -> str:
         # Use epsilon greedy strategy to determine whether to exploit or explore
         EPS_START = 0.95
         EPS_END = 0.01
-        EPS_DECAY = 500
-        EPS_MIN = 0.15
+        EPS_DECAY = 150
+        EPS_MIN = 0.1
         sample = random.random()
         # let the exploration decay but not below 15 %
         eps_threshold = max(EPS_MIN, EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY))
@@ -90,8 +90,9 @@ def act(self, game_state: dict) -> str:
                 # self.logger.info("Game state transformed")
                 # self.logger.info(state_features)
                 # Pass features through policy network
-                self.logger.info(self.policy_net(state_features))
-                action = self.policy_net(state_features).max(1)[1].view(1, 1)
+                q_values = self.policy_net(state_features)
+                self.logger.info(f"Q-values: {q_values} | Max Value chosen: {q_values.max(1)[1]} | Chosen view: {q_values.max(1)[1].view(1,1)} | Item: {q_values.max(1)[1].view(1,1).item()}")
+                action = q_values.max(1)[1].view(1, 1)
                 self.logger.info(f"Chose {ACTIONS[action.item()]} as best value ")
                 return ACTIONS[action.item()]
         else:
@@ -106,9 +107,10 @@ def act(self, game_state: dict) -> str:
         with torch.no_grad():
             state_features = state_to_features(self, game_state)
             state_features = state_features.unsqueeze(0).to(device)
-            # Pass features through policy network
-            self.logger.info(f"Action values: {self.policy_net(state_features)}")
-            action = self.policy_net(state_features).max(1)[1].view(1, 1)
+            # Pass features through policy network           
+            q_values = self.policy_net(state_features)
+            self.logger.info(f"Q-values: {q_values} | Max Value chosen: {q_values.max(1)[1]} | Chosen view: {q_values.max(1)[1].view(1,1)} | Item: {q_values.max(1)[1].view(1,1).item()}")
+            action = q_values.max(1)[1].view(1, 1)
             self.logger.info(f"Chose {ACTIONS[action.item()]} as best value ")
             return ACTIONS[action.item()]
 
@@ -168,17 +170,14 @@ def state_to_features(self, game_state: dict) -> np.array:
     stacked_features = np.stack([field, coin_map, agent_position, other_agents_positions, bomb_map], axis=0)
 
     # Convert to PyTorch tensor
-    features_tensor = torch.from_numpy(stacked_features).float()
-    
-    # self.logger.info("Field")
-    # self.logger.info(features_tensor[0])
-    # self.logger.info("Coins")
-    # self.logger.info(features_tensor[1])
-    # self.logger.info("agent")
-    # self.logger.info(features_tensor[2])
-    # self.logger.info("others")
-    # self.logger.info(features_tensor[3])
-    # self.logger.info("bombs")
-    # self.logger.info(features_tensor[4])
+    # features_tensor = torch.from_numpy(stacked_features).float()
+
+    # use single channel
+    combined_features = np.sum(stacked_features, axis=0, keepdims=True)
+
+    # Convert to PyTorch tensor
+    features_tensor = torch.from_numpy(combined_features).float()
+
+    # self.logger.info(f"Game-state as input for the CNN: {features_tensor}")
     return features_tensor
 

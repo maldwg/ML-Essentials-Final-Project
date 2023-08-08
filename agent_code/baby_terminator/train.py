@@ -21,7 +21,7 @@ RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
 
 # Events
 NOT_KILLED_BY_OWN_BOMB = "NOT_KILLED_BY_OWN_BOMB"
-LAYED_TWO_BOMBS = "LAYED_TWO_BOMBS"
+UNALLOWED_BOMB = "UNALLOWED_BOMB"
 
 
 def setup_training(self):
@@ -60,8 +60,8 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
     if e.BOMB_EXPLODED in events and not e.KILLED_SELF in events:
         events.append(NOT_KILLED_BY_OWN_BOMB)
-    if self_action == "BOMB" and e.INVALID_ACTION in events:
-        events.append(LAYED_TWO_BOMBS)
+    if self_action == "BOMB" and old_game_state["self"][2] == False:
+        events.append(UNALLOWED_BOMB)
     self.logger.info("Game events occurred")
     self.logger.debug(f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}')
     if old_game_state is None:
@@ -127,23 +127,24 @@ def reward_from_events(self, events: List[str]) -> int:
     """
     game_rewards = {
         e.KILLED_OPPONENT: 100,
-        e.INVALID_ACTION: -30,
-        e.CRATE_DESTROYED: 20,
-        e.COIN_FOUND: 20,
-        e.COIN_COLLECTED: 100,
-        e.KILLED_SELF: -20,
-        e.GOT_KILLED: -20,
-        e.MOVED_LEFT: 1,
-        e.MOVED_RIGHT: 1,
-        e.MOVED_UP: 1,
-        e.MOVED_DOWN: 1,
-        e.WAITED: -1,
-        e.BOMB_DROPPED: 1,
+        e.INVALID_ACTION: -50,
+        e.CRATE_DESTROYED: 15,
+        e.COIN_FOUND: 15,
+        e.COIN_COLLECTED: 50,
+        e.KILLED_SELF: -100,
+        e.GOT_KILLED: -100,
+        e.MOVED_LEFT: 5,
+        e.MOVED_RIGHT: 5,
+        e.MOVED_UP: 5,
+        e.MOVED_DOWN: 5,
+        e.WAITED: -15,
+        e.BOMB_DROPPED: 0,
         e.BOMB_EXPLODED: 0,
-        e.SURVIVED_ROUND: 10,
-        e.OPPONENT_ELIMINATED: 5,
-        NOT_KILLED_BY_OWN_BOMB: 20,
-        LAYED_TWO_BOMBS: -10,
+        e.SURVIVED_ROUND: 100,
+        e.OPPONENT_ELIMINATED: 10,
+        NOT_KILLED_BY_OWN_BOMB: 100,
+        # additional penalty when laying 2 bombs in a row
+        UNALLOWED_BOMB: -100,
     }
     reward_sum = 0
     for event in events:
@@ -159,13 +160,16 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    BATCH_SIZE = 16
+    BATCH_SIZE = 128
     GAMMA = 0.999
-    UPDATE_FREQUENCY = 1000
+    UPDATE_FREQUENCY = 200
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
-    transitions = self.memory.sample(BATCH_SIZE)
+    transitions = self.memory.sample(BATCH_SIZE -1 )
+    # todo activate online learning approach --> you will need a larger memory for that > 1000000
+    # "online learning"
+    transitions.append(self.memory.memory[-1])
     batch = Transition(*zip(*transitions))
 
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
@@ -176,6 +180,8 @@ def optimize_model(self):
     state_batch = torch.stack(batch.state).float()
     action_batch = torch.stack(batch.action)
     reward_batch = torch.stack(batch.reward)
+
+    # self.logger.info(f"Action-batch: {action_batch} | reward-batch: {reward_batch}")
     # Construct Q value for the current state
     state_action_values = self.policy_net(state_batch).gather(1, action_batch)
 
@@ -202,7 +208,7 @@ def optimize_model(self):
     self.optimizer.step()
 
     # update the target net each C steps to be in synch with the policy net 
-    if len(self.memory) % UPDATE_FREQUENCY:
+    if len(self.memory) % UPDATE_FREQUENCY == 0:
         self.logger.info("Update target network")
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
