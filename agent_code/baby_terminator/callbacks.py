@@ -73,10 +73,10 @@ def act(self, game_state: dict) -> str:
     # self.logger.info(game_state)
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
-        EPS_START = 0.95
-        EPS_END = 0.01
-        EPS_DECAY = 150
-        EPS_MIN = 0.1
+        EPS_START = 0.2
+        EPS_END = 0.05
+        EPS_DECAY = 500
+        EPS_MIN = 0.0
         sample = random.random()
         # let the exploration decay but not below 15 %
         eps_threshold = max(EPS_MIN, EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY))
@@ -135,49 +135,63 @@ def state_to_features(self, game_state: dict) -> np.array:
     field = game_state['field']
     # Transpose the field, because state is transposed!
     field = np.transpose(field)
-    # remove negative values
-    field[field == 1.] = 3. 
-    field[field == 0.] = 2.
-    field[field == -1.] = 1.
-    # Create coin ma
-    # y,x because the filed is transposed
-    coin_map = np.zeros_like(field)
-    for (x, y) in game_state['coins']:
-        coin_map[y, x] = 4.
+    # create base board for all channels
+    # encode values because of explosion map (No influence on how long an explosion will be there (4..0))
+    field[field == 1.] = 11. 
+    field[field == 0.] = 10.
+    field[field == -1.] = 9.
 
+    agent_field = np.copy(field)
     # Create agent's position channel
-    agent_position = np.zeros_like(field)
     x, y = game_state['self'][-1]
-    agent_position[y, x] = 5.
+    agent_field[y, x] = 8.
 
     # Create other agents' position channels
-    other_agents_positions = np.zeros_like(field)
     for _, _, _, (x, y) in game_state['others']:
-        other_agents_positions[y, x] = 6.
+        agent_field[y, x] = 7.
+
 
     # Transpose explosion map
-    bomb_map = game_state['explosion_map']
-    bomb_map = np.transpose(bomb_map)
+    # values of 0..2 depending on how long an explosion will be there
+    explosion_map = game_state['explosion_map']
+    explosion_map = np.transpose(explosion_map)
+
+
+    bomb_map = np.copy(field)
+    # override all values in bomb map, where explosion map is not 0 (copy all remaining explosions to field)
+    bomb_map[explosion_map != 0] = explosion_map[explosion_map != 0]
+
     # get where the bombs are and add to the pixel value the timer
     # the pixel value for bombs should be the highest in order to not infere with other values
     for ((x, y), t) in game_state['bombs']:
-        bomb_map[y, x] = 8. + t
-    bomb_map[bomb_map == 1.] = 7.
+        bomb_map[y, x] = 12. + t
+
+    # Create coin ma
+    # y,x because the filed is transposed
+    coin_map = np.copy(field)
+    for (x, y) in game_state['coins']:
+        coin_map[y, x] = 6.
 
     # Get where the bombs are
+    # self.logger.info(agent_field)
+    # self.logger.info(coin_map)
+    # self.logger.info(f"Bomb info {game_state['bombs']}")
+    # self.logger.info(game_state["explosion_map"])
+    # self.logger.info(bomb_map)
 
     # Stack all these features into a multi-channel tensor
-    stacked_features = np.stack([field, coin_map, agent_position, other_agents_positions, bomb_map], axis=0)
+    stacked_features = np.stack([agent_field, coin_map, bomb_map], axis=0)
 
     # Convert to PyTorch tensor
-    # features_tensor = torch.from_numpy(stacked_features).float()
+    features_tensor = torch.from_numpy(stacked_features).float()
 
     # use single channel
-    combined_features = np.sum(stacked_features, axis=0, keepdims=True)
+    # combined_features = np.sum(stacked_features, axis=0, keepdims=True)
 
     # Convert to PyTorch tensor
-    features_tensor = torch.from_numpy(combined_features).float()
+    # features_tensor = torch.from_numpy(combined_features).float()
 
     # self.logger.info(f"Game-state as input for the CNN: {features_tensor}")
+
     return features_tensor
 

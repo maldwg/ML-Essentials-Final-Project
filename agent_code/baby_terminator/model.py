@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 
-
 class QNetwork(nn.Module):
     def __init__(self, h, w, outputs):
         super(QNetwork, self).__init__()
@@ -9,7 +8,7 @@ class QNetwork(nn.Module):
         self.stride = 1
         self.padding = 2
 
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
         self.dropout1 = nn.Dropout2d(p=0.3)
         self.conv2 = nn.Conv2d(16, 32, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
         self.dropout2 = nn.Dropout2d(p=0.3)
@@ -33,7 +32,10 @@ class QNetwork(nn.Module):
         x = self.dropout2(x)
         x = nn.functional.relu(self.conv3(x))
         x = self.dropout3(x)
-        return self.head(x.view(x.size(0), -1))
+        x = self.head(x.view(x.size(0), -1))
+        # return nn.functional.softmax(x)
+        return x 
+
 
 import torch.nn.functional as F
 

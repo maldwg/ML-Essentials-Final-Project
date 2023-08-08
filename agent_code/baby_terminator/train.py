@@ -78,7 +78,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
             next_state = state_to_features(self, new_game_state)
         reward = torch.tensor(reward, device=device)
         # push the state to the memory in order to be able to learn from it 
-        self.memory.push(torch.tensor(state), action, torch.tensor(next_state), reward)
+        self.memory.push(state, action, next_state, reward)
         optimize_model(self)
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -99,7 +99,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     action = torch.tensor([ACTIONS.index(last_action)], device=device)
     reward = reward_from_events(self, events)
     reward = torch.tensor(reward, device=device)
-    self.memory.push(torch.tensor(state), action, None, reward)
+    self.memory.push(state, action, None, reward)
 
     # # synch the target network with the policy network 
     # self.target_net.load_state_dict(self.policy_net.state_dict())
@@ -127,24 +127,24 @@ def reward_from_events(self, events: List[str]) -> int:
     """
     game_rewards = {
         e.KILLED_OPPONENT: 100,
-        e.INVALID_ACTION: -50,
+        e.INVALID_ACTION: -10,
         e.CRATE_DESTROYED: 15,
         e.COIN_FOUND: 15,
-        e.COIN_COLLECTED: 50,
-        e.KILLED_SELF: -100,
-        e.GOT_KILLED: -100,
-        e.MOVED_LEFT: 5,
-        e.MOVED_RIGHT: 5,
-        e.MOVED_UP: 5,
-        e.MOVED_DOWN: 5,
-        e.WAITED: -15,
-        e.BOMB_DROPPED: 0,
+        e.COIN_COLLECTED: 20,
+        e.KILLED_SELF: -50,
+        e.GOT_KILLED: -50,
+        e.MOVED_LEFT: .1,
+        e.MOVED_RIGHT: .1,
+        e.MOVED_UP: .1,
+        e.MOVED_DOWN: .1,
+        e.WAITED: -1,
+        e.BOMB_DROPPED: .1,
         e.BOMB_EXPLODED: 0,
         e.SURVIVED_ROUND: 100,
         e.OPPONENT_ELIMINATED: 10,
-        NOT_KILLED_BY_OWN_BOMB: 100,
+        NOT_KILLED_BY_OWN_BOMB: 50,
         # additional penalty when laying 2 bombs in a row
-        UNALLOWED_BOMB: -100,
+        UNALLOWED_BOMB: -20,
     }
     reward_sum = 0
     for event in events:
