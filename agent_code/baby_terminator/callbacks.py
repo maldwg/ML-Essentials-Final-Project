@@ -133,7 +133,7 @@ def state_to_features(self, game_state: dict) -> np.array:
     
     # Get field data
     field = game_state['field']
-    # Transpose the field, because state is transposed!
+    # Transpose the field, for prints since otherwise the field is displayed with 90 degrees rotated
     field = np.transpose(field)
     # create base board for all channels
     # encode values because of explosion map (No influence on how long an explosion will be there (4..0))
