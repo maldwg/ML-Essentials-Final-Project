@@ -130,7 +130,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
 def custom_game_events(self, old_game_state, new_game_state, events, self_action):
     custom_events = []
-    valid_move = e.INVALID_ACTION in events
+    valid_move = e.INVALID_ACTION not in events
     in_old_explosion_zone = False
     in_new_explosion_zone = False
     # init with high value so if no bomb was in old state but one is discovered in new one, there is no penalty since 0 would be < distance to bomb
@@ -275,20 +275,20 @@ def reward_from_events(self, events: List[str]) -> int:
         e.BOMB_DROPPED: 1,
         e.BOMB_EXPLODED: 0,
         e.SURVIVED_ROUND: 50,
-        e.OPPONENT_ELIMINATED: 10,
-        NOT_KILLED_BY_OWN_BOMB: 35,
+        e.OPPONENT_ELIMINATED: 5,
+        NOT_KILLED_BY_OWN_BOMB: 15,
         # additional penalty when laying 2 bombs in a row
         UNALLOWED_BOMB: -20,
-        DISTANCE_TO_COIN_DECREASED: 7.5,
-        DISTANCE_TO_COIN_INCREASED: -5,
-        DISTANCE_FROM_BOMB_INCREASED: 7.5,
-        DISTANCE_FROM_BOMB_DECREASED: -5,
-        APPROACHED_ENEMY: 5,
-        DISAPPROACHED_ENEMY: -3,
-        LEFT_POTENTIAL_EXPLOSION_ZONE: 7.5,
-        ENTERED_POTENTIAL_EXPLOSION_ZONE: -5,
-        IN_SAFE_ZONE: 2,
-        AGENT_CORNERED: -10,
+        DISTANCE_TO_COIN_DECREASED: 3.5,
+        DISTANCE_TO_COIN_INCREASED: -2,
+        DISTANCE_FROM_BOMB_INCREASED: 3.5,
+        DISTANCE_FROM_BOMB_DECREASED: -2,
+        APPROACHED_ENEMY: 3.5,
+        DISAPPROACHED_ENEMY: -2,
+        LEFT_POTENTIAL_EXPLOSION_ZONE: 3.5,
+        ENTERED_POTENTIAL_EXPLOSION_ZONE: -2,
+        IN_SAFE_ZONE: 1,
+        AGENT_CORNERED: -5,
 
     }
     reward_sum = 0
@@ -305,7 +305,7 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    BATCH_SIZE = 128
+    BATCH_SIZE = 32
     GAMMA = 0.999
     UPDATE_FREQUENCY = 200
     if len(self.memory) < BATCH_SIZE:
