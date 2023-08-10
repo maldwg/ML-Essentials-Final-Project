@@ -260,13 +260,13 @@ def reward_from_events(self, events: List[str]) -> int:
     certain behavior.
     """
     game_rewards = {
-        e.KILLED_OPPONENT: 75,
-        e.INVALID_ACTION: -5,
+        e.KILLED_OPPONENT: 50,
+        e.INVALID_ACTION: -12.5,
         e.CRATE_DESTROYED: 15,
         e.COIN_FOUND: 15,
         e.COIN_COLLECTED: 25,
-        e.KILLED_SELF: -10,
-        e.GOT_KILLED: -10,
+        e.KILLED_SELF: -15,
+        e.GOT_KILLED: -15,
         e.MOVED_LEFT: 0.5,
         e.MOVED_RIGHT: 0.5,
         e.MOVED_UP: 0.5,
@@ -275,21 +275,21 @@ def reward_from_events(self, events: List[str]) -> int:
         e.WAITED: -7.5,
         e.BOMB_DROPPED: 0.5,
         e.BOMB_EXPLODED: 0,
-        e.SURVIVED_ROUND: 50,
+        e.SURVIVED_ROUND: 25,
         e.OPPONENT_ELIMINATED: 5,
         NOT_KILLED_BY_OWN_BOMB: 15,
         # additional penalty when laying 2 bombs in a row
         UNALLOWED_BOMB: -10,
         DISTANCE_TO_COIN_DECREASED: 5,
-        DISTANCE_TO_COIN_INCREASED: -2,
+        DISTANCE_TO_COIN_INCREASED: -4,
         DISTANCE_FROM_BOMB_INCREASED: 5,
-        DISTANCE_FROM_BOMB_DECREASED: -2,
+        DISTANCE_FROM_BOMB_DECREASED: -4,
         APPROACHED_ENEMY: 5,
-        DISAPPROACHED_ENEMY: -2,
+        DISAPPROACHED_ENEMY: -4,
         LEFT_POTENTIAL_EXPLOSION_ZONE: 5,
-        ENTERED_POTENTIAL_EXPLOSION_ZONE: -2,
+        ENTERED_POTENTIAL_EXPLOSION_ZONE: -4,
         IN_SAFE_ZONE: 2,
-        AGENT_CORNERED: -5,
+        AGENT_CORNERED: -7.5,
 
     }
     reward_sum = 0
@@ -308,7 +308,7 @@ def optimize_model(self):
     # Adapt the hyper parameters
     BATCH_SIZE = 128
     GAMMA = 0.999
-    UPDATE_FREQUENCY = 1500
+    UPDATE_FREQUENCY = 2500
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return

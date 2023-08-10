@@ -183,18 +183,44 @@ def state_to_features(self, game_state: dict) -> np.array:
             if distance_map[i, j] == 10:
                 distance_map[i, j] = min_distance
 
+    # Dead Ends
+    dead_ends = np.copy(field)
+    for x in range(1, field.shape[0]-1):
+        for y in range(1, field.shape[1]-1):
+            # if cell is empty
+            if field[x, y] == 10:  
+                free_neighs = sum([field[x-1, y] == 10, field[x+1, y] == 10, field[x, y-1] == 10, field[x, y+1] == 10])
+                if free_neighs == 1:
+                    dead_ends[x, y] = 1
+
+    # Threat from Enemies (Heatmap style)
+    threat_map_enemies = np.copy(field)
+    for _, _, _, (ex, ey) in game_state['others']:
+        for x in range(field.shape[0]):
+            for y in range(field.shape[1]):
+                threat_map_enemies[x, y] += 1 / (1 + abs(ex - x) + abs(ey - y))
+
+    # Potential Safe Zones
+    potential_safe_zones = np.copy(field)
+    for ((x, y), t) in game_state['bombs']:
+
+        if t < 3 and t > 0:
+            for dx in range(-3,4):
+                for dy in range(-3,4):
+                    # to only include the horizontal and vertical line of potential movement
+                    if dx * dy == 0:
+                        if 0 <= x + dx < field.shape[0] and 0 <= y + dy < field.shape[1]:
+                            # set to 0 if a tile is *not* safe
+                            potential_safe_zones[y + dy, x + dx] = 0
+
     # Stack all these features into a multi-channel tensor
-    stacked_features = np.stack([agent_field, coin_map, bomb_map, safety_map, threat_map, distance_map], axis=0)
+    stacked_features = np.stack([agent_field, coin_map, bomb_map, safety_map, threat_map, distance_map, dead_ends, threat_map_enemies, potential_safe_zones], axis=0)
 
     # Convert to PyTorch tensor
     features_tensor = torch.from_numpy(stacked_features).float()
-    # for idx, t in enumerate(features_tensor):
-    #     self.logger.info(f"{idx}. channel {t}")
     features_tensor = normalize_data(features_tensor)
-    # for idx, t in enumerate(features_tensor):
-    #     self.logger.info(f"Normalized: {idx}. channel {t}")
-    return features_tensor
 
+    return features_tensor
 
 
 def normalize_data(data):

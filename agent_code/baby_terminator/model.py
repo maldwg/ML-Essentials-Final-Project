@@ -8,10 +8,10 @@ class QNetwork(nn.Module):
         self.stride = 1
         self.padding = 2
 
-        self.conv1 = nn.Conv2d(6, 8, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
+        self.conv1 = nn.Conv2d(9, 18, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
         # self.bn1 = nn.BatchNorm2d(8)
         #  self.dropout1 = nn.Dropout2d(p=0.5)
-        self.conv2 = nn.Conv2d(8, 8, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
+        # self.conv2 = nn.Conv2d(18, 18, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
         # self.dropout2 = nn.Dropout2d(p=0.5)
         # self.conv3 = nn.Conv2d(8, 8, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
         # self.dropout3 = nn.Dropout2d(p=0.5)
@@ -21,16 +21,16 @@ class QNetwork(nn.Module):
             """
             return (self.padding * 2 + size - kernel_size + stride) // stride 
 
-        convw = conv2d_size_out(conv2d_size_out(w))
-        convh = conv2d_size_out(conv2d_size_out(h))
-        linear_input_size = convw * convh * 8
+        convw = conv2d_size_out(w)
+        convh = conv2d_size_out(h)
+        linear_input_size = convw * convh * 18
         self.head = nn.Linear(linear_input_size, outputs)
 
     def forward(self, x):
         x = nn.functional.relu(self.conv1(x))
         #x = self.bn1(x)
         #  x = self.dropout1(x)
-        x = nn.functional.relu(self.conv2(x))
+        # x = nn.functional.relu(self.conv2(x))
         # x = self.dropout2(x)
         # x = nn.functional.relu(self.conv3(x))
         # x = self.dropout3(x)
