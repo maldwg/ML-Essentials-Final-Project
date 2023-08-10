@@ -9,7 +9,7 @@ AGENT_NAME = "baby_terminator"
 model_path = "agent_code/" + AGENT_NAME + "/my-saved-model.pkl.gz"
 
 with gzip.open(model_path, 'rb') as f:
-    _,_,_, memory = pickle.load(f)
+    policy_net,_,_, memory = pickle.load(f)
 
 # get q_value and calc mean
 q_value_after_episode = memory.q_value_after_episode
@@ -63,6 +63,21 @@ plt.xticks(np.arange(0, len(mean_q_values_after_episode) + 1, 2))
 plt.legend(loc='best')
 plt.show()
 plt.savefig(f"./{AGENT_NAME}-loss.png")
+plt.clf()
 
 
 print(f"Model has remembered {memory.steps_done} steps")
+
+
+def plot_weights(model):
+    for name, param in model.named_parameters():
+        if param.requires_grad and "bias" not in name:
+            plt.figure(figsize=(15, 4))
+            plt.title(name)
+            plt.hist(param.data.cpu().numpy().flatten(), bins=100)
+            plt.show()
+            plt.savefig(f"./{AGENT_NAME}-weights.png")
+            plt.clf()
+
+plot_weights(policy_net)
+

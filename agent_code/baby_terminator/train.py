@@ -142,6 +142,8 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
     # init with high value so if no coin was in old state but one is discovered in new one, there is no penalty since 0 would be < distance to coin
     old_distance_to_coin = 1000
     new_distance_to_coin = 1000
+    old_distance_to_enemy = 1000
+    new_distance_to_enemy = 1000
 
     # if new is none something went wrong
     if new_game_state is None:
@@ -168,10 +170,10 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
         if new_game_state["coins"]:
             new_distance_to_coin = min([abs(coin[0] - new_agent_pos[0]) + abs(coin[1] - new_agent_pos[1]) for coin in new_game_state["coins"]])
 
-        if new_distance_to_coin < old_distance_to_coin and agent_moved and valid_move:
+        if new_distance_to_coin < old_distance_to_coin and agent_moved:
             self.logger.info(f"COIN DISTANCE DECREASED: {new_distance_to_coin} < {old_distance_to_coin}")
             custom_events.append("DISTANCE_TO_COIN_DECREASED")
-        elif new_distance_to_coin > old_distance_to_coin and agent_moved and valid_move:
+        elif new_distance_to_coin > old_distance_to_coin and agent_moved:
             self.logger.info(f"COIN DISTANCE INCREASED: {new_distance_to_coin} > {old_distance_to_coin}")
             custom_events.append("DISTANCE_TO_COIN_INCREASED")
 
@@ -199,27 +201,26 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             # preemptively calculate the closest bomb 
             closest_bomb = min([abs(bomb_pos[0] - new_agent_pos[0]) + abs(bomb_pos[1] - new_agent_pos[1]) for bomb_pos, _ in new_game_state["bombs"]], default=safe_distance)
 
-        # entering does not imply a move since an enemy can plant the bomb nearby 
-        if not in_old_explosion_zone and in_new_explosion_zone:
+        if not in_old_explosion_zone and in_new_explosion_zone and agent_moved:
             self.logger.info(f"EXPLOSION ZONE ENTERED: {in_new_explosion_zone} < {in_old_explosion_zone}")
             custom_events.append("ENTERED_POTENTIAL_EXPLOSION_ZONE")
-        elif in_old_explosion_zone and not in_new_explosion_zone and agent_moved and valid_move:
+        elif in_old_explosion_zone and not in_new_explosion_zone and agent_moved:
             self.logger.info(f"EXPLOSION ZONE LEFT: {in_new_explosion_zone} < {in_old_explosion_zone}")
             custom_events.append("LEFT_POTENTIAL_EXPLOSION_ZONE")
 
         # agent moved not neccessary since enemy can plant bomb nearby and a wait does decrease distance in this case
-        if new_distance_to_bomb > old_distance_to_bomb:
+        if new_distance_to_bomb > old_distance_to_bomb and agent_moved:
             self.logger.info(f"BOMB DISTANCE INCREASED: {new_distance_to_bomb} > {old_distance_to_bomb}")
             custom_events.append("DISTANCE_FROM_BOMB_INCREASED")
-        elif new_distance_to_bomb < old_distance_to_bomb and agent_moved and valid_move:
+        elif new_distance_to_bomb < old_distance_to_bomb and agent_moved:
             self.logger.info(f"BOMB DISTANCE DECREASED: {new_distance_to_bomb} < {old_distance_to_bomb}")
             custom_events.append("DISTANCE_FROM_BOMB_DECREASED")
 
-
-        old_distance_to_enemy = min([abs(enemy[-1][0] - old_agent_pos[0]) + abs(enemy[-1][1] - old_agent_pos[1]) for enemy in old_game_state["others"]])
-        new_distance_to_enemy = min([abs(enemy[-1][0] - new_agent_pos[0]) + abs(enemy[-1][1] - new_agent_pos[1]) for enemy in new_game_state["others"]])
+        if new_game_state["others"]: 
+            old_distance_to_enemy = min([abs(enemy[-1][0] - old_agent_pos[0]) + abs(enemy[-1][1] - old_agent_pos[1]) for enemy in old_game_state["others"]])
+            new_distance_to_enemy = min([abs(enemy[-1][0] - new_agent_pos[0]) + abs(enemy[-1][1] - new_agent_pos[1]) for enemy in new_game_state["others"]])
         # a wait might decrease the distance if the enemy approaches
-        if new_distance_to_enemy < old_distance_to_enemy:
+        if new_distance_to_enemy < old_distance_to_enemy and agent_moved:
             self.logger.info(f"ENEMY DISTANCE DECREASED: {new_distance_to_enemy} < {old_distance_to_enemy}")
             custom_events.append("APPROACHED_ENEMY")
         elif new_distance_to_enemy > old_distance_to_enemy and agent_moved:
@@ -260,34 +261,34 @@ def reward_from_events(self, events: List[str]) -> int:
     """
     game_rewards = {
         e.KILLED_OPPONENT: 75,
-        e.INVALID_ACTION: -7.5,
+        e.INVALID_ACTION: -5,
         e.CRATE_DESTROYED: 15,
         e.COIN_FOUND: 15,
-        e.COIN_COLLECTED: 20,
-        e.KILLED_SELF: -25,
-        e.GOT_KILLED: -25,
-        e.MOVED_LEFT: 1,
-        e.MOVED_RIGHT: 1,
-        e.MOVED_UP: 1,
-        e.MOVED_DOWN: 1,
+        e.COIN_COLLECTED: 25,
+        e.KILLED_SELF: -10,
+        e.GOT_KILLED: -10,
+        e.MOVED_LEFT: 0.5,
+        e.MOVED_RIGHT: 0.5,
+        e.MOVED_UP: 0.5,
+        e.MOVED_DOWN: 0.5,
         # waited penalty has to be bigger than safe zone reward
-        e.WAITED: -5,
-        e.BOMB_DROPPED: 1,
+        e.WAITED: -7.5,
+        e.BOMB_DROPPED: 0.5,
         e.BOMB_EXPLODED: 0,
         e.SURVIVED_ROUND: 50,
         e.OPPONENT_ELIMINATED: 5,
         NOT_KILLED_BY_OWN_BOMB: 15,
         # additional penalty when laying 2 bombs in a row
-        UNALLOWED_BOMB: -20,
-        DISTANCE_TO_COIN_DECREASED: 3.5,
+        UNALLOWED_BOMB: -10,
+        DISTANCE_TO_COIN_DECREASED: 5,
         DISTANCE_TO_COIN_INCREASED: -2,
-        DISTANCE_FROM_BOMB_INCREASED: 3.5,
+        DISTANCE_FROM_BOMB_INCREASED: 5,
         DISTANCE_FROM_BOMB_DECREASED: -2,
-        APPROACHED_ENEMY: 3.5,
+        APPROACHED_ENEMY: 5,
         DISAPPROACHED_ENEMY: -2,
-        LEFT_POTENTIAL_EXPLOSION_ZONE: 3.5,
+        LEFT_POTENTIAL_EXPLOSION_ZONE: 5,
         ENTERED_POTENTIAL_EXPLOSION_ZONE: -2,
-        IN_SAFE_ZONE: 1,
+        IN_SAFE_ZONE: 2,
         AGENT_CORNERED: -5,
 
     }
@@ -305,9 +306,9 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    BATCH_SIZE = 32
+    BATCH_SIZE = 128
     GAMMA = 0.999
-    UPDATE_FREQUENCY = 200
+    UPDATE_FREQUENCY = 1500
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
@@ -357,4 +358,3 @@ def optimize_model(self):
         self.logger.info("Update target network")
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
-
