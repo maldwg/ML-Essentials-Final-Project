@@ -3,8 +3,9 @@ import pickle
 import random
 
 import numpy as np
+import gzip 
 
-from .model import QNetwork
+from .model import QNetwork, FullyConnectedQNetwork
 import torch
 import torch.optim as optim
 
@@ -32,7 +33,7 @@ def setup(self):
     self.steps_done = 0
     if self.train:
         self.logger.info("Training mode selected")
-        if not os.path.isfile("my-saved-model.pt"):
+        if not os.path.isfile("my-saved-model.pkl.gz"):
             self.logger.info("Setting up model from scratch.")
             # init policy and target network 
             self.policy_net = QNetwork(17, 17, 6).to(device)
@@ -40,20 +41,23 @@ def setup(self):
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
             self.optimizer = optim.RMSprop(self.policy_net.parameters())
-            self.memory = ReplayMemory(1000000)
+            self.memory = ReplayMemory(1000)
 
             weights = np.random.rand(len(ACTIONS))
             self.model = weights / weights.sum()
         else:
             self.logger.info("Using existing model to generate new generation")
-            with open("my-saved-model.pt", "rb") as file:
-                self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
+            # with open("my-saved-model.pt", "rb") as file:
+            #     self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
+            with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
+                self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(f)
     else:
         self.logger.info("Loading model from saved state, no training")
-        with open("my-saved-model.pt", "rb") as file:
-            self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
+        # with open("my-saved-model.pt", "rb") as file:
+        #     self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
 
-
+        with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
+            self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(f)
 
 
 def act(self, game_state: dict) -> str:
@@ -69,44 +73,48 @@ def act(self, game_state: dict) -> str:
     # self.logger.info(game_state)
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
-        EPS_START = 0.9
+        EPS_START = 0.5
         EPS_END = 0.05
-        EPS_DECAY = 200
+        EPS_DECAY = 250
+        EPS_MIN = 0.0
         sample = random.random()
-        # let the exploration decay 
-        eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.steps_done / EPS_DECAY)
-        self.steps_done += 1
+        # let the exploration decay but not below 15 %
+        eps_threshold = max(EPS_MIN, EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY))
+        self.memory.steps_done += 1
+
         if sample > eps_threshold:
             self.logger.info("Exploitation")
             with torch.no_grad():
-                state_features = state_to_features(game_state)
+                state_features = state_to_features(self, game_state)
                 state_features = state_features.unsqueeze(0).to(device)
-                self.logger.info("Game state transformed")
-                self.logger.info(state_features)
+                # self.logger.info("Game state transformed")
+                # self.logger.info(state_features)
                 # Pass features through policy network
-                self.logger.info(self.policy_net(state_features))
-                action = self.policy_net(state_features).max(1)[1].view(1, 1)
+                q_values = self.policy_net(state_features)
+                self.logger.info(f"Q-values: {q_values} | Max Value chosen: {q_values.max(1)[1]} | Chosen view: {q_values.max(1)[1].view(1,1)} | Item: {q_values.max(1)[1].view(1,1).item()}")
+                action = q_values.max(1)[1].view(1, 1)
                 self.logger.info(f"Chose {ACTIONS[action.item()]} as best value ")
                 return ACTIONS[action.item()]
         else:
             self.logger.info("Exploration")
-            action = torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)
-            action = ACTIONS[action.item()]
+            action = np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
             self.logger.info(f"Choose random action {action}")
             return action
+
     else:
         # exploit only in test mode
         self.logger.info("Exploitation")
         with torch.no_grad():
-            state_features = state_to_features(game_state)
+            state_features = state_to_features(self, game_state)
             state_features = state_features.unsqueeze(0).to(device)
-            # Pass features through policy network
-            self.logger.info(f"Action values: {self.policy_net(state_features)}")
-            action = self.policy_net(state_features).max(1)[1].view(1, 1)
+            # Pass features through policy network           
+            q_values = self.policy_net(state_features)
+            self.logger.info(f"Q-values: {q_values} | Max Value chosen: {q_values.max(1)[1]} | Chosen view: {q_values.max(1)[1].view(1,1)} | Item: {q_values.max(1)[1].view(1,1).item()}")
+            action = q_values.max(1)[1].view(1, 1)
             self.logger.info(f"Chose {ACTIONS[action.item()]} as best value ")
             return ACTIONS[action.item()]
 
-def state_to_features(game_state: dict) -> np.array:
+def state_to_features(self, game_state: dict) -> np.array:
     """
     *This is not a required function, but an idea to structure your code.*
 
@@ -123,35 +131,83 @@ def state_to_features(game_state: dict) -> np.array:
     if game_state is None:
         return None
     
-    # Get field data
     field = game_state['field']
-    # Transpose the field, because state is transposed!
     field = np.transpose(field)
+    field[field == 1.] = 11.
+    field[field == 0.] = 10.
+    field[field == -1.] = 9.
 
-    # Create coin map
-    # y,x because the filed is transposed
-    coin_map = np.zeros_like(field)
-    for (x, y) in game_state['coins']:
-        coin_map[y, x] = 3
-
-    # Create agent's position channel
-    agent_position = np.zeros_like(field)
+    agent_field = np.copy(field)
     x, y = game_state['self'][-1]
-    agent_position[y, x] = 2
-
-    # Create other agents' position channels
-    other_agents_positions = np.zeros_like(field)
+    agent_field[y, x] = 8.
     for _, _, _, (x, y) in game_state['others']:
-        other_agents_positions[y, x] = -2
+        agent_field[y, x] = 7.
 
-    # Normalize explosion map
-    explosion_map = game_state['explosion_map']
-    explosion_map = np.transpose(explosion_map)
+    explosion_map = np.transpose(game_state['explosion_map'])
+    bomb_map = np.copy(field)
+    bomb_map[explosion_map != 0] = explosion_map[explosion_map != 0]
+
+    for ((x, y), t) in game_state['bombs']:
+        bomb_map[y, x] = 20. + t
+
+    coin_map = np.copy(field)
+    for (x, y) in game_state['coins']:
+        coin_map[y, x] = 6.
+
+    # Safety Map
+    safety_map = np.copy(field)
+    for ((x, y), t) in game_state['bombs']:
+        for dx in range(-3, 4):
+            for dy in range(-3, 4):
+                if (0 <= y+dy < safety_map.shape[0]) and (0 <= x+dx < safety_map.shape[1]):
+                    safety_map[y+dy, x+dx] = 5
+
+    # Threat Map
+    threat_map = np.copy(field)
+    for ((x, y), t) in game_state['bombs']:
+        for dx in range(-3, 4):
+            for dy in range(-3, 4):
+                if (0 <= y+dy < threat_map.shape[0]) and (0 <= x+dx < threat_map.shape[1]):
+                    threat_map[y+dy, x+dx] = t
+
+    # Distance Map to next coin
+    distance_map = np.copy(field)
+    for i in range(field.shape[0]):
+        for j in range(field.shape[1]):
+            # 30 is the maximum distance on the board
+            min_distance = 30
+            for (x, y) in game_state['coins']:
+                min_distance = min(min_distance, abs(i-y) + abs(j-x))
+
+            # update only free tiles with this info, otherwise no point
+            if distance_map[i, j] == 10:
+                distance_map[i, j] = min_distance
 
     # Stack all these features into a multi-channel tensor
-    stacked_features = np.stack([field, agent_position, other_agents_positions, explosion_map, coin_map], axis=0)
+    stacked_features = np.stack([agent_field, coin_map, bomb_map, safety_map, threat_map, distance_map], axis=0)
 
     # Convert to PyTorch tensor
     features_tensor = torch.from_numpy(stacked_features).float()
+    # for idx, t in enumerate(features_tensor):
+    #     self.logger.info(f"{idx}. channel {t}")
+    features_tensor = normalize_data(features_tensor)
+    # for idx, t in enumerate(features_tensor):
+    #     self.logger.info(f"Normalized: {idx}. channel {t}")
     return features_tensor
 
+
+
+def normalize_data(data):
+    """
+    Normalizes the data using Z-score normalization to not rely on batchnorm
+    Args:
+    - data (numpy.ndarray or torch.Tensor): Input data to be normalized.
+    Returns:
+    - normalized_data (numpy.ndarray or torch.Tensor): Normalized data.
+    """
+    mean = data.mean()
+    std = data.std()
+    
+    normalized_data = (data - mean) / (std + 1e-7)  # Adding a small value to prevent division by zero
+    
+    return normalized_data

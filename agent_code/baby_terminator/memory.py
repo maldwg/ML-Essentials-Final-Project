@@ -15,6 +15,10 @@ class ReplayMemory:
         self.capacity = capacity
         self.memory = []
         self.position = 0
+        # Array for Q value after each episode
+        self.q_value_after_episode = []
+        self.loss_after_episode = []
+        self.steps_done = 0
 
     def push(self, *args):
         """Saves a transition."""
