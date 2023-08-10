@@ -42,7 +42,7 @@ plt.xlabel('Episodes')
 plt.ylabel('Q Value')
  
 # Set the tick locations
-plt.xticks(np.arange(0, len(mean_q_values_after_episode) + 1, 2))
+plt.xticks(np.arange(0, len(mean_q_values_after_episode) + 1, 10))
  
 # Display the plot
 plt.legend(loc='best')
