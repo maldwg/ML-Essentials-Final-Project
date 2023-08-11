@@ -1,6 +1,7 @@
 import torch
 from collections import namedtuple, deque
 import events as e
+from . import additional_events as ad
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 device = torch.device("cpu")
@@ -25,19 +26,19 @@ game_rewards = {
         e.BOMB_EXPLODED: 0,
         e.SURVIVED_ROUND: 25,
         e.OPPONENT_ELIMINATED: 5,
-        NOT_KILLED_BY_OWN_BOMB: 15,
+        ad.NOT_KILLED_BY_OWN_BOMB: 15,
         # additional penalty when laying 2 bombs in a row
-        UNALLOWED_BOMB: -10,
-        DISTANCE_TO_COIN_DECREASED: 5,
-        DISTANCE_TO_COIN_INCREASED: -4,
-        DISTANCE_FROM_BOMB_INCREASED: 5,
-        DISTANCE_FROM_BOMB_DECREASED: -4,
-        APPROACHED_ENEMY: 5,
-        DISAPPROACHED_ENEMY: -4,
-        LEFT_POTENTIAL_EXPLOSION_ZONE: 5,
-        ENTERED_POTENTIAL_EXPLOSION_ZONE: -4,
-        IN_SAFE_ZONE: 2,
-        AGENT_CORNERED: -7.5,
+        ad.UNALLOWED_BOMB: -10,
+        ad.DISTANCE_TO_COIN_DECREASED: 5,
+        ad.DISTANCE_TO_COIN_INCREASED: -4,
+        ad.DISTANCE_FROM_BOMB_INCREASED: 5,
+        ad.DISTANCE_FROM_BOMB_DECREASED: -4,
+        ad.APPROACHED_ENEMY: 5,
+        ad.DISAPPROACHED_ENEMY: -4,
+        ad.LEFT_POTENTIAL_EXPLOSION_ZONE: 5,
+        ad.ENTERED_POTENTIAL_EXPLOSION_ZONE: -4,
+        # probably too dense ad.IN_SAFE_ZONE: 2,
+        ad.AGENT_CORNERED: -7.5,
 }
 
 # BAD!!!1!

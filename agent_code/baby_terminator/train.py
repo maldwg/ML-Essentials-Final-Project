@@ -5,6 +5,7 @@ import gzip
 from typing import List
 
 import events as e
+from . import additional_events as ad
 from .callbacks import state_to_features
 
 from .model import QNetwork
@@ -18,20 +19,6 @@ from .utils import *
 # Hyper parameters -- DO modify
 TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
-
-# Events
-NOT_KILLED_BY_OWN_BOMB = "NOT_KILLED_BY_OWN_BOMB"
-UNALLOWED_BOMB = "UNALLOWED_BOMB"
-DISTANCE_FROM_BOMB_INCREASED = "DISTANCE_FROM_BOMB_INCREASED"
-DISTANCE_FROM_BOMB_DECREASED = "DISTANCE_FROM_BOMB_DECREASED"
-DISTANCE_TO_COIN_INCREASED = "DISTANCE_TO_COIN_INCREASED"
-DISTANCE_TO_COIN_DECREASED = "DISTANCE_TO_COIN_DECREASED"
-APPROACHED_ENEMY = "APPROACHED_ENEMY"
-DISAPPROACHED_ENEMY = "DISAPPROACHED_ENEMY"
-LEFT_POTENTIAL_EXPLOSION_ZONE = "LEFT_POTENTIAL_EXPLOSION_ZONE"
-ENTERED_POTENTIAL_EXPLOSION_ZONE = "ENTERED_POTENTIAL_EXPLOSION_ZONE"
-IN_SAFE_ZONE = "IN_SAFE_ZONE"
-AGENT_CORNERED = "AGENT_CORNERED"
 
 def setup_training(self):
     """
@@ -152,7 +139,7 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
 
     # append only the events that can also be calculated for the lats step
     if e.BOMB_EXPLODED in events and not e.KILLED_SELF in events:
-        custom_events.append(NOT_KILLED_BY_OWN_BOMB)
+        custom_events.append(ad.NOT_KILLED_BY_OWN_BOMB)
 
 
     # if old is none --> Last round occured
@@ -160,7 +147,7 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
     if old_game_state is not None:
 
         if self_action == "BOMB" and old_game_state["self"][2] == False:
-            custom_events.append(UNALLOWED_BOMB)
+            custom_events.append(ad.UNALLOWED_BOMB)
 
         old_agent_pos = old_game_state["self"][-1]
         new_agent_pos = new_game_state["self"][-1]
