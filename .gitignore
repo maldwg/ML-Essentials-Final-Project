@@ -2,8 +2,8 @@ logs/**
 agent_code/**/logs/**
 agent_code/**/__pycache__
 __pycache__
-Icon
-agent_code/**/Icon
+Icon**
+agent_code/**/Icon**
 
 # MacOS files
 **.DS_Store
