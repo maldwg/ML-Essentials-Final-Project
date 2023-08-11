@@ -1,9 +1,13 @@
-DEFAULTAGENT=baby_terminator
-AGENT="${1:$DEFAULTAGENT}"
-DEFAULTROUNDS=100
-N_ROUNDS="${2:-$DEFAULTROUNDS}"
-
-TRAIN_FILE=./agent_code/"$DEFAULTAGENT"/my-saved-model.pkl.gz
+AGENT=baby_terminator
+N_ROUNDS=100
+while getopts a:n: flag
+do 
+    case "${flag}" in
+        a) AGENT=${OPTARG};;
+        n) N_ROUNDS=${OPTARG};;
+    esac
+done
+TRAIN_FILE=./agent_code/"$AGENT"/my-saved-model.pkl.gz
 if test -f "$TRAIN_FILE"; then
     rm "$TRAIN_FILE"
 fi
