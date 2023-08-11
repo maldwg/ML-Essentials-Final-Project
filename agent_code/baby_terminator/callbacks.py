@@ -131,44 +131,30 @@ def state_to_features(self, game_state: dict) -> np.array:
     if game_state is None:
         return None
     
-    field = game_state['field']
-    field = np.transpose(field)
+    field = game_state['field'].astype(np.float32)
     field[field == 1.] = 11.
     field[field == 0.] = 10.
     field[field == -1.] = 9.
 
-    agent_field = np.copy(field)
+    agent_field = np.zeros_like(field)
     x, y = game_state['self'][-1]
-    agent_field[y, x] = 8.
+    agent_field[x, y] = 8.
     for _, _, _, (x, y) in game_state['others']:
-        agent_field[y, x] = 7.
-
-    explosion_map = np.transpose(game_state['explosion_map'])
-    bomb_map = np.copy(field)
-    bomb_map[explosion_map != 0] = explosion_map[explosion_map != 0]
-
-    for ((x, y), t) in game_state['bombs']:
-        bomb_map[y, x] = 20. + t
+        agent_field[x, y] = 7.
 
     coin_map = np.copy(field)
     for (x, y) in game_state['coins']:
-        coin_map[y, x] = 6.
-
-    # Safety Map
-    safety_map = np.copy(field)
-    for ((x, y), t) in game_state['bombs']:
-        for dx in range(-3, 4):
-            for dy in range(-3, 4):
-                if (0 <= y+dy < safety_map.shape[0]) and (0 <= x+dx < safety_map.shape[1]):
-                    safety_map[y+dy, x+dx] = 5
+        coin_map[x, y] = 6.
 
     # Threat Map
-    threat_map = np.copy(field)
-    for ((x, y), t) in game_state['bombs']:
+    # fuze explosion and threat_maps 
+    threat_map = np.zeros_like(field)
+    for ((x, y), t) in game_state['bombs']: 
         for dx in range(-3, 4):
             for dy in range(-3, 4):
-                if (0 <= y+dy < threat_map.shape[0]) and (0 <= x+dx < threat_map.shape[1]):
-                    threat_map[y+dy, x+dx] = t
+                if inPlayArea(field, x+dx, y+dy) and (dx*dy == 0 and field[x+dx, y+dy] != 9):
+                    threat_map[x+dx, y+dy] = 1/(t + 1) * 10
+    threat_map += game_state['explosion_map'].astype(np.float32) * 20
 
     # Distance Map to next coin
     distance_map = np.copy(field)
@@ -177,7 +163,8 @@ def state_to_features(self, game_state: dict) -> np.array:
             # 30 is the maximum distance on the board
             min_distance = 30
             for (x, y) in game_state['coins']:
-                min_distance = min(min_distance, abs(i-y) + abs(j-x))
+                # implement A* here
+                min_distance = min(min_distance, abs(i-y) + abs(j-x)) 
 
             # update only free tiles with this info, otherwise no point
             if distance_map[i, j] == 10:
@@ -200,22 +187,9 @@ def state_to_features(self, game_state: dict) -> np.array:
             for y in range(field.shape[1]):
                 threat_map_enemies[x, y] += 1 / (1 + abs(ex - x) + abs(ey - y))
 
-    # Potential Safe Zones
-    potential_safe_zones = np.copy(field)
-    for ((x, y), t) in game_state['bombs']:
-
-        if t < 3 and t > 0:
-            for dx in range(-3,4):
-                for dy in range(-3,4):
-                    # to only include the horizontal and vertical line of potential movement
-                    if dx * dy == 0:
-                        if 0 <= x + dx < field.shape[0] and 0 <= y + dy < field.shape[1]:
-                            # set to 0 if a tile is *not* safe
-                            potential_safe_zones[y + dy, x + dx] = 0
-
     # Stack all these features into a multi-channel tensor
-    stacked_features = np.stack([agent_field, coin_map, bomb_map, safety_map, threat_map, distance_map, dead_ends, threat_map_enemies, potential_safe_zones], axis=0)
-
+    stacked_features = np.stack([agent_field, coin_map, threat_map, distance_map, dead_ends, threat_map_enemies], axis=0)
+    
     # Convert to PyTorch tensor
     features_tensor = torch.from_numpy(stacked_features).float()
     features_tensor = normalize_data(features_tensor)
@@ -237,3 +211,6 @@ def normalize_data(data):
     normalized_data = (data - mean) / (std + 1e-7)  # Adding a small value to prevent division by zero
     
     return normalized_data
+
+def inPlayArea(field, x, y):
+    return (1 <= y < field.shape[0] - 1) and (1 <= x < field.shape[1] - 1)

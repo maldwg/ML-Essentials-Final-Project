@@ -12,7 +12,7 @@ from .memory import ReplayMemory
 
 import torch
 from torch import nn
-from .utils import ACTIONS, device, Transition
+from .utils import *
 
 
 # Hyper parameters -- DO modify
@@ -74,6 +74,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     if old_game_state is None:
         self.logger.info("State is none in game events occurred")
         return
+    self.logger.info(f"Game field:\n{old_game_state}")
     # get the input for the CNN
     state = state_to_features(self, old_game_state)
     if state is not None:
@@ -259,39 +260,7 @@ def reward_from_events(self, events: List[str]) -> int:
     Here you can modify the rewards your agent get so as to en/discourage
     certain behavior.
     """
-    game_rewards = {
-        e.KILLED_OPPONENT: 50,
-        e.INVALID_ACTION: -12.5,
-        e.CRATE_DESTROYED: 15,
-        e.COIN_FOUND: 15,
-        e.COIN_COLLECTED: 25,
-        e.KILLED_SELF: -15,
-        e.GOT_KILLED: -15,
-        e.MOVED_LEFT: 0.5,
-        e.MOVED_RIGHT: 0.5,
-        e.MOVED_UP: 0.5,
-        e.MOVED_DOWN: 0.5,
-        # waited penalty has to be bigger than safe zone reward
-        e.WAITED: -7.5,
-        e.BOMB_DROPPED: 0.5,
-        e.BOMB_EXPLODED: 0,
-        e.SURVIVED_ROUND: 25,
-        e.OPPONENT_ELIMINATED: 5,
-        NOT_KILLED_BY_OWN_BOMB: 15,
-        # additional penalty when laying 2 bombs in a row
-        UNALLOWED_BOMB: -10,
-        DISTANCE_TO_COIN_DECREASED: 5,
-        DISTANCE_TO_COIN_INCREASED: -4,
-        DISTANCE_FROM_BOMB_INCREASED: 5,
-        DISTANCE_FROM_BOMB_DECREASED: -4,
-        APPROACHED_ENEMY: 5,
-        DISAPPROACHED_ENEMY: -4,
-        LEFT_POTENTIAL_EXPLOSION_ZONE: 5,
-        ENTERED_POTENTIAL_EXPLOSION_ZONE: -4,
-        IN_SAFE_ZONE: 2,
-        AGENT_CORNERED: -7.5,
-
-    }
+    
     reward_sum = 0
     for event in events:
         if event in game_rewards:
