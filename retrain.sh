@@ -13,7 +13,6 @@ Help()
     echo "                                default: 100"
 }
 
-
 AGENT=baby_terminator
 N_ROUNDS=100
 
@@ -24,9 +23,11 @@ while getopts a:n:h flag; do
         h) Help && exit;;
     esac
 done
+
 TRAIN_FILE=./agent_code/"$AGENT"/my-saved-model.pkl.gz
 if test -f "$TRAIN_FILE"; then
     rm "$TRAIN_FILE"
 fi
+
 python main.py play --agents "$AGENT" rule_based_agent rule_based_agent rule_based_agent --n-rounds="$N_ROUNDS" --train 1  --no-gui &&
 python evaluations.py
