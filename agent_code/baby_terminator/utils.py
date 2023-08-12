@@ -25,7 +25,7 @@ game_rewards = {
         e.BOMB_DROPPED: 0.5,
         e.BOMB_EXPLODED: 0,
         e.SURVIVED_ROUND: 25,
-        e.OPPONENT_ELIMINATED: 5,
+        e.OPPONENT_ELIMINATED: -2,
         ad.NOT_KILLED_BY_OWN_BOMB: 15,
         # additional penalty when laying 2 bombs in a row
         ad.UNALLOWED_BOMB: -10,
