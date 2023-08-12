@@ -133,7 +133,7 @@ def state_to_features(self, game_state: dict) -> np.array:
     
     field = game_state['field'].astype(np.float32)
     field[field == 1.] = 11.
-    field[field == 0.] = 10.
+    field[field == 0.] = 0
     field[field == -1.] = 9.
 
     agent_field = np.zeros_like(field)
@@ -167,7 +167,7 @@ def state_to_features(self, game_state: dict) -> np.array:
                 min_distance = min(min_distance, abs(i-y) + abs(j-x)) 
 
             # update only free tiles with this info, otherwise no point
-            if distance_map[i, j] == 10:
+            if distance_map[i, j] == 0:
                 distance_map[i, j] = min_distance
 
     # Dead Ends
@@ -176,7 +176,7 @@ def state_to_features(self, game_state: dict) -> np.array:
         for y in range(1, field.shape[1]-1):
             # if cell is empty
             if field[x, y] == 10:  
-                free_neighs = sum([field[x-1, y] == 10, field[x+1, y] == 10, field[x, y-1] == 10, field[x, y+1] == 10])
+                free_neighs = sum([field[x-1, y] == 0, field[x+1, y] == 0, field[x, y-1] == 0, field[x, y+1] == 0])
                 if free_neighs == 1:
                     dead_ends[x, y] = 1
 
@@ -192,7 +192,7 @@ def state_to_features(self, game_state: dict) -> np.array:
     
     # Convert to PyTorch tensor
     features_tensor = torch.from_numpy(stacked_features).float()
-    features_tensor = normalize_data(features_tensor)
+    features_tensor = min_max_scale(features_tensor)
 
     return features_tensor
 
@@ -211,6 +211,16 @@ def normalize_data(data):
     normalized_data = (data - mean) / (std + 1e-7)  # Adding a small value to prevent division by zero
     
     return normalized_data
+
+
+def min_max_scale(data):
+    """
+    Normalize the data by using a min max scaler strategie
+    """
+    minimum = min(data)
+    maximum = max(data)
+
+    return (data - minimum) / (maximum - minimum)
 
 def inPlayArea(field, x, y):
     return (1 <= y < field.shape[0] - 1) and (1 <= x < field.shape[1] - 1)
