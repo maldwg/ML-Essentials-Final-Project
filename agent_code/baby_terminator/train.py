@@ -271,7 +271,7 @@ def optimize_model(self):
     # Adapt the hyper parameters
     BATCH_SIZE = 128
     GAMMA = 0.999
-    UPDATE_FREQUENCY = 500
+    UPDATE_FREQUENCY = 1000
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
