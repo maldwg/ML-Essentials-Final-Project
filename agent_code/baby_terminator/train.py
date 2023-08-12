@@ -170,25 +170,37 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
 
 
 
-        def explosion_zones(bomb_pos, explosion_radius=3):
+        def explosion_zones(field, bomb_pos):
             """Returns a list of coordinates that will be affected by the bomb's explosion."""
             x, y = bomb_pos
             zones = []
-
             # Add tiles for each direction until the explosion radius is reached
-            for i in range(0, explosion_radius + 1):
-                zones.extend([(x+i, y), (x-i, y), (x, y+i), (x, y-i)])
-                
+            for left in range(4):
+                if x - left == -1:
+                    break
+                zones.append((x - left, y))
+            for right in range(4):
+                if x + right == -1:
+                    break
+                zones.append((x + right, y))
+            for up in range(4):
+                if y + up == -1:
+                    break
+                zones.append((x, y + up))
+            for down in range(4):
+                if y - down == -1:
+                    break
+                zones.append((x, y - down))
             return zones
 
         # check if there are bombs on the filed, if not skip calculations
         if old_game_state["bombs"]:
             old_distance_to_bomb = min([abs(bomb[0][0] - old_agent_pos[0]) + abs(bomb[0][1] - old_agent_pos[1]) for bomb in old_game_state["bombs"]])
-            in_old_explosion_zone = any([old_agent_pos in explosion_zones(bomb_pos) for bomb_pos, _ in old_game_state["bombs"]])
+            in_old_explosion_zone = any([old_agent_pos in explosion_zones(old_game_state["field"], bomb_pos) for bomb_pos, _ in old_game_state["bombs"]])
 
         if new_game_state["bombs"]:
             new_distance_to_bomb = min([abs(bomb[0][0] - new_agent_pos[0]) + abs(bomb[0][1] - new_agent_pos[1]) for bomb in new_game_state["bombs"]])
-            in_new_explosion_zone = any([new_agent_pos in explosion_zones(bomb_pos) for bomb_pos, _ in new_game_state["bombs"]])
+            in_new_explosion_zone = any([new_agent_pos in explosion_zones(new_game_state["field"], bomb_pos) for bomb_pos, _ in new_game_state["bombs"]])
             # preemptively calculate the closest bomb 
             closest_bomb = min([abs(bomb_pos[0] - new_agent_pos[0]) + abs(bomb_pos[1] - new_agent_pos[1]) for bomb_pos, _ in new_game_state["bombs"]], default=safe_distance)
 
@@ -238,9 +250,28 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             self.logger.info(f"IN SAFE ZONE {closest_bomb} > {safe_distance} and {closest_enemy} > {safe_distance}")
             custom_events.append("IN_SAFE_ZONE")
 
+        # reward correct dropped bomb before crate
+        agent_in_front_of_crate(self, new_game_state["field"] , new_agent_pos)
+
+        if e.BOMB_DROPPED in events and agent_in_front_of_crate(self, new_game_state["field"] , new_agent_pos):
+            custom_events.append("BOMB_DROPPED_BEFORE_CRATE")
+            # check if position is before crate 
     return custom_events
 
 
+
+def agent_in_front_of_crate(self, field, agent_pos):
+    agent_x, agent_y = agent_pos[0], agent_pos[1]
+    for dx in [-1, 0, 1]:
+        for dy in [-1, 0, 1]:
+            # check only vertical and horizontal lines
+            if dx * dy == 0:
+                if field[dx + agent_x][dy + agent_y] == 1:
+                    # self.logger.info(f"{dx + agent_x}, {dy + agent_y}")
+                    # self.logger.info("agent before crate")
+                    return True
+    # self.logger.info("Agent not in front of crate")
+    return False
 
 
 def reward_from_events(self, events: List[str]) -> int:
@@ -257,9 +288,9 @@ def reward_from_events(self, events: List[str]) -> int:
             reward_sum += game_rewards[event]
     
     if reward_sum > 0:
-        reward_sum = min(reward_sum, 25)
+        reward_sum = min(reward_sum, 20)
     elif reward_sum < 0:
-        reward_sum = max(reward_sum, -25)
+        reward_sum = max(reward_sum, -20)
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
     return reward_sum
 
@@ -272,7 +303,7 @@ def optimize_model(self):
     # Adapt the hyper parameters
     BATCH_SIZE = 128
     GAMMA = 0.999
-    UPDATE_FREQUENCY = 2000
+    UPDATE_FREQUENCY = 500
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
