@@ -133,7 +133,6 @@ def state_to_features(self, game_state: dict) -> np.array:
     
     field = game_state['field'].astype(np.float32)
     field[field == 1.] = 11.
-    field[field == 0.] = 10.
     field[field == -1.] = 9.
 
     agent_field = np.zeros_like(field)
