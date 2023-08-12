@@ -14,6 +14,7 @@ from .memory import ReplayMemory
 import math
 
 from .utils import ACTIONS, device 
+from .path_finding import astar
 
 
 def setup(self):
@@ -156,19 +157,15 @@ def state_to_features(self, game_state: dict) -> np.array:
     threat_map += game_state['explosion_map'].astype(np.float32) * 20
 
     # Distance Map to next coin
+    # TODO: fix adding to disatnce map 
     distance_map = np.copy(field)
-    for i in range(field.shape[0]):
-        for j in range(field.shape[1]):
-            # 30 is the maximum distance on the board
-            min_distance = 30
-            for (x, y) in game_state['coins']:
-                # implement A* here
-                min_distance = min(min_distance, abs(i-y) + abs(j-x)) 
-
-            # update only free tiles with this info, otherwise no point
-            if distance_map[i, j] == 0:
-                distance_map[i, j] = min_distance
-
+    agent_x, agent_y = game_state["self"][-1]
+    paths = np.zeros(len(game_state['coins']))
+    for i, (x, y) in enumerate(game_state['coins']):
+        path = astar(start=(agent_x, agent_y), goal=(x, y), field=game_state["field"])
+        paths[i] = path
+        distance_map[x, y] = len(path)
+              
     # Dead Ends
     dead_ends = np.copy(field)
     for x in range(1, field.shape[0]-1):
