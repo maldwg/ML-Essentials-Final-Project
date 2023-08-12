@@ -99,6 +99,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     reward = reward_from_events(self, events)
     reward = torch.tensor(reward, device=device)
     self.memory.push(state, action, None, reward)
+    optimize_model(self)
 
     # # synch the target network with the policy network 
     # self.target_net.load_state_dict(self.policy_net.state_dict())
@@ -271,7 +272,7 @@ def optimize_model(self):
     # Adapt the hyper parameters
     BATCH_SIZE = 128
     GAMMA = 0.999
-    UPDATE_FREQUENCY = 1000
+    UPDATE_FREQUENCY = 2000
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
@@ -297,7 +298,7 @@ def optimize_model(self):
     # compute the expected Q values
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
     next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
-    expected_state_action_values = (next_state_values * GAMMA) + reward_batch 
+    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
     # compute loss
     loss = nn.functional.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
