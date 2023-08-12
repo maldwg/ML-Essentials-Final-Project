@@ -237,9 +237,28 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             self.logger.info(f"IN SAFE ZONE {closest_bomb} > {safe_distance} and {closest_enemy} > {safe_distance}")
             custom_events.append("IN_SAFE_ZONE")
 
+        # reward correct dropped bomb before crate
+        agent_in_front_of_crate(self, new_game_state["field"] , new_agent_pos)
+
+        if e.BOMB_DROPPED in events and agent_in_front_of_crate(self, new_game_state["field"] , new_agent_pos):
+            custom_events.append("BOMB_DROPPED_BEFORE_CRATE")
+            # check if position is before crate 
     return custom_events
 
 
+
+def agent_in_front_of_crate(self, field, agent_pos):
+    agent_x, agent_y = agent_pos[0], agent_pos[1]
+    for dx in [-1, 0, 1]:
+        for dy in [-1, 0, 1]:
+            # check only vertical and horizontal lines
+            if dx * dy == 0:
+                if field[dx + agent_x][dy + agent_y] == 1:
+                    # self.logger.info(f"{dx + agent_x}, {dy + agent_y}")
+                    # self.logger.info("agent before crate")
+                    return True
+    # self.logger.info("Agent not in front of crate")
+    return False
 
 
 def reward_from_events(self, events: List[str]) -> int:

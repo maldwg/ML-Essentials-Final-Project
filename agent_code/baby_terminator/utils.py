@@ -39,6 +39,7 @@ game_rewards = {
         ad.ENTERED_POTENTIAL_EXPLOSION_ZONE: -4,
         # probably too dense ad.IN_SAFE_ZONE: 2,
         ad.AGENT_CORNERED: -7.5,
+        ad.BOMB_DROPPED_BEFORE_CRATE: 3,
 }
 
 # BAD!!!1!
