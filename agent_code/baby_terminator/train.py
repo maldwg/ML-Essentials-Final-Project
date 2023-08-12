@@ -4,6 +4,8 @@ import pickle
 import gzip
 from typing import List
 
+import numpy as np
+
 import events as e
 from . import additional_events as ad
 from .callbacks import state_to_features
@@ -61,7 +63,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     if old_game_state is None:
         self.logger.info("State is none in game events occurred")
         return
-    self.logger.info(f"Game field:\n{old_game_state}")
+    # self.logger.info(f"Game field:\n{old_game_state}")
     # get the input for the CNN
     state = state_to_features(self, old_game_state)
     if state is not None:
@@ -252,6 +254,11 @@ def reward_from_events(self, events: List[str]) -> int:
     for event in events:
         if event in game_rewards:
             reward_sum += game_rewards[event]
+    
+    if reward_sum > 0:
+        reward_sum = min(reward_sum, 25)
+    elif reward_sum < 0:
+        reward_sum = max(reward_sum, -25)
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
     return reward_sum
 
@@ -264,7 +271,7 @@ def optimize_model(self):
     # Adapt the hyper parameters
     BATCH_SIZE = 128
     GAMMA = 0.999
-    UPDATE_FREQUENCY = 2500
+    UPDATE_FREQUENCY = 500
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
@@ -310,7 +317,7 @@ def optimize_model(self):
     self.optimizer.step()
 
     # update the target net each C steps to be in synch with the policy net 
-    if len(self.memory) % UPDATE_FREQUENCY == 0:
+    if self.memory.steps_done % UPDATE_FREQUENCY == 0:
         self.logger.info("Update target network")
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
