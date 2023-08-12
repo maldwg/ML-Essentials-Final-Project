@@ -31,7 +31,7 @@ while getopts a:n:s:ch flag; do
     esac
 done
 TRAIN_FILE=./agent_code/"$AGENT"/my-saved-model.pkl.gz
-if [ test -f "$TRAIN_FILE" && CONTINUE = true ]; then
+if [[ $(test -f "$TRAIN_FILE") && "$CONTINUE"=true ]]; then
     rm "$TRAIN_FILE"
 fi
 python main.py play --agents "$AGENT" rule_based_agent rule_based_agent rule_based_agent --n-rounds="$N_ROUNDS" --train 1  --no-gui --scenario "$SCENARIO" &&
