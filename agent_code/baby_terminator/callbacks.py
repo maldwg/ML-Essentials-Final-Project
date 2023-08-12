@@ -216,8 +216,8 @@ def min_max_scale(data):
     """
     Normalize the data by using a min max scaler strategie
     """
-    minimum = min(data)
-    maximum = max(data)
+    minimum = torch.min(data)
+    maximum = torch.max(data)
 
     return (data - minimum) / (maximum - minimum)
 
