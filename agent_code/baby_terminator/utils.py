@@ -3,6 +3,7 @@ from collections import namedtuple, deque
 import events as e
 from . import additional_events as ad
 
+DIRECTIONS = [(1, 0), (0, 1), (-1, 0 ), (0, -1)]
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 device = torch.device("cpu")
 Transition = namedtuple('Transition',

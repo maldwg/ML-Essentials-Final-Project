@@ -13,7 +13,7 @@ from .memory import ReplayMemory
 
 import math
 
-from .utils import ACTIONS, device 
+from .utils import ACTIONS, device, DIRECTIONS
 from .path_finding import astar
 
 
@@ -157,14 +157,30 @@ def state_to_features(self, game_state: dict) -> np.array:
     threat_map += game_state['explosion_map'].astype(np.float32) * 20
 
     # Distance Map to next coin
-    # TODO: fix adding to disatnce map 
     distance_map = np.copy(field)
     agent_x, agent_y = game_state["self"][-1]
     paths = np.zeros(len(game_state['coins']))
     for i, (x, y) in enumerate(game_state['coins']):
         path = astar(start=(agent_x, agent_y), goal=(x, y), field=game_state["field"])
+        self.logger.info(path)
         paths[i] = path
         distance_map[x, y] = len(path)
+
+    # Quorum Map that indicates in which direction to go
+    # each coin has a vote for this
+    direction_map = np.copy(field)
+    number_of_coins = len(game_state["coins"])
+    for path  in paths:
+        if path == None:
+            continue
+        for x, y in path:
+            # don't vote if the position is the position of the agent
+            if (x, y) != (agent_x, agent_y):
+                # each coin has a vote of 1/n to minimize values
+                direction_map[x, y] += 1 / number_of_coins
+    self.logger.info(direction_map)
+    
+
               
     # Dead Ends
     dead_ends = np.copy(field)
@@ -184,7 +200,7 @@ def state_to_features(self, game_state: dict) -> np.array:
                 threat_map_enemies[x, y] += 1 / (1 + abs(ex - x) + abs(ey - y))
 
     # Stack all these features into a multi-channel tensor
-    stacked_features = np.stack([agent_field, coin_map, threat_map, distance_map, dead_ends, threat_map_enemies], axis=0)
+    stacked_features = np.stack([agent_field, coin_map, threat_map, distance_map, dead_ends, threat_map_enemies, direction_map], axis=0)
     
     # Convert to PyTorch tensor
     features_tensor = torch.from_numpy(stacked_features).float()

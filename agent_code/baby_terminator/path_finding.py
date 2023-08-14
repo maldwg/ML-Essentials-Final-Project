@@ -2,8 +2,8 @@ import heapq
 import numpy as np
 
 # Define the 4 possible movement directions (no diagonal)
-DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT']
+DIRECTIONS = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+ACTIONS = ['UP', 'DOWN', 'RIGHT', 'LEFT']
 
 def heuristic(a, b):
     # Manhattan distance heuristic
