@@ -132,12 +132,14 @@ def state_to_features(self, game_state: dict) -> np.array:
     if game_state is None:
         return None
     
+    agent_x, agent_y = game_state["self"][-1]
+
+
     field = game_state['field'].astype(np.float32)
     field[field == 1.] = 11.
 
     agent_field = np.zeros_like(field)
-    x, y = game_state['self'][-1]
-    agent_field[x, y] = 8.
+    agent_field[agent_x, agent_y] = 8.
     for _, _, _, (x, y) in game_state['others']:
         agent_field[x, y] = 7.
 
@@ -156,18 +158,16 @@ def state_to_features(self, game_state: dict) -> np.array:
     threat_map += game_state['explosion_map'].astype(np.float32) * 20
 
     # Distance Map to next coin
-    distance_map = np.copy(field)
-    agent_x, agent_y = game_state["self"][-1]
-    paths = np.zeros(len(game_state['coins']))
+    coin_distance_map = np.copy(field)
+    paths = []
     for i, (x, y) in enumerate(game_state['coins']):
         path = astar(start=(agent_x, agent_y), goal=(x, y), field=game_state["field"])
-        self.logger.info(path)
-        paths[i] = path
-        distance_map[x, y] = len(path)
-
+        paths.append(path)
+        # length of path -1 because the first element is always the current position
+        coin_distance_map[x, y] = len(path) - 1
     # Quorum Map that indicates in which direction to go
     # each coin has a vote for this
-    direction_map = np.copy(field)
+    coin_direction_map = np.copy(field)
     number_of_coins = len(game_state["coins"])
     for path  in paths:
         if path == None:
@@ -176,11 +176,28 @@ def state_to_features(self, game_state: dict) -> np.array:
             # don't vote if the position is the position of the agent
             if (x, y) != (agent_x, agent_y):
                 # each coin has a vote of 1/n to minimize values
-                direction_map[x, y] += 1 / number_of_coins
-    self.logger.info(direction_map)
+                coin_direction_map[x, y] += 1 / number_of_coins
     
+    # Distance to next opponent
+    enemy_distance_map = np.copy(field)
+    paths = []
+    for opponent in game_state['others']:
+        x, y  = opponent[-1]
+        path = astar(start=(agent_x, agent_y), goal=(x, y), field=game_state["field"])
+        paths.append(path)
+        # length of path -1 because the first element is always the current position
+        enemy_distance_map[x, y] = len(path) - 1     
+    enemy_direction_map = np.copy(field)
+    number_of_enemies = len(game_state["others"])
+    for path  in paths:
+        if path == None:
+            continue
+        for x, y in path:
+            # don't vote if the position is the position of the agent
+            if (x, y) != (agent_x, agent_y):
+                # each coin has a vote of 1/n to minimize values
+                enemy_direction_map[x, y] += 1 / number_of_enemies
 
-              
     # Dead Ends
     dead_ends = np.copy(field)
     for x in range(1, field.shape[0]-1):
@@ -199,7 +216,7 @@ def state_to_features(self, game_state: dict) -> np.array:
                 threat_map_enemies[x, y] += 1 / (1 + abs(ex - x) + abs(ey - y))
 
     # Stack all these features into a multi-channel tensor
-    stacked_features = np.stack([agent_field, coin_map, threat_map, distance_map, dead_ends, threat_map_enemies, direction_map], axis=0)
+    stacked_features = np.stack([agent_field, coin_map, threat_map, coin_distance_map, dead_ends, threat_map_enemies, coin_direction_map, enemy_distance_map, enemy_direction_map], axis=0)
     
     # Convert to PyTorch tensor
     features_tensor = torch.from_numpy(stacked_features).float()
