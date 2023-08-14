@@ -8,7 +8,7 @@ class QNetwork(nn.Module):
         self.stride = 1
         self.padding = 2
 
-        self.conv1 = nn.Conv2d(9, 18, kernel_size=1, stride=1, padding=0)
+        self.conv1 = nn.Conv2d(9, 18, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
         def conv2d_size_out(size, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding):
             """
             calculate the Output height or width of a convolutional layer
