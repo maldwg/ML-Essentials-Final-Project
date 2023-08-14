@@ -16,7 +16,6 @@ Help()
     echo "                                default: classic"
 }
 
-
 AGENT=baby_terminator
 N_ROUNDS=100
 SCENARIO=classic
@@ -30,6 +29,7 @@ while getopts a:n:s:ch flag; do
         h) Help && exit;;
     esac
 done
+
 TRAIN_FILE=./agent_code/"$AGENT"/my-saved-model.pkl.gz
 if [[ $(test -f "$TRAIN_FILE") && "$CONTINUE"=false ]]; then
     rm "$TRAIN_FILE"
