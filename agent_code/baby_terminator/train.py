@@ -300,9 +300,9 @@ def reward_from_events(self, events: List[str]) -> int:
             rewarded_events.append(event)
         
     if reward_sum > 0:
-        reward_sum = min(reward_sum, 30)
+        reward_sum = min(reward_sum, 50)
     elif reward_sum < 0:
-        reward_sum = max(reward_sum, -30)
+        reward_sum = max(reward_sum, -50)
     self.logger.info(f"Awarded {reward_sum} for the {len(rewarded_events)} events {', '.join(rewarded_events)}")
     return reward_sum
 
@@ -387,12 +387,8 @@ def reshape_rewards(self):
     self.logger.info(f"fractioned event counts {event_counts}")
     # TODO adjust  events that are expected to be more often/rare otherwise (killed, got_killed, etc. )
     for event in self.memory.game_rewards:
-        if self.memory.game_rewards[event] >= 0:
-            # update reward by old reward + percentage of old reward that the event occurs more/less than the average
-            # the values in parantheses can be + or -. + if event occurs rarely and - if it occurs often --> Penalty in reward for often occurring events
-            self.memory.game_rewards[event] += self.memory.game_rewards[event] * (average_event_fraction - event_counts[event]) 
-        else:
-            self.memory.game_rewards[event] -= self.memory.game_rewards[event] * (average_event_fraction - event_counts[event]) 
+        bonus = abs(self.memory.game_rewards[event]) * (average_event_fraction - event_counts[event]) 
+        self.memory.game_rewards[event] += bonus
     self.logger.info(f"Updated rewards: { self.memory.game_rewards}")
 
 def increment_event_counts(self, events):
