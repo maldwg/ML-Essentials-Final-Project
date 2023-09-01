@@ -164,7 +164,7 @@ def state_to_features(self, game_state: dict) -> np.array:
         path = astar(start=(agent_x, agent_y), goal=(x, y), field=game_state["field"])
         paths.append(path)
         # length of path -1 because the first element is always the current position
-        coin_distance_map[x, y] = len(path) - 1
+        coin_distance_map[x, y] = len(path) - 1 if path != None else 1000
     # Quorum Map that indicates in which direction to go
     # each coin has a vote for this
     coin_direction_map = np.copy(field)
@@ -186,7 +186,9 @@ def state_to_features(self, game_state: dict) -> np.array:
         path = astar(start=(agent_x, agent_y), goal=(x, y), field=game_state["field"])
         paths.append(path)
         # length of path -1 because the first element is always the current position
-        enemy_distance_map[x, y] = len(path) - 1     
+        # chances are that crates block the way, then assign 1000 as value
+
+        enemy_distance_map[x, y] = len(path) - 1 if path != None else 1000
     enemy_direction_map = np.copy(field)
     number_of_enemies = len(game_state["others"])
     for path  in paths:
