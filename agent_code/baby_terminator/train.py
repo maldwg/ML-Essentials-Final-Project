@@ -18,6 +18,9 @@ from torch import nn
 from .utils import *
 
 
+import functools
+
+
 # Hyper parameters -- DO modify
 TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
@@ -76,7 +79,14 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         reward = torch.tensor(reward, device=device)
         # push the state to the memory in order to be able to learn from it 
         self.memory.push(state, action, next_state, reward)
+
+        # needs to be before optimize otherwise the events occured are not taken into account
+        increment_event_counts(self, events)
+
         optimize_model(self)
+
+        
+
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
     """
@@ -117,7 +127,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     # Add loss to memory
     self.memory.loss_after_episode.append(self.loss)
 
-
+    increment_event_counts(self, events)
 
 def custom_game_events(self, old_game_state, new_game_state, events, self_action):
     custom_events = []
@@ -285,8 +295,8 @@ def reward_from_events(self, events: List[str]) -> int:
     reward_sum = 0
     rewarded_events = []
     for event in events:
-        if event in game_rewards:
-            reward_sum += game_rewards[event]
+        if event in self.memory.game_rewards:
+            reward_sum += self.memory.game_rewards[event]
             rewarded_events.append(event)
         
     if reward_sum > 0:
@@ -305,7 +315,9 @@ def optimize_model(self):
     # Adapt the hyper parameters
     BATCH_SIZE = 128
     GAMMA = 0.999
-    UPDATE_FREQUENCY = 500
+    UPDATE_FREQUENCY = 750
+    UPDATE_FREQUENCY_FOR_REWARDS = 250
+
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
@@ -356,3 +368,36 @@ def optimize_model(self):
         self.logger.info("Update target network")
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
+
+    # adapt rewards
+    if self.memory.steps_done % UPDATE_FREQUENCY_FOR_REWARDS == 0:
+        reshape_rewards(self)
+
+
+def reshape_rewards(self):
+    self.logger.info("Updating rewards...")
+    # self.logger.info(f"old rewards: {self.memory.game_rewards}")
+    # sum up all events so far seen
+    event_counts = self.memory.rewarded_event_counts
+    total_events = functools.reduce(lambda ac,k: ac+event_counts[k], event_counts, 0)
+    # calculate fractions of event counts
+    event_counts = {key: round(event_counts[key] / total_events, 3) for key in event_counts}
+    average_event_fraction = np.mean(list(event_counts.values()))
+    self.logger.info(f"Average occurrence: {average_event_fraction}")
+    self.logger.info(f"fractioned event counts {event_counts}")
+    # TODO adjust  events that are expected to be more often/rare otherwise (killed, got_killed, etc. )
+    for event in self.memory.game_rewards:
+        if self.memory.game_rewards[event] >= 0:
+            # update reward by old reward + percentage of old reward that the event occurs more/less than the average
+            # the values in parantheses can be + or -. + if event occurs rarely and - if it occurs often --> Penalty in reward for often occurring events
+            self.memory.game_rewards[event] += self.memory.game_rewards[event] * (average_event_fraction - event_counts[event]) 
+        else:
+            self.memory.game_rewards[event] -= self.memory.game_rewards[event] * (average_event_fraction - event_counts[event]) 
+    self.logger.info(f"Updated rewards: { self.memory.game_rewards}")
+
+def increment_event_counts(self, events):
+    self.logger.info("Increment count of events in memory")
+    for event in events:
+        if event in self.memory.rewarded_event_counts:
+            self.memory.rewarded_event_counts[event] += 1
+    # self.logger.info(f"incremented events: {self.memory.rewarded_event_counts}")

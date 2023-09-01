@@ -1,4 +1,4 @@
-from .utils import Transition
+from .utils import Transition, game_rewards
 import random
 
 class ReplayMemory:
@@ -19,6 +19,9 @@ class ReplayMemory:
         self.q_value_after_episode = []
         self.loss_after_episode = []
         self.steps_done = 0
+        # set all rewarded events to 0 
+        self.rewarded_event_counts = dict.fromkeys(game_rewards, 0)
+        self.game_rewards = game_rewards
 
     def push(self, *args):
         """Saves a transition."""
