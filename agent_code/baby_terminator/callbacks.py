@@ -42,7 +42,7 @@ def setup(self):
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
             self.optimizer = optim.RMSprop(self.policy_net.parameters())
-            self.memory = ReplayMemory(1000)
+            self.memory = ReplayMemory(10000)
 
             weights = np.random.rand(len(ACTIONS))
             self.model = weights / weights.sum()

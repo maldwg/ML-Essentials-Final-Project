@@ -283,15 +283,17 @@ def reward_from_events(self, events: List[str]) -> int:
     """
     
     reward_sum = 0
+    rewarded_events = []
     for event in events:
         if event in game_rewards:
             reward_sum += game_rewards[event]
-    
+            rewarded_events.append(event)
+        
     if reward_sum > 0:
-        reward_sum = min(reward_sum, 20)
+        reward_sum = min(reward_sum, 30)
     elif reward_sum < 0:
-        reward_sum = max(reward_sum, -20)
-    self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
+        reward_sum = max(reward_sum, -30)
+    self.logger.info(f"Awarded {reward_sum} for the {len(rewarded_events)} events {', '.join(rewarded_events)}")
     return reward_sum
 
 
@@ -308,8 +310,7 @@ def optimize_model(self):
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
     transitions = self.memory.sample(BATCH_SIZE -1 )
-    # todo activate online learning approach --> you will need a larger memory for that > 1000000
-    # "online learning"
+    # "online learning" by always including the last step to ensure we learn fro this experience
     transitions.append(self.memory.memory[-1])
     batch = Transition(*zip(*transitions))
 
@@ -318,12 +319,14 @@ def optimize_model(self):
     non_final_next_states = torch.stack([s for s in batch.next_state
                                                 if s is not None]).float()
 
+    # self.logger.info(f"Encountered {non_final_next_states.size()} non final next states")
+
     state_batch = torch.stack(batch.state).float()
     action_batch = torch.stack(batch.action)
     reward_batch = torch.stack(batch.reward)
 
     # self.logger.info(f"Action-batch: {action_batch} | reward-batch: {reward_batch}")
-    # Construct Q value for the current state
+    # Compute Q value for all actions taken in the batch
     state_action_values = self.policy_net(state_batch).gather(1, action_batch)
 
     # compute the expected Q values
@@ -333,7 +336,7 @@ def optimize_model(self):
 
     # compute loss
     loss = nn.functional.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
-    self.logger.info(f"Q value of: {expected_state_action_values}")
+    # self.logger.info(f"Q value of: {expected_state_action_values}")
     self.logger.info(f"Loss of {loss}")
 
     # Add Q value to object
