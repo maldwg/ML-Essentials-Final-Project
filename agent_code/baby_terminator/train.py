@@ -388,7 +388,7 @@ def reshape_rewards(self):
     # TODO adjust  events that are expected to be more often/rare otherwise (killed, got_killed, etc. )
     for event in self.memory.game_rewards:
         bonus = abs(self.memory.game_rewards[event]) * (average_event_fraction - event_counts[event]) 
-        self.memory.game_rewards[event] += bonus
+        # self.memory.game_rewards[event] += bonus
     self.logger.info(f"Updated rewards: { self.memory.game_rewards}")
 
 def increment_event_counts(self, events):
