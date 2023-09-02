@@ -5,6 +5,8 @@ import torch
 import gzip
 import os
 
+# TODO: add metric for how high reward score was during one round (at end of round)
+
 def create_directory_if_not_exists(directory_path):
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)

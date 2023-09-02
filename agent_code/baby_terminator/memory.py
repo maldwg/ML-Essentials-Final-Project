@@ -22,6 +22,10 @@ class ReplayMemory:
         # set all rewarded events to 0 
         self.rewarded_event_counts = dict.fromkeys(game_rewards, 0)
         self.game_rewards = game_rewards
+        self.shortest_path_to_coin = float("inf")
+        self.shortest_path_to_enemy = float("inf")
+        self.shortest_path_to_crate = float("inf")
+        self.shortest_path_out_of_explosion_zone = float("inf")
 
     def push(self, *args):
         """Saves a transition."""

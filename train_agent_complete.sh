@@ -3,10 +3,10 @@
 AGENT=baby_terminator
 # Different number of rounds to learn the game incrementally on each scenario
 # larger nr of round vs weak agents to learn the scenario deeper
-N_ROUNDS_1=500
-N_ROUNDS_2=350
-N_ROUNDS_3=200
-N_ROUNDS_4=200
+N_ROUNDS_1=75
+N_ROUNDS_2=50
+N_ROUNDS_3=30
+N_ROUNDS_4=30
 
 rm agent_code/$AGENT/logs/all.log
 touch agent_code/$AGENT/logs/all.log
