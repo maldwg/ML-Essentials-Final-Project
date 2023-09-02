@@ -360,7 +360,7 @@ def optimize_model(self):
     # back propagation
     self.optimizer.zero_grad()
     loss.backward()
-    torch.nn.utils.clip_grad_value(self.policy_net.parameters(), 100)
+    torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
     self.optimizer.step()
 
     # update the target net each C steps to be in synch with the policy net 
