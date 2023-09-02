@@ -1,6 +1,7 @@
 import os
-import pickle
+import pickle 
 import random
+import gc
 
 import numpy as np
 import gzip 
@@ -50,15 +51,18 @@ def setup(self):
             self.logger.info("Using existing model to generate new generation")
             # with open("my-saved-model.pt", "rb") as file:
             #     self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
+            gc.disable()
             with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
                 self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(f)
+            gc.enable()
     else:
         self.logger.info("Loading model from saved state, no training")
         # with open("my-saved-model.pt", "rb") as file:
         #     self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
-
+        gc.disable()
         with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
             self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(f)
+        gc.enable()
 
 
 def act(self, game_state: dict) -> str:

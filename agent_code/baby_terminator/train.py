@@ -1,6 +1,7 @@
 from collections import namedtuple, deque
 
 import pickle
+import gc
 import gzip
 from typing import List
 
@@ -116,9 +117,19 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     # self.target_net.eval()
 
     # Store the model
+    # data = [i for i in range(10000)]  # Example data
+    # chunk_size = 1000  # Size of each chunk
 
+    # with gzip.open('my-saved-model.pkl.gz', 'wb') as f:
+    #     for i in range(0, len(data), chunk_size):
+    #         chunk = data[i:i+chunk_size]
+    #         pickled_chunk = pickle.HIGHEST_PROTOCOL.dumps(chunk)
+    #         f.write(pickled_chunk)
+
+    gc.disable()
     with gzip.open('my-saved-model.pkl.gz', 'wb') as f:
-        pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], f)
+        pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], f,  protocol=pickle.HIGHEST_PROTOCOL)
+    gc.enable()
     # with open("my-saved-model.pt", "wb") as file:
     #     pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], file)
 
