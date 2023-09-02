@@ -51,6 +51,12 @@ game_rewards = {
         ad.ENTERED_POTENTIAL_EXPLOSION_ZONE: -5,
         ad.ATTACKED_ENEMY: 10,
 
+        # penalize default actions otherwise too many watis and random moves
+        # e.MOVED_DOWN: -0.5,
+        # e.MOVED_LEFT: -0.5,
+        # e.MOVED_RIGHT: -0.5,
+        # e.MOVED_UP: -0.5,
+        e.WAITED: -3.5,
 }
 
 # for the empty field scenario

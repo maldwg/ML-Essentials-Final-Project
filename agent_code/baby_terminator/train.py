@@ -171,16 +171,22 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
     path_to_coins = list(filter(lambda item: item is not None, path_to_coins))
 
     # check if there is a coin reachable
+    # TODO: does not work as intended: does not trigger after collected a coin
     if len(path_to_coins):
         shortest_path_to_coin = len(min(path_to_coins, key=len))
 
         if self.memory.shortest_path_to_coin > shortest_path_to_coin:
             if self.memory.shortest_path_to_coin == float("inf"):
-                difference = shortest_path_to_coin
+                # set difference to 0 to not trigger a reward
+                difference = 0
             else:
                 difference = self.memory.shortest_path_to_coin - shortest_path_to_coin
             self.memory.shortest_path_to_coin=min(self.memory.shortest_path_to_coin, shortest_path_to_coin)
-            events.extend([ difference * ad.MOVED_TOWARDS_COIN ])
+            events.extend(difference * [ad.MOVED_TOWARDS_COIN ])
+
+    # reset the distance to coin after agent grabbed one
+    if e.COIN_COLLECTED in events:
+        self.memory.shortest_path_to_coin = float("inf")
 
     # calculate astar to the shortest way out of explosion zone
     paths_out_of_explosions = []
@@ -203,11 +209,12 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
 
             if self.memory.shortest_path_out_of_explosion_zone > shortest_path_out_of_explosion_zone:
                 if self.memory.shortest_path_out_of_explosion_zone == float("inf"):
-                    difference = shortest_path_out_of_explosion_zone
+                    # set difference to 0 to not trigger a reward
+                    difference = 0
                 else: 
                     difference = self.memory.shortest_path_out_of_explosion_zone - shortest_path_out_of_explosion_zone
                 self.memory.shortest_path_out_of_explosion_zone=min(self.memory.shortest_path_out_of_explosion_zone, shortest_path_out_of_explosion_zone)
-                events.extend([ difference * ad.MOVED_TOWARDS_END_OF_EXPLOSION ])  
+                events.extend( difference * [ad.MOVED_TOWARDS_END_OF_EXPLOSION ])  
 
     else:
         self.logger.info("agent not in explosion zone of bombs")
@@ -217,14 +224,12 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
     if e.BOMB_DROPPED in events:
         # check if enemy in explosion radius
         potential_explosions = explosion_zones(new_game_state["field"], new_game_state["self"][-1])
-        self.logger.info(f"potential explosions: {potential_explosions}")
         for agent in new_game_state["others"]:
             if agent[-1] in potential_explosions:
                 # TODO: check if it wokrs
                 self.logger.info("attacked enemy")
                 events.append(ad.ATTACKED_ENEMY)
         for (x, y) in potential_explosions:
-            self.logger.info(f"X: {x}, Y: {y}")
             if new_game_state["field"][x, y] == 1:
                 self.logger.info("crate in explosion zone")
                 events.append(ad.CRATE_IN_EXPLOSION_ZONE)
@@ -314,7 +319,11 @@ def after_game_rewards(self, last_game_state):
     scores = [ agent[1] for agent in last_game_state["others"] ]
     scores.append(score)
     placement = np.argsort(scores)[-1]
-    placement_reward = (1 / (placement + 1) * self.memory.game_rewards[ad.PLACEMENT_REWARD]) 
+    self.logger.info(f"Reached {placement +1 } place")
+    if placement + 1 != 4: 
+        placement_reward = (1 / (placement + 1) * self.memory.game_rewards[ad.PLACEMENT_REWARD]) 
+    else: 
+        placement_reward = 0
     score_reward = (score * self.memory.game_rewards[ad.SCORE_REWARD])
     self.logger.info(f"Score reward: {score_reward}")
     self.logger.info(f"placement reward: {placement_reward}")

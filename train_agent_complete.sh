@@ -11,7 +11,7 @@ N_ROUNDS_4=30
 rm agent_code/$AGENT/logs/all.log
 touch agent_code/$AGENT/logs/all.log
 
-for SCENARIO in "empty" "coin-heaven" # "loot-crate" "classic"
+for SCENARIO in "coin-heaven" # "empty" "coin-heaven" # "loot-crate" "classic"
 do
     echo "training on scenario $SCENARIO"
     echo "Training step 1 / 4"
