@@ -289,8 +289,9 @@ def optimize_model(self):
 
     # compute the expected Q values
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
-    next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
-    expected_state_action_values = (next_state_values * GAMMA) + reward_batch 
+    with torch.no_grad():
+        next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0]
+    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
     # compute loss
     loss = nn.functional.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
@@ -305,8 +306,7 @@ def optimize_model(self):
     # back propagation
     self.optimizer.zero_grad()
     loss.backward()
-    for param in self.policy_net.parameters():
-        param.grad.data.clamp_(-1, 1)
+    torch.nn.utils.clip_grad_value(self.policy_net.parameters(), 100)
     self.optimizer.step()
 
     # update the target net each C steps to be in synch with the policy net 
