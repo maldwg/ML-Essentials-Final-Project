@@ -56,7 +56,9 @@ game_rewards = {
         # e.MOVED_LEFT: -0.5,
         # e.MOVED_RIGHT: -0.5,
         # e.MOVED_UP: -0.5,
-        e.WAITED: -3.5,
+        # e.WAITED: -0.5,
+        # e.BOMB_DROPPED: -0.5,
+
 }
 
 # for the empty field scenario

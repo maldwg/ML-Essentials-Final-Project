@@ -162,87 +162,6 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
 
     agent_x, agent_y = new_game_state["self"][-1]
 
-    # calculate the astar distances to the next coin
-    path_to_coins = []
-    for x, y in new_game_state["coins"]:
-        path_to_coins.append(astar(start=(agent_x, agent_y), goal=(x, y), field=new_game_state["field"]))
-
-    # filter all nones (paths that are blocked)
-    path_to_coins = list(filter(lambda item: item is not None, path_to_coins))
-    self.logger.info(f"path to coins: {path_to_coins}")
-
-    # check if there is a coin reachable
-    if len(path_to_coins):
-        # len - 1 because the starting point is always included in the path!
-        shortest_path_to_coin = len(min(path_to_coins, key=len)) - 1
-        self.logger.info(f"shortest path to coin: {shortest_path_to_coin}")
-        self.logger.info(f"{min(path_to_coins, key=len)}")
-
-        if self.memory.shortest_path_to_coin > shortest_path_to_coin:
-            if self.memory.shortest_path_to_coin == float("inf"):
-                # set difference to 1, this will only trigger after the game start
-                difference = 1
-            else:
-                difference = self.memory.shortest_path_to_coin - shortest_path_to_coin
-            self.memory.shortest_path_to_coin=min(self.memory.shortest_path_to_coin, shortest_path_to_coin)
-            events.extend(difference * [ad.MOVED_TOWARDS_COIN ])
-
-        # reset the distance to coin after agent grabbed one
-        # needs also to be set at the end of an round otherwise the next round might be biased
-        if e.COIN_COLLECTED in events:
-            self.logger.info(f"collected coin --> newest shortest path: {shortest_path_to_coin}")
-            self.memory.shortest_path_to_coin = shortest_path_to_coin
-        if e.GOT_KILLED in events or e.SURVIVED_ROUND in events:
-            self.logger.info(f"Died in game --> newest shortest path was reset")
-            self.memory.shortest_path_to_coin = float("inf") 
-
-    # calculate astar to the shortest way out of explosion zone
-    paths_out_of_explosions = []
-    potential_explosions = []
-    for (x,y), t in new_game_state["bombs"]:
-        potential_explosions.extend(explosion_zones(new_game_state["field"], (x,y)))
-
-    if (agent_x, agent_y) in potential_explosions:
-        self.logger.info("agent in explosion zone")
-        neighbour_tiles_out_of_explosion=tiles_beneath_explosion(self, new_game_state, potential_explosions)
-
-        for x,y in neighbour_tiles_out_of_explosion:
-            paths_out_of_explosions.append(astar(start=(agent_x, agent_y), goal=(x, y), field=new_game_state["field"]))
-        # filter all nones (paths that are blocked)
-        paths_out_of_explosions = list(filter(lambda item: item is not None, paths_out_of_explosions))
-        self.logger.info(f"paths out of explosion: {paths_out_of_explosions}")
-
-        if len(paths_out_of_explosions):
-            shortest_path_out_of_explosion_zone = len(min(paths_out_of_explosions, key=len))
-
-            if self.memory.shortest_path_out_of_explosion_zone > shortest_path_out_of_explosion_zone:
-                if self.memory.shortest_path_out_of_explosion_zone == float("inf"):
-                    # set difference to 0 to not trigger a reward
-                    difference = 0
-                else: 
-                    difference = self.memory.shortest_path_out_of_explosion_zone - shortest_path_out_of_explosion_zone
-                self.memory.shortest_path_out_of_explosion_zone=min(self.memory.shortest_path_out_of_explosion_zone, shortest_path_out_of_explosion_zone)
-                events.extend( difference * [ad.MOVED_TOWARDS_END_OF_EXPLOSION ])  
-
-    else:
-        self.logger.info("agent not in explosion zone of bombs")
-
-    # check if bomb was placed so that enemy can be hit
-    # check if layed bomb
-    if e.BOMB_DROPPED in events:
-        # check if enemy in explosion radius
-        potential_explosions = explosion_zones(new_game_state["field"], new_game_state["self"][-1])
-        for agent in new_game_state["others"]:
-            if agent[-1] in potential_explosions:
-                # TODO: check if it wokrs
-                self.logger.info("attacked enemy")
-                events.append(ad.ATTACKED_ENEMY)
-        for (x, y) in potential_explosions:
-            if new_game_state["field"][x, y] == 1:
-                self.logger.info("crate in explosion zone")
-                events.append(ad.CRATE_IN_EXPLOSION_ZONE)
-
-
     # append only the events that can also be calculated for the lats step
     if e.BOMB_EXPLODED in events and not e.KILLED_SELF in events:
         custom_events.append(ad.NOT_KILLED_BY_OWN_BOMB)
@@ -280,44 +199,98 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             # set to inf since now the shortest path is not available anymore since we are not in an explosion radius
             self.memory.shortest_path_out_of_explosion_zone = float("inf")
 
-        # agent moved not neccessary since enemy can plant bomb nearby and a wait does decrease distance in this case
-        if new_distance_to_bomb > old_distance_to_bomb and agent_moved:
-            self.logger.info(f"BOMB DISTANCE INCREASED: {new_distance_to_bomb} > {old_distance_to_bomb}")
-            custom_events.append("DISTANCE_FROM_BOMB_INCREASED")
-        elif new_distance_to_bomb < old_distance_to_bomb and agent_moved:
-            self.logger.info(f"BOMB DISTANCE DECREASED: {new_distance_to_bomb} < {old_distance_to_bomb}")
-            custom_events.append("DISTANCE_FROM_BOMB_DECREASED")
-
-        if new_game_state["others"]: 
-            old_distance_to_enemy = min([abs(enemy[-1][0] - old_agent_pos[0]) + abs(enemy[-1][1] - old_agent_pos[1]) for enemy in old_game_state["others"]])
-            new_distance_to_enemy = min([abs(enemy[-1][0] - new_agent_pos[0]) + abs(enemy[-1][1] - new_agent_pos[1]) for enemy in new_game_state["others"]])
-        # a wait might decrease the distance if the enemy approaches
-        if new_distance_to_enemy < old_distance_to_enemy and agent_moved:
-            self.logger.info(f"ENEMY DISTANCE DECREASED: {new_distance_to_enemy} < {old_distance_to_enemy}")
-            custom_events.append("APPROACHED_ENEMY")
-        elif new_distance_to_enemy > old_distance_to_enemy and agent_moved:
-            self.logger.info(f"ENEMY DISTANCE DECREASED: {new_distance_to_enemy} < {old_distance_to_enemy}")
-            custom_events.append("DISAPPROACHED_ENEMY")
-
-
         # Helper function to check if a position is blocked by walls or crates
         def is_blocked(position, game_state):
             x,y  = position
             return game_state['field'][x, y] == -1 or game_state['field'][x, y] == 1
 
-        # Agent Cornered
-        adjacent_positions = [(new_agent_pos[0] + dx, new_agent_pos[1] + dy) for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]]
-        blocked_directions = sum([is_blocked(pos, new_game_state) for pos in adjacent_positions])
-        if blocked_directions >= 3:
-            self.logger.info(f"Agent is blocked by {blocked_directions} tiles")
-            custom_events.append("AGENT_CORNERED")
+
+        # calculate the astar distances to the next coin
+        path_to_coins = []
+        for x, y in new_game_state["coins"]:
+            path_to_coins.append(astar(start=(agent_x, agent_y), goal=(x, y), field=new_game_state["field"]))
+
+        # filter all nones (paths that are blocked)
+        path_to_coins = list(filter(lambda item: item is not None, path_to_coins))
+        self.logger.info(f"path to coins: {path_to_coins}")
+
+        # check if there is a coin reachable
+        if len(path_to_coins):
+            # len - 1 because the starting point is always included in the path!
+            shortest_path_to_coin = len(min(path_to_coins, key=len)) - 1
+            self.logger.info(f"shortest path to coin: {shortest_path_to_coin}")
+            self.logger.info(f"{min(path_to_coins, key=len)}")
+
+            if self.memory.shortest_path_to_coin > shortest_path_to_coin:
+                if self.memory.shortest_path_to_coin == float("inf"):
+                    # set difference to 1, this will only trigger after the game start
+                    difference = 1
+                else:
+                    difference = self.memory.shortest_path_to_coin - shortest_path_to_coin
+                self.memory.shortest_path_to_coin=min(self.memory.shortest_path_to_coin, shortest_path_to_coin)
+                events.extend(difference * [ad.MOVED_TOWARDS_COIN ])
+
+            # reset the distance to coin after agent grabbed one
+            # needs also to be set at the end of an round otherwise the next round might be biased
+            if e.COIN_COLLECTED in events:
+                self.logger.info(f"collected coin --> newest shortest path: {shortest_path_to_coin}")
+                self.memory.shortest_path_to_coin = shortest_path_to_coin
+            if e.GOT_KILLED in events or e.SURVIVED_ROUND in events:
+                self.logger.info(f"Died in game --> newest shortest path was reset")
+                self.memory.shortest_path_to_coin = float("inf") 
+
+        # calculate astar to the shortest way out of explosion zone
+        paths_out_of_explosions = []
+        potential_explosions = []
+        for (x,y), t in new_game_state["bombs"]:
+            potential_explosions.extend(explosion_zones(new_game_state["field"], (x,y)))
+
+        if (agent_x, agent_y) in potential_explosions:
+            self.logger.info("agent in explosion zone")
+            neighbour_tiles_out_of_explosion=tiles_beneath_explosion(self, new_game_state, potential_explosions)
+
+            for x,y in neighbour_tiles_out_of_explosion:
+                paths_out_of_explosions.append(astar(start=(agent_x, agent_y), goal=(x, y), field=new_game_state["field"]))
+            # filter all nones (paths that are blocked)
+            paths_out_of_explosions = list(filter(lambda item: item is not None, paths_out_of_explosions))
+            self.logger.info(f"paths out of explosion: {paths_out_of_explosions}")
+
+            if len(paths_out_of_explosions):
+                # min -1 because astar path contains start position
+                shortest_path_out_of_explosion_zone = len(min(paths_out_of_explosions, key=len)) - 1
+                self.logger.info(f"shortest path out of explosion: {shortest_path_out_of_explosion_zone}")
+                self.logger.info(min(paths_out_of_explosions, key=len))
+
+                if self.memory.shortest_path_out_of_explosion_zone > shortest_path_out_of_explosion_zone:
+                    if self.memory.shortest_path_out_of_explosion_zone == float("inf"):
+                        # only at the beginning after the first bomb applicable
+                        # set to 0 to not get the event when dropping the bomb
+                        difference = 0
+                    else: 
+                        difference = self.memory.shortest_path_out_of_explosion_zone - shortest_path_out_of_explosion_zone
+                    self.memory.shortest_path_out_of_explosion_zone=min(self.memory.shortest_path_out_of_explosion_zone, shortest_path_out_of_explosion_zone)
+                    events.extend( difference * [ad.MOVED_TOWARDS_END_OF_EXPLOSION ])  
+
+    else:
+        self.logger.info("agent not in explosion zone of bombs")
+
+    # check if bomb was placed so that enemy can be hit
+    # check if layed bomb
+    if e.BOMB_DROPPED in events:
+        # check if enemy in explosion radius
+        potential_explosions = explosion_zones(new_game_state["field"], new_game_state["self"][-1])
+        for agent in new_game_state["others"]:
+            if agent[-1] in potential_explosions:
+                # TODO: check if it wokrs
+                self.logger.info("attacked enemy")
+                events.append(ad.ATTACKED_ENEMY)
+        for (x, y) in potential_explosions:
+            if new_game_state["field"][x, y] == 1:
+                self.logger.info("crate in explosion zone")
+                events.append(ad.CRATE_IN_EXPLOSION_ZONE)
 
 
-        # Safe Zone: No bombs or enemies nearby
-        closest_enemy = min([abs(enemy[-1][0] - new_agent_pos[0]) + abs(enemy[-1][1] - new_agent_pos[1]) for enemy in new_game_state["others"]], default=safe_distance)
-        if closest_bomb >= safe_distance and closest_enemy >= safe_distance:
-            self.logger.info(f"IN SAFE ZONE {closest_bomb} > {safe_distance} and {closest_enemy} > {safe_distance}")
-            custom_events.append("IN_SAFE_ZONE")
+
 
     return custom_events
 
