@@ -39,6 +39,7 @@ def setup_training(self):
     self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
     self.q_value = None
     self.loss = None
+    self.number_of_executed_episodes = 0
 
 
 
@@ -115,10 +116,14 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     # self.target_net.load_state_dict(self.policy_net.state_dict())
     # self.target_net.eval()
 
-    # Store the model
+    # increment episode count
+    self.number_of_executed_episodes += 1
 
-    with gzip.open('my-saved-model.pkl.gz', 'wb') as f:
-        pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], f)
+    # Store the model
+    if self.number_of_executed_episodes == last_game_state["number_rounds"]:
+        with gzip.open('my-saved-model.pkl.gz', 'wb') as f:
+            pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], f)
+            self.logger.debug("Dumped pickle")
     # with open("my-saved-model.pt", "wb") as file:
     #     pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], file)
 

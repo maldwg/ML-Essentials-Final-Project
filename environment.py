@@ -334,6 +334,7 @@ class BombeRLeWorld(GenericWorld):
 
         self.rng = np.random.default_rng(args.seed)
         self.setup_agents(agents)
+        self.number_rounds = args.n_rounds
 
     def setup_agents(self, agents):
         # Add specified agents and start their subprocesses
@@ -406,6 +407,7 @@ class BombeRLeWorld(GenericWorld):
             'bombs': [bomb.get_state() for bomb in self.bombs],
             'coins': [coin.get_state() for coin in self.coins if coin.collectable],
             'user_input': self.user_input,
+            'number_rounds': self.number_rounds
         }
 
         explosion_map = np.zeros(self.arena.shape)
