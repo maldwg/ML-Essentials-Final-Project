@@ -169,24 +169,33 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
 
     # filter all nones (paths that are blocked)
     path_to_coins = list(filter(lambda item: item is not None, path_to_coins))
+    self.logger.info(f"path to coins: {path_to_coins}")
 
     # check if there is a coin reachable
     # TODO: does not work as intended: does not trigger after collected a coin
     if len(path_to_coins):
-        shortest_path_to_coin = len(min(path_to_coins, key=len))
+        # len - 1 because the starting point is always included in the path!
+        shortest_path_to_coin = len(min(path_to_coins, key=len)) - 1
+        self.logger.info(f"shortest path to coin: {shortest_path_to_coin}")
+        self.logger.info(f"{min(path_to_coins, key=len)}")
 
         if self.memory.shortest_path_to_coin > shortest_path_to_coin:
             if self.memory.shortest_path_to_coin == float("inf"):
-                # set difference to 0 to not trigger a reward
-                difference = 0
+                # set difference to 1, this will only trigger after the game start
+                difference = 1
             else:
                 difference = self.memory.shortest_path_to_coin - shortest_path_to_coin
             self.memory.shortest_path_to_coin=min(self.memory.shortest_path_to_coin, shortest_path_to_coin)
             events.extend(difference * [ad.MOVED_TOWARDS_COIN ])
 
-    # reset the distance to coin after agent grabbed one
-    if e.COIN_COLLECTED in events:
-        self.memory.shortest_path_to_coin = float("inf")
+        # reset the distance to coin after agent grabbed one
+        # needs also to be set at the end of an round otherwise the next round might be biased
+        if e.COIN_COLLECTED in events:
+            self.logger.info(f"collected coin --> newest shortest path: {shortest_path_to_coin}")
+            self.memory.shortest_path_to_coin = shortest_path_to_coin
+        if e.GOT_KILLED in events or e.SURVIVED_ROUND in events:
+            self.logger.info(f"Died in game --> newest shortest path was reset")
+            self.memory.shortest_path_to_coin = float("inf") 
 
     # calculate astar to the shortest way out of explosion zone
     paths_out_of_explosions = []
