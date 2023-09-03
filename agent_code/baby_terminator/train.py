@@ -142,9 +142,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     # Add loss to memory
     self.memory.loss_after_episode.append(self.loss)
 
-    increment_event_counts(self, events)
-
-    self.memory.round += 1
+    # increment_event_counts(self, events)
 
 def custom_game_events(self, old_game_state, new_game_state, events, self_action):
     custom_events = []
