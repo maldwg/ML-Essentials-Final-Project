@@ -172,7 +172,6 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
     self.logger.info(f"path to coins: {path_to_coins}")
 
     # check if there is a coin reachable
-    # TODO: does not work as intended: does not trigger after collected a coin
     if len(path_to_coins):
         # len - 1 because the starting point is always included in the path!
         shortest_path_to_coin = len(min(path_to_coins, key=len)) - 1
