@@ -94,3 +94,22 @@ def plot_weights(model):
             plt.clf()
 
 plot_weights(policy_net)
+
+########################################################
+# Plot rewards
+########################################################
+rewards = memory.rewards_after_round
+rounds = [ x for x in range(1, len(rewards) + 1)]
+plt.title('Overall reward after Round')
+plt.xlabel('Round')
+plt.ylabel('Reward')
+print(len(rewards))
+print(rounds)
+plt.plot(rounds, rewards, label='Reward of round')
+# Set the tick locations
+plt.xticks(np.arange(0, len(mean_q_values_after_episode) + 1, tick_distance))
+
+# Display the plot
+plt.legend(loc='best')
+plt.savefig(f"{figure_evaluation_dir}{AGENT_NAME}_rewards.png")
+plt.clf()
