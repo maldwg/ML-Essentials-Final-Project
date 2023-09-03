@@ -74,6 +74,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     if state is not None:
         action = torch.tensor([ACTIONS.index(self_action)], device=device)
         reward = reward_from_events(self, events)
+        self.memory.rewards_of_round.append(reward)
         if new_game_state is None:
             next_state = None
         else:
@@ -113,9 +114,15 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     reward = reward_from_events(self, events)
     reward += after_game_rewards(self, last_game_state)
     self.logger.info(f"Overall reward at end of round: {reward}")
+    self.memory.rewards_of_round.append(reward)
+    self.memory.rewards_after_round.append(sum(self.memory.rewards_of_round))
+    # reset memory for next round
+    self.memory.rewards_of_round = []
+
     reward = torch.tensor(reward, device=device)
     self.memory.push(state, action, None, reward)
     optimize_model(self)
+
 
     # # synch the target network with the policy network 
     # self.target_net.load_state_dict(self.policy_net.state_dict())
@@ -137,7 +144,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     increment_event_counts(self, events)
 
-
+    self.memory.round += 1
 
 def custom_game_events(self, old_game_state, new_game_state, events, self_action):
     custom_events = []
