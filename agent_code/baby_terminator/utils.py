@@ -22,18 +22,18 @@ game_rewards = {
         # killing goals
         e.KILLED_OPPONENT: 75,
         e.OPPONENT_ELIMINATED: -2,        
-        e.KILLED_SELF: -50,
+        e.KILLED_SELF: -100,
         e.GOT_KILLED: -50,
 
         # correct actions
-        e.INVALID_ACTION: -5,
+        e.INVALID_ACTION: -10,
         # additional penalty when laying 2 bombs in a row
-        ad.UNALLOWED_BOMB: -5,
+        ad.UNALLOWED_BOMB: -10,
 
         # coin goals
         e.COIN_FOUND: 5,
         e.COIN_COLLECTED: 25,
-        ad.MOVED_TOWARDS_COIN: 5,
+        ad.MOVED_TOWARDS_COIN: 7.5,
 
         # crate goals
         # crate destroyed im verhältnis zu coin found ändern, ggf. mehr für coin found als crate destroyed

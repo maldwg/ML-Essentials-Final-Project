@@ -113,7 +113,9 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     state = state_to_features(self, last_game_state)
     action = torch.tensor([ACTIONS.index(last_action)], device=device)
     reward = reward_from_events(self, events)
-    reward += after_game_rewards(self, last_game_state)
+    # only give end of round rewards if the round was sufficiently long
+    if last_game_state['step'] > 30:
+        reward += after_game_rewards(self, last_game_state)
     self.logger.info(f"Overall reward at end of round: {reward}")
     self.memory.rewards_of_round.append(reward)
     self.memory.rewards_after_round.append(sum(self.memory.rewards_of_round))
@@ -202,17 +204,16 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
         if len(path_to_coins):
             # len - 1 because the starting point is always included in the path!
             shortest_path_to_coin = len(min(path_to_coins, key=len)) - 1
-            self.logger.info(f"shortest path to coin: {shortest_path_to_coin}")
-            self.logger.info(f"{min(path_to_coins, key=len)}")
+            self.logger.info(f"shortest path to coin: {shortest_path_to_coin}, {min(path_to_coins, key=len)[1:]}")
 
-            if self.memory.shortest_path_to_coin > shortest_path_to_coin:
+            if self.memory.shortest_path_to_coin > shortest_path_to_coin and agent_moved:
                 if self.memory.shortest_path_to_coin == float("inf"):
                     # set difference to 1, this will only trigger after the game start
-                    difference = 1
+                    difference = 0
                 else:
                     difference = self.memory.shortest_path_to_coin - shortest_path_to_coin
                 self.memory.shortest_path_to_coin=min(self.memory.shortest_path_to_coin, shortest_path_to_coin)
-                events.extend(difference * [ad.MOVED_TOWARDS_COIN ])
+                events.extend(difference * [ad.MOVED_TOWARDS_COIN])
 
             # reset the distance to coin after agent grabbed one
             # needs also to be set at the end of an round otherwise the next round might be biased
@@ -302,8 +303,8 @@ def after_game_rewards(self, last_game_state):
     scores = [ agent[1] for agent in last_game_state["others"] ]
     scores.append(score)
     placement = np.argsort(scores)[-1]
-    self.logger.info(f"Reached {placement +1 } place")
-    if placement + 1 != 4: 
+    self.logger.info(f"Reached {placement + 1} place")
+    if placement + 1 < 3: 
         placement_reward = (1 / (placement + 1) * self.memory.game_rewards[ad.PLACEMENT_REWARD]) 
     else: 
         placement_reward = 0
@@ -339,15 +340,15 @@ def optimize_model(self):
     BATCH_SIZE = 128
     GAMMA = 0.999
     # TODO: Epsilon greedy strategy for update frequency
-    UPDATE_FREQUENCY = 750
+    UPDATE_FREQUENCY = 3000
     UPDATE_FREQUENCY_FOR_REWARDS = 250
 
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
-    transitions = self.memory.sample(BATCH_SIZE -1 )
+    transitions = self.memory.sample(BATCH_SIZE)
     # "online learning" by always including the last step to ensure we learn fro this experience
-    transitions.append(self.memory.memory[-1])
+    # transitions.append(self.memory.memory[-1])
     batch = Transition(*zip(*transitions))
 
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
@@ -360,6 +361,7 @@ def optimize_model(self):
     state_batch = torch.stack(batch.state).float()
     action_batch = torch.stack(batch.action)
     reward_batch = torch.stack(batch.reward)
+    self.logger.info(f"Reward batch: {reward_batch}")
 
     # self.logger.info(f"Action-batch: {action_batch} | reward-batch: {reward_batch}")
     # Compute Q value for all actions taken in the batch
