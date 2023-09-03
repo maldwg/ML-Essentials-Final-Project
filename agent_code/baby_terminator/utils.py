@@ -15,12 +15,12 @@ Transition = namedtuple('Transition',
 game_rewards = {
 
         # long term goal
-        e.SURVIVED_ROUND: 75,
+        e.SURVIVED_ROUND: 100,
         ad.SCORE_REWARD: 25,
         ad.PLACEMENT_REWARD: 200,
 
         # killing goals
-        e.KILLED_OPPONENT: 50,
+        e.KILLED_OPPONENT: 75,
         e.OPPONENT_ELIMINATED: -2,        
         e.KILLED_SELF: -50,
         e.GOT_KILLED: -50,
@@ -52,12 +52,12 @@ game_rewards = {
         ad.ATTACKED_ENEMY: 10,
 
         # penalize default actions otherwise too many watis and random moves
-        # e.MOVED_DOWN: -0.5,
-        # e.MOVED_LEFT: -0.5,
-        # e.MOVED_RIGHT: -0.5,
-        # e.MOVED_UP: -0.5,
-        # e.WAITED: -0.5,
-        # e.BOMB_DROPPED: -0.5,
+        e.MOVED_DOWN: -0.1,
+        e.MOVED_LEFT: -0.1,
+        e.MOVED_RIGHT: -0.1,
+        e.MOVED_UP: -0.1,
+        e.WAITED: -0.1,
+        e.BOMB_DROPPED: -0.1,
 
 }
 
@@ -220,3 +220,9 @@ def increment_event_counts(self, events):
         if event in self.memory.rewarded_event_counts:
             self.memory.rewarded_event_counts[event] += 1
     # self.logger.info(f"incremented events: {self.memory.rewarded_event_counts}")
+
+
+# Helper function to check if a position is blocked by walls or crates
+def is_blocked(position, game_state):
+    x,y  = position
+    return game_state['field'][x, y] == -1 or game_state['field'][x, y] == 1

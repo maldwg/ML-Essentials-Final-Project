@@ -178,33 +178,6 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
         new_agent_pos = new_game_state["self"][-1]
         agent_moved = old_agent_pos != new_agent_pos
 
-
-        # check if there are bombs on the filed, if not skip calculations
-        if old_game_state["bombs"]:
-            old_distance_to_bomb = min([abs(bomb[0][0] - old_agent_pos[0]) + abs(bomb[0][1] - old_agent_pos[1]) for bomb in old_game_state["bombs"]])
-            in_old_explosion_zone = any([old_agent_pos in explosion_zones(old_game_state["field"], bomb_pos) for bomb_pos, _ in old_game_state["bombs"]])
-
-        if new_game_state["bombs"]:
-            new_distance_to_bomb = min([abs(bomb[0][0] - new_agent_pos[0]) + abs(bomb[0][1] - new_agent_pos[1]) for bomb in new_game_state["bombs"]])
-            in_new_explosion_zone = any([new_agent_pos in explosion_zones(new_game_state["field"], bomb_pos) for bomb_pos, _ in new_game_state["bombs"]])
-            # preemptively calculate the closest bomb 
-            closest_bomb = min([abs(bomb_pos[0] - new_agent_pos[0]) + abs(bomb_pos[1] - new_agent_pos[1]) for bomb_pos, _ in new_game_state["bombs"]], default=safe_distance)
-
-        if not in_old_explosion_zone and in_new_explosion_zone and agent_moved:
-            self.logger.info(f"EXPLOSION ZONE ENTERED: {in_new_explosion_zone} < {in_old_explosion_zone}")
-            custom_events.append("ENTERED_POTENTIAL_EXPLOSION_ZONE")
-        elif in_old_explosion_zone and not in_new_explosion_zone and agent_moved:
-            self.logger.info(f"EXPLOSION ZONE LEFT: {in_new_explosion_zone} < {in_old_explosion_zone}")
-            custom_events.append("LEFT_POTENTIAL_EXPLOSION_ZONE")
-            # set to inf since now the shortest path is not available anymore since we are not in an explosion radius
-            self.memory.shortest_path_out_of_explosion_zone = float("inf")
-
-        # Helper function to check if a position is blocked by walls or crates
-        def is_blocked(position, game_state):
-            x,y  = position
-            return game_state['field'][x, y] == -1 or game_state['field'][x, y] == 1
-
-
         # calculate the astar distances to the next coin
         path_to_coins = []
         for x, y in new_game_state["coins"]:
@@ -262,35 +235,53 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
                 self.logger.info(min(paths_out_of_explosions, key=len))
 
                 if self.memory.shortest_path_out_of_explosion_zone > shortest_path_out_of_explosion_zone:
+                    # agent was not in an explosion zone last turn
                     if self.memory.shortest_path_out_of_explosion_zone == float("inf"):
-                        # only at the beginning after the first bomb applicable
+                        # in zone by own bomb
+                        if e.BOMB_DROPPED in events:
                         # set to 0 to not get the event when dropping the bomb
-                        difference = 0
+                            difference = 0
+                        # in zone by other bomb
+                        else:
+                            difference = shortest_path_out_of_explosion_zone
                     else: 
                         difference = self.memory.shortest_path_out_of_explosion_zone - shortest_path_out_of_explosion_zone
                     self.memory.shortest_path_out_of_explosion_zone=min(self.memory.shortest_path_out_of_explosion_zone, shortest_path_out_of_explosion_zone)
                     events.extend( difference * [ad.MOVED_TOWARDS_END_OF_EXPLOSION ])  
 
-    else:
-        self.logger.info("agent not in explosion zone of bombs")
+        else:
+            self.logger.info("agent not in explosion zone of bombs")
 
-    # check if bomb was placed so that enemy can be hit
-    # check if layed bomb
-    if e.BOMB_DROPPED in events:
-        # check if enemy in explosion radius
-        potential_explosions = explosion_zones(new_game_state["field"], new_game_state["self"][-1])
-        for agent in new_game_state["others"]:
-            if agent[-1] in potential_explosions:
-                # TODO: check if it wokrs
-                self.logger.info("attacked enemy")
-                events.append(ad.ATTACKED_ENEMY)
-        for (x, y) in potential_explosions:
-            if new_game_state["field"][x, y] == 1:
-                self.logger.info("crate in explosion zone")
-                events.append(ad.CRATE_IN_EXPLOSION_ZONE)
+        # check if bomb was placed so that enemy can be hit
+        # check if layed bomb
+        if e.BOMB_DROPPED in events:
+            # check if enemy in explosion radius
+            potential_explosions = explosion_zones(new_game_state["field"], new_game_state["self"][-1])
+            for agent in new_game_state["others"]:
+                if agent[-1] in potential_explosions:
+                    # TODO: check if it wokrs
+                    self.logger.info("attacked enemy")
+                    events.append(ad.ATTACKED_ENEMY)
+            for (x, y) in potential_explosions:
+                if new_game_state["field"][x, y] == 1:
+                    self.logger.info("crate in explosion zone")
+                    events.append(ad.CRATE_IN_EXPLOSION_ZONE)
 
+        # check if there are bombs on the filed, if not skip calculations
+        if old_game_state["bombs"]:
+            in_old_explosion_zone = any([old_agent_pos in explosion_zones(old_game_state["field"], bomb_pos) for bomb_pos, _ in old_game_state["bombs"]])
 
+        if new_game_state["bombs"]:
+            in_new_explosion_zone = any([new_agent_pos in explosion_zones(new_game_state["field"], bomb_pos) for bomb_pos, _ in new_game_state["bombs"]])
 
+        if not in_old_explosion_zone and in_new_explosion_zone and agent_moved:
+            self.logger.info(f"EXPLOSION ZONE ENTERED: {in_new_explosion_zone} < {in_old_explosion_zone}")
+            custom_events.append("ENTERED_POTENTIAL_EXPLOSION_ZONE")
+        elif in_old_explosion_zone and not in_new_explosion_zone and agent_moved:
+            self.logger.info(f"EXPLOSION ZONE LEFT: {in_new_explosion_zone} < {in_old_explosion_zone}")
+            custom_events.append("LEFT_POTENTIAL_EXPLOSION_ZONE")
+            # set to inf since now the shortest path is not available anymore since we are not in an explosion radius
+            self.memory.shortest_path_out_of_explosion_zone = float("inf")
 
     return custom_events
 
