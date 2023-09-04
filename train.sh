@@ -19,6 +19,7 @@ Help()
 AGENT=baby_terminator
 N_ROUNDS=100
 SCENARIO=classic
+CONTINUE=false
 
 while getopts a:n:s:ch flag; do 
     case "${flag}" in
@@ -31,8 +32,9 @@ while getopts a:n:s:ch flag; do
 done
 
 TRAIN_FILE=./agent_code/"$AGENT"/my-saved-model.pkl.gz
-if [[ $(test -f "$TRAIN_FILE") && "$CONTINUE"=false ]]; then
+if $(test -f "$TRAIN_FILE") && [ "$CONTINUE" == false ] ; then
     rm "$TRAIN_FILE"
+    echo "trained weights removed"
 fi
 python main.py play --agents "$AGENT" rule_based_agent rule_based_agent rule_based_agent --n-rounds="$N_ROUNDS" --train 1  --no-gui --scenario "$SCENARIO" &&
 python evaluations.py

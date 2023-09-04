@@ -29,11 +29,11 @@ class ReplayMemory:
         self.rewards_after_round = []
         self.rewards_of_round = []
         self.steps_since_last_update = 0
-        self.update_frequency = 300 
+        self.update_frequency = 500 
 
     def push(self, *args):
         """Saves a transition."""
-        if len(self.memory) < self.capacity:
+        if len(self.memory) <= self.capacity:
             self.memory.append(None)
         self.memory[self.position] = Transition(*args)
         self.position = (self.position + 1) % self.capacity
