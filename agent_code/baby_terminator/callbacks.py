@@ -226,12 +226,12 @@ def state_to_features(self, game_state: dict) -> np.array:
     
     # Convert to PyTorch tensor
     features_tensor = torch.from_numpy(stacked_features).float()
-    features_tensor = min_max_scale(features_tensor)
+    features_tensor = channelwise_normalize_data(features_tensor)
 
     return features_tensor
 
 
-def normalize_data(data):
+def channelwise_normalize_data(data):
     """
     Normalizes the data using Z-score normalization to not rely on batchnorm
     Args:
@@ -239,8 +239,8 @@ def normalize_data(data):
     Returns:
     - normalized_data (numpy.ndarray or torch.Tensor): Normalized data.
     """
-    mean = data.mean()
-    std = data.std()
+    mean = data.mean(dim=(1, 2), keepdim=True)
+    std = data.std(dim=(1, 2), keepdim=True)
     
     normalized_data = (data - mean) / (std + 1e-7)  # Adding a small value to prevent division by zero
     
