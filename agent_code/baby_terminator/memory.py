@@ -39,7 +39,10 @@ class ReplayMemory:
         self.position = (self.position + 1) % self.capacity
 
     def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
+        # Exclude None values from sampled data
+        non_none_values = [item for item in self.memory if item is not None]
+
+        return random.sample(non_none_values, batch_size)
 
     def __len__(self):
         return len(self.memory)

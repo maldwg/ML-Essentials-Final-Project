@@ -358,7 +358,7 @@ def optimize_model(self):
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
     transitions = self.memory.sample(BATCH_SIZE)
-    # "online learning" by always including the last step to ensure we learn fro this experience
+    # "online learning" by always including the last step to ensure we learn from this experience
     # transitions.append(self.memory.memory[-1])
     batch = Transition(*zip(*transitions))
 

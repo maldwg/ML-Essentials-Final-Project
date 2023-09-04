@@ -8,10 +8,6 @@ import os
 def create_directory_if_not_exists(directory_path):
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
-        print(f"Directory '{directory_path}' created.")
-    else:
-        print(f"Directory '{directory_path}' already exists.")
-
 
 AGENT_NAME = "baby_terminator"
 
@@ -103,8 +99,7 @@ rounds = [ x for x in range(1, len(rewards) + 1)]
 plt.title('Overall reward after Round')
 plt.xlabel('Round')
 plt.ylabel('Reward')
-print(len(rewards))
-print(rounds)
+print(f"Length of overall trained rounds: {len(rewards)}")
 plt.plot(rounds, rewards, label='Reward of round')
 # Set the tick locations
 plt.xticks(np.arange(0, len(mean_q_values_after_episode) + 1, tick_distance))
