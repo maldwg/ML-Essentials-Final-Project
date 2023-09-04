@@ -33,7 +33,7 @@ class ReplayMemory:
 
     def push(self, *args):
         """Saves a transition."""
-        if len(self.memory) <= self.capacity:
+        if len(self.memory) < self.capacity:
             self.memory.append(None)
         self.memory[self.position] = Transition(*args)
         self.position = (self.position + 1) % self.capacity
