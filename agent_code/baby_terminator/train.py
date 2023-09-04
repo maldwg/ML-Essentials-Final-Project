@@ -233,9 +233,6 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
                 custom_events.append(ad.MOVED_TOWARDS_COIN)
                 self.logger.info(f"collected coin --> newest shortest path: {shortest_path_to_coin}")
                 self.memory.shortest_path_to_coin = shortest_path_to_coin
-        if e.GOT_KILLED in events or e.SURVIVED_ROUND in events:
-            self.logger.info(f"Died in game --> newest shortest path was reset")
-            self.memory.shortest_path_to_coin = float("inf") 
 
         # calculate astar to the shortest way out of explosion zone
         paths_out_of_explosions = []
@@ -309,6 +306,11 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             # set to inf since now the shortest path is not available anymore since we are not in an explosion radius
             self.memory.shortest_path_out_of_explosion_zone = float("inf")
 
+    # place it here because otherwise it wont trigger since the if old_gamestate not none would prevent it
+    if e.GOT_KILLED in events or e.SURVIVED_ROUND in events:
+        self.logger.info(f"Died in game --> newest shortest path was reset")
+        self.memory.shortest_path_to_coin = float("inf") 
+        self.memory.shortest_path_out_of_explosion_zone = float("inf")
     return custom_events
 
 def after_game_rewards(self, last_game_state):
@@ -317,7 +319,7 @@ def after_game_rewards(self, last_game_state):
     scores = [ agent[1] for agent in last_game_state["others"] ]
     scores.append(score)
     placement = np.argsort(scores)[-1]
-    self.logger.info(f"Reached {placement + 1} place")
+    self.logger.info(f"Reached {placement + 1} place with score of {score}, all scores: {scores}")
     if placement + 1 < 3: 
         placement_reward = (1 / (placement + 1) * self.memory.game_rewards[ad.PLACEMENT_REWARD]) 
     else: 
@@ -372,7 +374,6 @@ def optimize_model(self):
     state_batch = torch.stack(batch.state).float()
     action_batch = torch.stack(batch.action)
     reward_batch = torch.stack(batch.reward)
-    self.logger.info(f"Reward batch: {reward_batch}")
 
     # self.logger.info(f"Action-batch: {action_batch} | reward-batch: {reward_batch}")
     # Compute Q value for all actions taken in the batch

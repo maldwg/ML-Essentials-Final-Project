@@ -42,8 +42,8 @@ def setup(self):
             self.target_net = QNetwork(17, 17, 6).to(device)
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
-            self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.0001,weight_decay=1e-5)
-            self.memory = ReplayMemory(1500)
+            self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.00001,weight_decay=1e-5)
+            self.memory = ReplayMemory(5000)
 
             weights = np.random.rand(len(ACTIONS))
             self.model = weights / weights.sum()
@@ -80,8 +80,8 @@ def act(self, game_state: dict) -> str:
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
         EPS_START = 0.9
-        EPS_END = 0.1
-        EPS_DECAY = 250
+        EPS_END = 0.05
+        EPS_DECAY = 300
         sample = random.random()
         # let the exploration decay but not below 15 %
         eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)
@@ -226,7 +226,7 @@ def state_to_features(self, game_state: dict) -> np.array:
     
     # Convert to PyTorch tensor
     features_tensor = torch.from_numpy(stacked_features).float()
-    features_tensor = channelwise_normalize_data(features_tensor)
+    features_tensor = min_max_scale(features_tensor)
 
     return features_tensor
 
