@@ -209,21 +209,16 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             shortest_path_to_coin = len(min(path_to_coins, key=len)) - 1
             self.logger.info(f"shortest path to coin: {shortest_path_to_coin}, {min(path_to_coins, key=len)[1:]}")
 
-<<<<<<< HEAD
             self.logger.info(f"memory: {self.memory.shortest_path_to_coin}, new: {shortest_path_to_coin}")
 
             # made a correct step
             if self.memory.shortest_path_to_coin > shortest_path_to_coin:
-=======
-            if self.memory.shortest_path_to_coin > shortest_path_to_coin and agent_moved:
->>>>>>> 315e6c4d4395cb80aac03ffa2e9bbecd8c01e70c
                 if self.memory.shortest_path_to_coin == float("inf"):
                     # set difference to 1, this will only trigger after the game start
                     difference = 0
                 else:
                     difference = self.memory.shortest_path_to_coin - shortest_path_to_coin
                 self.memory.shortest_path_to_coin=min(self.memory.shortest_path_to_coin, shortest_path_to_coin)
-<<<<<<< HEAD
                 self.logger.info(f"new value {min(self.memory.shortest_path_to_coin, shortest_path_to_coin)}")
                 self.logger.info(f"difference {difference}")
                 custom_events.extend(difference * [ad.MOVED_TOWARDS_COIN ])
@@ -231,10 +226,6 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
                 #after wrong step update new shortest distance
                 self.logger.info(f"set memory value to the now new shortest distance after wrong step")
                 self.memory.shortest_path_to_coin = shortest_path_to_coin
-=======
-                events.extend(difference * [ad.MOVED_TOWARDS_COIN])
-
->>>>>>> 315e6c4d4395cb80aac03ffa2e9bbecd8c01e70c
             # reset the distance to coin after agent grabbed one
             # needs also to be set at the end of an round otherwise the next round might be biased
             if e.COIN_COLLECTED in events:
