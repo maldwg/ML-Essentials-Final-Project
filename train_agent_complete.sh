@@ -5,13 +5,13 @@ AGENT=baby_terminator
 # larger nr of round vs weak agents to learn the scenario deeper
 N_ROUNDS_1=75
 N_ROUNDS_2=50
-N_ROUNDS_3=30
-N_ROUNDS_4=30
+N_ROUNDS_3=50
+N_ROUNDS_4=50
 
 rm agent_code/$AGENT/logs/all.log
 touch agent_code/$AGENT/logs/all.log
 
-for SCENARIO in "empty" "coin-heaven" "loot-crate" "classic"
+for SCENARIO in "empty" # "coin-heaven" "loot-crate" "classic"
 do
     echo "training on scenario $SCENARIO"
     echo "Training step 1 / 4"

@@ -42,8 +42,8 @@ def setup(self):
             self.target_net = QNetwork(17, 17, 6).to(device)
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
-            self.optimizer = optim.RMSprop(self.policy_net.parameters())
-            self.memory = ReplayMemory(10000)
+            self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.0001,weight_decay=1e-5)
+            self.memory = ReplayMemory(1500)
 
             weights = np.random.rand(len(ACTIONS))
             self.model = weights / weights.sum()
@@ -74,17 +74,17 @@ def act(self, game_state: dict) -> str:
     :param game_state: The dictionary that describes everything on the board.
     :return: The action to take as a string.
     """
+    self.logger.info(50*"----")
     # Exploration vs exploitation
     # self.logger.info(game_state)
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
-        EPS_START = 0.5
-        EPS_END = 0.05
+        EPS_START = 0.9
+        EPS_END = 0.1
         EPS_DECAY = 250
-        EPS_MIN = 0.0
         sample = random.random()
         # let the exploration decay but not below 15 %
-        eps_threshold = max(EPS_MIN, EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY))
+        eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)
         self.memory.steps_done += 1
 
         if sample > eps_threshold:

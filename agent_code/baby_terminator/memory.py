@@ -28,6 +28,8 @@ class ReplayMemory:
         self.shortest_path_out_of_explosion_zone = float("inf")
         self.rewards_after_round = []
         self.rewards_of_round = []
+        self.steps_since_last_update = 0
+        self.update_frequency = 300 
 
     def push(self, *args):
         """Saves a transition."""

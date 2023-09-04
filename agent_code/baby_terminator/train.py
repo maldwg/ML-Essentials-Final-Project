@@ -117,6 +117,8 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.logger.info(f"Overall reward at end of round: {reward}")
     self.memory.rewards_of_round.append(reward)
     self.memory.rewards_after_round.append(sum(self.memory.rewards_of_round))
+    self.logger.info(f"Rewards of the round:{self.memory.rewards_of_round}")
+    self.logger.info(f"Complete reward in round was {sum(self.memory.rewards_of_round)}")
     # reset memory for next round
     self.memory.rewards_of_round = []
 
@@ -199,12 +201,16 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
         self.logger.info(f"path to coins: {path_to_coins}")
 
         # check if there is a coin reachable
+        # TODO: let the bonus stack so that on ecah following step the bonus gets bigger
         if len(path_to_coins):
             # len - 1 because the starting point is always included in the path!
             shortest_path_to_coin = len(min(path_to_coins, key=len)) - 1
             self.logger.info(f"shortest path to coin: {shortest_path_to_coin}")
             self.logger.info(f"{min(path_to_coins, key=len)}")
 
+            self.logger.info(f"memory: {self.memory.shortest_path_to_coin}, new: {shortest_path_to_coin}")
+
+            # made a correct step
             if self.memory.shortest_path_to_coin > shortest_path_to_coin:
                 if self.memory.shortest_path_to_coin == float("inf"):
                     # set difference to 1, this will only trigger after the game start
@@ -212,16 +218,23 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
                 else:
                     difference = self.memory.shortest_path_to_coin - shortest_path_to_coin
                 self.memory.shortest_path_to_coin=min(self.memory.shortest_path_to_coin, shortest_path_to_coin)
-                events.extend(difference * [ad.MOVED_TOWARDS_COIN ])
-
+                self.logger.info(f"new value {min(self.memory.shortest_path_to_coin, shortest_path_to_coin)}")
+                self.logger.info(f"difference {difference}")
+                custom_events.extend(difference * [ad.MOVED_TOWARDS_COIN ])
+            else: 
+                #after wrong step update new shortest distance
+                self.logger.info(f"set memory value to the now new shortest distance after wrong step")
+                self.memory.shortest_path_to_coin = shortest_path_to_coin
             # reset the distance to coin after agent grabbed one
             # needs also to be set at the end of an round otherwise the next round might be biased
             if e.COIN_COLLECTED in events:
+                # since he moved to the coin drop the event too
+                custom_events.append(ad.MOVED_TOWARDS_COIN)
                 self.logger.info(f"collected coin --> newest shortest path: {shortest_path_to_coin}")
                 self.memory.shortest_path_to_coin = shortest_path_to_coin
-            if e.GOT_KILLED in events or e.SURVIVED_ROUND in events:
-                self.logger.info(f"Died in game --> newest shortest path was reset")
-                self.memory.shortest_path_to_coin = float("inf") 
+        if e.GOT_KILLED in events or e.SURVIVED_ROUND in events:
+            self.logger.info(f"Died in game --> newest shortest path was reset")
+            self.memory.shortest_path_to_coin = float("inf") 
 
         # calculate astar to the shortest way out of explosion zone
         paths_out_of_explosions = []
@@ -258,8 +271,10 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
                     else: 
                         difference = self.memory.shortest_path_out_of_explosion_zone - shortest_path_out_of_explosion_zone
                     self.memory.shortest_path_out_of_explosion_zone=min(self.memory.shortest_path_out_of_explosion_zone, shortest_path_out_of_explosion_zone)
-                    events.extend( difference * [ad.MOVED_TOWARDS_END_OF_EXPLOSION ])  
-
+                    custom_events.extend( difference * [ad.MOVED_TOWARDS_END_OF_EXPLOSION ])  
+                else: 
+                    self.logger.info("update shortest path out of zone after wrong step")
+                    self.memory.shortest_path_out_of_explosion_zone = shortest_path_out_of_explosion_zone
         else:
             self.logger.info("agent not in explosion zone of bombs")
 
@@ -270,13 +285,12 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             potential_explosions = explosion_zones(new_game_state["field"], new_game_state["self"][-1])
             for agent in new_game_state["others"]:
                 if agent[-1] in potential_explosions:
-                    # TODO: check if it wokrs
                     self.logger.info("attacked enemy")
-                    events.append(ad.ATTACKED_ENEMY)
+                    custom_events.append(ad.ATTACKED_ENEMY)
             for (x, y) in potential_explosions:
                 if new_game_state["field"][x, y] == 1:
                     self.logger.info("crate in explosion zone")
-                    events.append(ad.CRATE_IN_EXPLOSION_ZONE)
+                    custom_events.append(ad.CRATE_IN_EXPLOSION_ZONE)
 
         # check if there are bombs on the filed, if not skip calculations
         if old_game_state["bombs"]:
@@ -338,9 +352,6 @@ def optimize_model(self):
     # Adapt the hyper parameters
     BATCH_SIZE = 128
     GAMMA = 0.999
-    # TODO: Epsilon greedy strategy for update frequency
-    UPDATE_FREQUENCY = 750
-    UPDATE_FREQUENCY_FOR_REWARDS = 250
 
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
@@ -387,11 +398,23 @@ def optimize_model(self):
     torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
     self.optimizer.step()
 
-    # update the target net each C steps to be in synch with the policy net 
-    if self.memory.steps_done % UPDATE_FREQUENCY == 0:
+    # Check if it's time to update the target network
+    if self.memory.steps_since_last_update >= self.memory.update_frequency:
         self.logger.info("Update target network")
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
+        # Reset the steps since last update
+        self.memory.steps_since_last_update = 0
+    else:
+        # Increment the counter
+        self.memory.steps_since_last_update += 1
+
+    # Dynamically adjust UPDATE_FREQUENCY via exp function only after the network has been updated once
+    if self.memory.steps_since_last_update == 0:
+        self.memory.update_frequency = int(300 * np.exp(0.0001 * self.memory.steps_done))
+        # Ensure there's a maximum limit for UPDATE_FREQUENCY to prevent very infrequent updates
+        self.memory.update_frequency = min(self.memory.update_frequency, 5000)
+
 
     # # adapt rewards
     # if self.memory.steps_done % UPDATE_FREQUENCY_FOR_REWARDS == 0:

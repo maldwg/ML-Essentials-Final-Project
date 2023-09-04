@@ -16,17 +16,17 @@ game_rewards = {
 
         # long term goal
         e.SURVIVED_ROUND: 100,
-        ad.SCORE_REWARD: 25,
+        ad.SCORE_REWARD: 40,
         ad.PLACEMENT_REWARD: 200,
 
         # killing goals
         e.KILLED_OPPONENT: 75,
         e.OPPONENT_ELIMINATED: -2,        
-        e.KILLED_SELF: -50,
-        e.GOT_KILLED: -50,
+        e.KILLED_SELF: -75,
+        e.GOT_KILLED: -75,
 
         # correct actions
-        e.INVALID_ACTION: -5,
+        e.INVALID_ACTION: -10,
         # additional penalty when laying 2 bombs in a row
         ad.UNALLOWED_BOMB: -5,
 
@@ -46,18 +46,18 @@ game_rewards = {
         # ad.PATH_SHORTENED_TO_OBJECTIVE: 10,
 
         # bomb related goals
-        ad.MOVED_TOWARDS_END_OF_EXPLOSION: 5,
+        ad.MOVED_TOWARDS_END_OF_EXPLOSION: 7.5,
         ad.LEFT_POTENTIAL_EXPLOSION_ZONE: 10,
         ad.ENTERED_POTENTIAL_EXPLOSION_ZONE: -5,
-        ad.ATTACKED_ENEMY: 10,
+        ad.ATTACKED_ENEMY: 15,
 
         # penalize default actions otherwise too many watis and random moves
-        e.MOVED_DOWN: -0.1,
-        e.MOVED_LEFT: -0.1,
-        e.MOVED_RIGHT: -0.1,
-        e.MOVED_UP: -0.1,
-        e.WAITED: -0.1,
-        e.BOMB_DROPPED: -0.1,
+        # e.MOVED_DOWN: -0.1,
+        # e.MOVED_LEFT: -0.1,
+        # e.MOVED_RIGHT: -0.1,
+        # e.MOVED_UP: -0.1,
+        # e.WAITED: -0.1,
+        # e.BOMB_DROPPED: -0.1,
 
 }
 
