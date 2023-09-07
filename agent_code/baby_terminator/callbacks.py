@@ -42,7 +42,7 @@ def setup(self):
             self.target_net = QNetwork(17, 17, 6).to(device)
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
-            self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.0001,weight_decay=1e-5)
+            self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.0001, weight_decay=1e-5)
             self.memory = ReplayMemory(1500)
 
             weights = np.random.rand(len(ACTIONS))

@@ -12,7 +12,38 @@ Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
 
-game_rewards = {
+def z_normalize_rewards(rewards: dict) -> dict:
+    """
+    Z-normalizes a dictionary of rewards using the standard score (z-score).
+
+    Args:
+        rewards (dict): A dictionary containing rewards.
+
+    Returns:
+        dict: A dictionary of rewards with values normalized using the z-score.
+
+    Example:
+        >>> rewards = {
+        ...     'reward_1': 100,
+        ...     'reward_2': 200,
+        ...     'reward_3': 300
+        ... }
+        >>> z_normalized = z_normalize_rewards(rewards)
+    """
+    # Extract the reward values
+    reward_values = list(rewards.values())
+
+    # Calculate mean and standard deviation
+    mean = np.mean(reward_values)
+    std_dev = np.std(reward_values)
+
+    # Normalize the rewards using z-score
+    normalized_rewards = {key: (value - mean) / std_dev for key, value in rewards.items()}
+
+    return normalized_rewards
+
+
+game_rewards_not_normalized = {
 
         # long term goal
         e.SURVIVED_ROUND: 100,
@@ -60,6 +91,11 @@ game_rewards = {
         # e.BOMB_DROPPED: -0.1,
 
 }
+
+
+#game_rewards = z_normalize_rewards(game_rewards_not_normalized)
+game_rewards = game_rewards_not_normalized
+
 
 # for the empty field scenario
 # game_rewards = {

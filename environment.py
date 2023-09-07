@@ -417,6 +417,27 @@ class BombeRLeWorld(GenericWorld):
                     explosion_map[x, y] = max(explosion_map[x, y], exp.timer - 1)
         state['explosion_map'] = explosion_map
 
+        print("#"*40)
+        print("Field:")
+        print(state["field"])
+        print("")
+        print("")
+        print("Our agent:")
+        print(state["self"])
+        print("")
+        print("")
+        print("Other agents:")
+        print(state["others"])
+        print("")
+        print("")
+        print("Bombs:")
+        print(state["bombs"])
+        print("")
+        print("")
+        print("Coins:")
+        print(state["coins"])
+        print("#"*40)
+
         return state
 
     def poll_and_run_agents(self):
