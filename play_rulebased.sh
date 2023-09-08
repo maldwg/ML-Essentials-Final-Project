@@ -1,0 +1,1 @@
+python main.py play --agents baby_terminator rule_based_agent rule_based_agent rule_based_agent

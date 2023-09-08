@@ -93,8 +93,8 @@ game_rewards_not_normalized = {
 }
 
 
-#game_rewards = z_normalize_rewards(game_rewards_not_normalized)
-game_rewards = game_rewards_not_normalized
+game_rewards = z_normalize_rewards(game_rewards_not_normalized)
+#game_rewards = game_rewards_not_normalized
 
 
 # for the empty field scenario

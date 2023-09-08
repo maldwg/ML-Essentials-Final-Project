@@ -1,0 +1,1 @@
+python main.py play --agents baby_terminator random_agent random_agent random_agent
