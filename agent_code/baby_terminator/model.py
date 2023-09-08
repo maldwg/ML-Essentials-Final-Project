@@ -8,7 +8,7 @@ class QNetwork(nn.Module):
         self.stride = 1
         self.padding = 2
 
-        self.conv1 = nn.Conv2d(9, 16, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
         self.dropout1 = nn.Dropout(0.3)
         self.conv2 = nn.Conv2d(16, 32, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
         self.dropout2 = nn.Dropout(0.3)

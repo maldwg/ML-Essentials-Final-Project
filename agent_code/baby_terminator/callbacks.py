@@ -136,97 +136,59 @@ def state_to_features(self, game_state: dict) -> np.array:
     if game_state is None:
         return None
     
-    agent_x, agent_y = game_state["self"][-1]
-
-
     field = game_state['field'].astype(np.float32)
     field[field == 1.] = 11.
 
-    agent_field = np.zeros_like(field)
-    agent_field[agent_x, agent_y] = 8.
+    # The RGB map should contain:  
+    # w = wall, e = empty, c = crate, a = agent, oa = other agents, b = bombs, co = coins
+    # Define a mapping for the values: red, black and brown
+    value_to_color = {-1: [255, 0, 0], 0: [0, 0, 0], 1: [210, 105, 30]}
+
+    # Get the height and width of the original array
+    height, width = game_state["field"].shape
+
+    # Create a new array with 3 channels and the specified shape
+    rgb_map = np.zeros((3, height, width), dtype=np.uint8)
+
+    # Iterate through the original array and fill the new array with corresponding colors
+    for i in range(height):
+        for j in range(width):
+            rgb_map[:, i, j] = value_to_color[game_state["field"][i, j]]
+
+    agent_x, agent_y = game_state["self"][-1]
+    # Add a agent at the specified coordinates with the color [1, 0, 255] = blue
+    rgb_map[:, agent_x, agent_y] = [1, 0, 255]
+
+    # Add other agents at the specified coordinates with the color [249, 0, 249] = pink
     for _, _, _, (x, y) in game_state['others']:
-        agent_field[x, y] = 7.
+        rgb_map[:, x, y] = [249, 0, 249]
 
-    coin_map = np.copy(field)
+    # Add coins with the color [255, 255, 0] = yellow
     for (x, y) in game_state['coins']:
-        coin_map[x, y] = 6.
+        rgb_map[:, x, y] = [255, 255, 0]
 
-    # Threat Map
-    # fuze explosion and threat_maps 
-    threat_map = np.zeros_like(field)
-    for ((x, y), t) in game_state['bombs']: 
-        for dx in range(-3, 4):
-            for dy in range(-3, 4):
-                if inPlayArea(field, x+dx, y+dy) and (dx*dy == 0 and field[x+dx, y+dy] != 9):
-                    threat_map[x+dx, y+dy] = 1/(t + 1) * 10
-    threat_map += game_state['explosion_map'].astype(np.float32) * 20
+    # Add not exploded bombs with the color [0, 255, 0] = green and exploding bombs with explosion zone [0, 255, 222] = türkis
+    for ((x, y), t) in game_state['bombs']:
+        if t > 0:
+            rgb_map[:, x, y] = [0, 255, 0]
+        else:
+            for dx in range(-3, 4):
+                for dy in range(-3, 4): 
+                    if inPlayArea(field, x+dx, y+dy) and (dx*dy == 0 and field[x+dx, y+dy] != 9):
+                        rgb_map[:, x+dx, y+dy] = [0, 255, 222]
 
-    # Distance Map to next coin
-    coin_distance_map = np.copy(field)
-    paths = []
-    for i, (x, y) in enumerate(game_state['coins']):
-        path = astar(start=(agent_x, agent_y), goal=(x, y), field=game_state["field"])
-        paths.append(path)
-        # length of path -1 because the first element is always the current position
-        coin_distance_map[x, y] = len(path) - 1 if path != None else 1000
-    # Quorum Map that indicates in which direction to go
-    # each coin has a vote for this
-    coin_direction_map = np.copy(field)
-    number_of_coins = len(game_state["coins"])
-    for path  in paths:
-        if path == None:
-            continue
-        for x, y in path:
-            # don't vote if the position is the position of the agent
-            if (x, y) != (agent_x, agent_y):
-                # each coin has a vote of 1/n to minimize values
-                coin_direction_map[x, y] += 1 / number_of_coins
-    
-    # Distance to next opponent
-    enemy_distance_map = np.copy(field)
-    paths = []
-    for opponent in game_state['others']:
-        x, y  = opponent[-1]
-        path = astar(start=(agent_x, agent_y), goal=(x, y), field=game_state["field"])
-        paths.append(path)
-        # length of path -1 because the first element is always the current position
-        # chances are that crates block the way, then assign 1000 as value
+    # # Assuming new_array is the RGB image
+    # import matplotlib.pyplot as plt
+    # plt.imshow(rgb_map.transpose(1, 2, 0))  # Transpose to (height, width, channels) for display
+    # plt.axis('off')  # Turn off axis labels
+    # plt.show()
 
-        enemy_distance_map[x, y] = len(path) - 1 if path != None else 1000
-    enemy_direction_map = np.copy(field)
-    number_of_enemies = len(game_state["others"])
-    for path  in paths:
-        if path == None:
-            continue
-        for x, y in path:
-            # don't vote if the position is the position of the agent
-            if (x, y) != (agent_x, agent_y):
-                # each coin has a vote of 1/n to minimize values
-                enemy_direction_map[x, y] += 1 / number_of_enemies
+    # Convert the NumPy array to a torch tensor
+    features_tensor = torch.from_numpy(rgb_map).float()
 
-    # Dead Ends
-    dead_ends = np.copy(field)
-    for x in range(1, field.shape[0]-1):
-        for y in range(1, field.shape[1]-1):
-            # if cell is empty
-            if field[x, y] == 10:  
-                free_neighs = sum([field[x-1, y] == 0, field[x+1, y] == 0, field[x, y-1] == 0, field[x, y+1] == 0])
-                if free_neighs == 1:
-                    dead_ends[x, y] = 1
-
-    # Threat from Enemies (Heatmap style)
-    threat_map_enemies = np.copy(field)
-    for _, _, _, (ex, ey) in game_state['others']:
-        for x in range(field.shape[0]):
-            for y in range(field.shape[1]):
-                threat_map_enemies[x, y] += 1 / (1 + abs(ex - x) + abs(ey - y))
-
-    # Stack all these features into a multi-channel tensor
-    stacked_features = np.stack([agent_field, coin_map, threat_map, coin_distance_map, dead_ends, threat_map_enemies, coin_direction_map, enemy_distance_map, enemy_direction_map], axis=0)
-    
-    # Convert to PyTorch tensor
-    features_tensor = torch.from_numpy(stacked_features).float()
-    features_tensor = min_max_scale(features_tensor)
+    # TODO: Maybe use min_max_scale?
+    # Resize the tensor to have a shape of [3, 17, 17]
+    features_tensor = features_tensor.view(3, 17, 17)
 
     return features_tensor
 
