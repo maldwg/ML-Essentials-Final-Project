@@ -92,9 +92,33 @@ game_rewards_not_normalized = {
 
 }
 
+# game_rewards = {
+#         e.COIN_COLLECTED: 100,
+#         e.KILLED_OPPONENT: 500,
+#         e.MOVED_RIGHT: -1,
+#         e.MOVED_LEFT: -1,
+#         e.MOVED_UP: -1,
+#         e.MOVED_DOWN: -1,
+#         e.WAITED: -1,
+#         e.INVALID_ACTION: -10,
+#         e.BOMB_DROPPED: -1,
+#         e.KILLED_SELF: 0,
+#         e.GOT_KILLED: -700,
+        
+#         ad.SCORE_REWARD: 0,
+#         ad.PLACEMENT_REWARD: 0,
+#         ad.UNALLOWED_BOMB: 0,
+#         ad.MOVED_TOWARDS_COIN: 0,
+#         ad.CRATE_IN_EXPLOSION_ZONE: 0,
+#         ad.MOVED_TOWARDS_END_OF_EXPLOSION: 0,
+#         ad.LEFT_POTENTIAL_EXPLOSION_ZONE: 0,
+#         ad.ENTERED_POTENTIAL_EXPLOSION_ZONE: 0,
+#         ad.ATTACKED_ENEMY: 0,
+#     }
 
-game_rewards = z_normalize_rewards(game_rewards_not_normalized)
-#game_rewards = game_rewards_not_normalized
+
+#game_rewards = z_normalize_rewards(game_rewards_not_normalized)
+game_rewards = game_rewards_not_normalized
 
 
 # for the empty field scenario

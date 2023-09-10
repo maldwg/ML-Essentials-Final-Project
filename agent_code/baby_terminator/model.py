@@ -40,26 +40,15 @@ class FullyConnectedQNetwork(nn.Module):
         super(FullyConnectedQNetwork, self).__init__()
         
         # Define the size of the hidden layers
-        hidden_1 = 512
-        hidden_2 = 256
-        hidden_3 = 128
+        hidden_1 = 60
+        output_size = 6
         
         # Fully connected layers
         self.fc1 = nn.Linear(input_size, hidden_1)
-        self.fc2 = nn.Linear(hidden_1, hidden_2)
-        self.fc3 = nn.Linear(hidden_2, hidden_3)
-        self.fc4 = nn.Linear(hidden_3, outputs)
-        
-        # Dropout for regularization
-        self.dropout = nn.Dropout(0.5)
+        self.fc2 = nn.Linear(hidden_1, output_size)
 
     def forward(self, x):
         x = x.view(x.size(0), -1)  # Flatten the input
         x = F.relu(self.fc1(x))
-        x = self.dropout(x)
-        x = F.relu(self.fc2(x))
-        x = self.dropout(x)
-        x = F.relu(self.fc3(x))
-        x = self.dropout(x)
-        x = self.fc4(x)
+        x = self.fc2(x)
         return x
