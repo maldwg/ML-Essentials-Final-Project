@@ -90,7 +90,7 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             self.logger.info(f"EXPLOSION ZONE LEFT: {in_new_explosion_zone} < {in_old_explosion_zone}")
             custom_events.append("LEFT_POTENTIAL_EXPLOSION_ZONE")
             # set to inf since now the shortest path is not available anymore since we are not in an explosion radius
-            self.memory.shortest_path_out_of_explosion_zone = float("inf")
+            self.memory.shortest_paths_out_of_explosion = []
 
     return custom_events
 

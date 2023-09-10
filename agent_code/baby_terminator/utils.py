@@ -46,7 +46,7 @@ game_rewards = {
         # ad.PATH_SHORTENED_TO_OBJECTIVE: 10,
 
         # bomb related goals
-        c.MOVED_TOWARDS_END_OF_EXPLOSION: 7.5,
+        c.MOVED_TOWARDS_END_OF_EXPLOSION: 2.5,
         c.LEFT_POTENTIAL_EXPLOSION_ZONE: 10,
         c.ENTERED_POTENTIAL_EXPLOSION_ZONE: -5,
         c.ATTACKED_ENEMY: 20,
