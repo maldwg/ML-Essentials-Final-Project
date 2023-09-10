@@ -1,6 +1,7 @@
 import pickle
 from matplotlib.pylab import plt
 import numpy as np
+import math
 import torch
 import gzip
 import os
@@ -8,6 +9,39 @@ import os
 def create_directory_if_not_exists(directory_path):
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
+
+def round_to_nearest_multiple(number):
+    """
+    Round a number to the nearest multiple of 10, 100, 1000, etc.
+
+    Args:
+        number (int): The number to be rounded.
+
+    Returns:
+        int: The rounded number.
+
+    If the input number is less than 10, it remains unchanged.
+
+    Examples:
+        >>> round_to_nearest_multiple(12)
+        10
+        >>> round_to_nearest_multiple(235)
+        240
+        >>> round_to_nearest_multiple(2348)
+        2400
+        >>> round_to_nearest_multiple(27)
+        30
+        >>> round_to_nearest_multiple(2735)
+        2700
+        >>> round_to_nearest_multiple(9859)
+        9900
+    """
+    if number < 10:
+        return number  # Numbers less than 10 remain unchanged
+
+    order_of_magnitude = int((10 ** (int(math.log10(number)))) / 10)
+    rounded_number = round(number / order_of_magnitude) * order_of_magnitude
+    return rounded_number
 
 AGENT_NAME = "baby_terminator"
 
@@ -34,6 +68,16 @@ for batch_q_value in q_value_after_episode:
         mean_q_value_after_episode = torch.mean(batch_q_value).item()
         mean_q_values_after_episode.append(mean_q_value_after_episode)
 
+rounded_max_x = round_to_nearest_multiple(len(mean_q_values_after_episode))
+tick_interval = int(rounded_max_x / 5)
+if tick_interval == 0:
+    tick_interval = 1
+
+if rounded_max_x < len(mean_q_values_after_episode): 
+    stop_x_tick = rounded_max_x + tick_interval + 1
+else:
+    stop_x_tick = rounded_max_x + 1
+
 # Generate a sequence of integers to represent the epoch numbers
 epochs = range(1, len(mean_q_values_after_episode) + 1)
 plt.plot(epochs, mean_q_values_after_episode, label='Mean Q Value after each episode')
@@ -42,10 +86,9 @@ plt.plot(epochs, mean_q_values_after_episode, label='Mean Q Value after each epi
 plt.title('Q Value after Episodes')
 plt.xlabel('Episodes')
 plt.ylabel('Q Value')
- 
+
 # Set the tick locations
-tick_distance = int(len(mean_q_values_after_episode) / 5)
-plt.xticks(np.arange(0, len(mean_q_values_after_episode) + 1, tick_distance))
+plt.xticks(np.arange(0, stop_x_tick, tick_interval))
  
 # Display the plot and safe
 plt.legend(loc='best')
@@ -70,7 +113,7 @@ plt.xlabel('Episodes')
 plt.ylabel('Loss')
 plt.plot(epochs, mean_losses_after_episode, label='Mean Loss after each episode')
 # Set the tick locations
-plt.xticks(np.arange(0, len(mean_q_values_after_episode) + 1, tick_distance))
+plt.xticks(np.arange(0, stop_x_tick, tick_interval))
 
 # Display the plot
 plt.legend(loc='best')
@@ -96,13 +139,24 @@ plot_weights(policy_net)
 ########################################################
 rewards = memory.rewards_after_round
 rounds = [ x for x in range(1, len(rewards) + 1)]
+
+rounded_max_x = round_to_nearest_multiple(len(rewards))
+tick_interval = int(rounded_max_x / 5)
+if tick_interval == 0:
+    tick_interval = 1
+
+if rounded_max_x < len(mean_q_values_after_episode): 
+    stop_x_tick = rounded_max_x + tick_interval + 1
+else:
+    stop_x_tick = rounded_max_x + 1
+
 plt.title('Overall reward after Round')
 plt.xlabel('Round')
 plt.ylabel('Reward')
 print(f"Length of overall trained rounds: {len(rewards)}")
 plt.plot(rounds, rewards, label='Reward of round')
 # Set the tick locations
-plt.xticks(np.arange(0, len(mean_q_values_after_episode) + 1, tick_distance))
+plt.xticks(np.arange(0, stop_x_tick, tick_interval))
 
 # Display the plot
 plt.legend(loc='best')
