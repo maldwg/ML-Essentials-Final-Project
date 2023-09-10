@@ -6,9 +6,10 @@ import gzip
 from typing import List
 
 import numpy as np
+from agent_code.baby_terminator.custom_event_handling import custom_game_events
 
 import events as e
-from . import additional_events as ad
+from . import custom_events as ad
 from .callbacks import state_to_features
 
 from .model import QNetwork
@@ -88,9 +89,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         # needs to be before optimize otherwise the events occured are not taken into account
         increment_event_counts(self, events)
 
-        optimize_model(self)
-
-        
+        optimize_model(self)     
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -119,13 +118,16 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.logger.info(f"Overall reward at end of round: {reward}")
     self.memory.rewards_of_round.append(reward)
     self.memory.rewards_after_round.append(sum(self.memory.rewards_of_round))
-    self.logger.info(f"Rewards of the round:{self.memory.rewards_of_round}")
-    self.logger.info(f"Complete reward in round was {sum(self.memory.rewards_of_round)}")
     # reset memory for next round
     self.memory.rewards_of_round = []
 
     reward = torch.tensor(reward, device=device)
     self.memory.push(state, action, None, reward)
+    self.logger.info(f"Round ended --> newest shortest path was reset")
+    self.memory.shortest_paths_out_of_explosion = []
+    self.memory.shortest_paths_to_coin = []
+    self.memory.shortest_paths_to_enemy = []
+    self.memory.shortest_paths_to_crate = []
     optimize_model(self)
 
 
@@ -154,172 +156,13 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     # increment_event_counts(self, events)
 
-def custom_game_events(self, old_game_state, new_game_state, events, self_action):
-    custom_events = []
-    valid_move = e.INVALID_ACTION not in events
-    in_old_explosion_zone = False
-    in_new_explosion_zone = False
-    # init with high value so if no bomb was in old state but one is discovered in new one, there is no penalty since 0 would be < distance to bomb
-    old_distance_to_bomb = 1000
-    new_distance_to_bomb = 1000
-    # init with high value as safe space is set to ~3
-    closest_bomb = 1000
-    safe_distance = 2
-    # init with high value so if no coin was in old state but one is discovered in new one, there is no penalty since 0 would be < distance to coin
-    old_distance_to_coin = 1000
-    new_distance_to_coin = 1000
-    old_distance_to_enemy = 1000
-    new_distance_to_enemy = 1000
-
-    # if new is none something went wrong
-    if new_game_state is None:
-        return custom_events
-
-    agent_x, agent_y = new_game_state["self"][-1]
-
-    # append only the events that can also be calculated for the lats step
-    if e.BOMB_EXPLODED in events and not e.KILLED_SELF in events:
-        custom_events.append(ad.NOT_KILLED_BY_OWN_BOMB)
-
-
-    # if old is none --> Last round occured
-    # append all events that can be calculated in the steps before the last one
-    if old_game_state is not None:
-
-        if self_action == "BOMB" and old_game_state["self"][2] == False:
-            custom_events.append(ad.UNALLOWED_BOMB)
-
-        old_agent_pos = old_game_state["self"][-1]
-        new_agent_pos = new_game_state["self"][-1]
-        agent_moved = old_agent_pos != new_agent_pos
-
-        # calculate the astar distances to the next coin
-        path_to_coins = []
-        for x, y in new_game_state["coins"]:
-            path_to_coins.append(astar(start=(agent_x, agent_y), goal=(x, y), field=new_game_state["field"]))
-
-        # filter all nones (paths that are blocked)
-        path_to_coins = list(filter(lambda item: item is not None, path_to_coins))
-        self.logger.info(f"path to coins: {path_to_coins}")
-
-        # check if there is a coin reachable
-        # TODO: let the bonus stack so that on ecah following step the bonus gets bigger
-        if len(path_to_coins):
-            # len - 1 because the starting point is always included in the path!
-            shortest_path_to_coin = len(min(path_to_coins, key=len)) - 1
-            self.logger.info(f"shortest path to coin: {shortest_path_to_coin}, {min(path_to_coins, key=len)[1:]}")
-
-            self.logger.info(f"memory: {self.memory.shortest_path_to_coin}, new: {shortest_path_to_coin}")
-
-            # made a correct step
-            if self.memory.shortest_path_to_coin > shortest_path_to_coin:
-                if self.memory.shortest_path_to_coin == float("inf"):
-                    # set difference to 1, this will only trigger after the game start
-                    difference = 0
-                else:
-                    difference = self.memory.shortest_path_to_coin - shortest_path_to_coin
-                self.memory.shortest_path_to_coin=min(self.memory.shortest_path_to_coin, shortest_path_to_coin)
-                self.logger.info(f"new value {min(self.memory.shortest_path_to_coin, shortest_path_to_coin)}")
-                self.logger.info(f"difference {difference}")
-                custom_events.extend(difference * [ad.MOVED_TOWARDS_COIN ])
-            else: 
-                #after wrong step update new shortest distance
-                self.logger.info(f"set memory value to the now new shortest distance after wrong step")
-                self.memory.shortest_path_to_coin = shortest_path_to_coin
-            # reset the distance to coin after agent grabbed one
-            # needs also to be set at the end of an round otherwise the next round might be biased
-            if e.COIN_COLLECTED in events:
-                # since he moved to the coin drop the event too
-                custom_events.append(ad.MOVED_TOWARDS_COIN)
-                self.logger.info(f"collected coin --> newest shortest path: {shortest_path_to_coin}")
-                self.memory.shortest_path_to_coin = shortest_path_to_coin
-
-        # calculate astar to the shortest way out of explosion zone
-        paths_out_of_explosions = []
-        potential_explosions = []
-        for (x,y), t in new_game_state["bombs"]:
-            potential_explosions.extend(explosion_zones(new_game_state["field"], (x,y)))
-
-        if (agent_x, agent_y) in potential_explosions:
-            self.logger.info("agent in explosion zone")
-            neighbour_tiles_out_of_explosion=tiles_beneath_explosion(self, new_game_state, potential_explosions)
-
-            for x,y in neighbour_tiles_out_of_explosion:
-                paths_out_of_explosions.append(astar(start=(agent_x, agent_y), goal=(x, y), field=new_game_state["field"]))
-            # filter all nones (paths that are blocked)
-            paths_out_of_explosions = list(filter(lambda item: item is not None, paths_out_of_explosions))
-            self.logger.info(f"paths out of explosion: {paths_out_of_explosions}")
-
-            if len(paths_out_of_explosions):
-                # min -1 because astar path contains start position
-                shortest_path_out_of_explosion_zone = len(min(paths_out_of_explosions, key=len)) - 1
-                self.logger.info(f"shortest path out of explosion: {shortest_path_out_of_explosion_zone}")
-                self.logger.info(min(paths_out_of_explosions, key=len))
-
-                if self.memory.shortest_path_out_of_explosion_zone > shortest_path_out_of_explosion_zone:
-                    # agent was not in an explosion zone last turn
-                    if self.memory.shortest_path_out_of_explosion_zone == float("inf"):
-                        # in zone by own bomb
-                        if e.BOMB_DROPPED in events:
-                        # set to 0 to not get the event when dropping the bomb
-                            difference = 0
-                        # in zone by other bomb
-                        else:
-                            difference = shortest_path_out_of_explosion_zone
-                    else: 
-                        difference = self.memory.shortest_path_out_of_explosion_zone - shortest_path_out_of_explosion_zone
-                    self.memory.shortest_path_out_of_explosion_zone=min(self.memory.shortest_path_out_of_explosion_zone, shortest_path_out_of_explosion_zone)
-                    custom_events.extend( difference * [ad.MOVED_TOWARDS_END_OF_EXPLOSION ])  
-                else: 
-                    self.logger.info("update shortest path out of zone after wrong step")
-                    self.memory.shortest_path_out_of_explosion_zone = shortest_path_out_of_explosion_zone
-        else:
-            self.logger.info("agent not in explosion zone of bombs")
-
-        # check if bomb was placed so that enemy can be hit
-        # check if layed bomb
-        if e.BOMB_DROPPED in events:
-            # check if enemy in explosion radius
-            potential_explosions = explosion_zones(new_game_state["field"], new_game_state["self"][-1])
-            for agent in new_game_state["others"]:
-                if agent[-1] in potential_explosions:
-                    self.logger.info("attacked enemy")
-                    custom_events.append(ad.ATTACKED_ENEMY)
-            for (x, y) in potential_explosions:
-                if new_game_state["field"][x, y] == 1:
-                    self.logger.info("crate in explosion zone")
-                    custom_events.append(ad.CRATE_IN_EXPLOSION_ZONE)
-
-        # check if there are bombs on the filed, if not skip calculations
-        if old_game_state["bombs"]:
-            in_old_explosion_zone = any([old_agent_pos in explosion_zones(old_game_state["field"], bomb_pos) for bomb_pos, _ in old_game_state["bombs"]])
-
-        if new_game_state["bombs"]:
-            in_new_explosion_zone = any([new_agent_pos in explosion_zones(new_game_state["field"], bomb_pos) for bomb_pos, _ in new_game_state["bombs"]])
-
-        if not in_old_explosion_zone and in_new_explosion_zone and agent_moved:
-            self.logger.info(f"EXPLOSION ZONE ENTERED: {in_new_explosion_zone} < {in_old_explosion_zone}")
-            custom_events.append("ENTERED_POTENTIAL_EXPLOSION_ZONE")
-        elif in_old_explosion_zone and not in_new_explosion_zone and agent_moved:
-            self.logger.info(f"EXPLOSION ZONE LEFT: {in_new_explosion_zone} < {in_old_explosion_zone}")
-            custom_events.append("LEFT_POTENTIAL_EXPLOSION_ZONE")
-            # set to inf since now the shortest path is not available anymore since we are not in an explosion radius
-            self.memory.shortest_path_out_of_explosion_zone = float("inf")
-
-    # place it here because otherwise it wont trigger since the if old_gamestate not none would prevent it
-    if e.GOT_KILLED in events or e.SURVIVED_ROUND in events:
-        self.logger.info(f"Died in game --> newest shortest path was reset")
-        self.memory.shortest_path_to_coin = float("inf") 
-        self.memory.shortest_path_out_of_explosion_zone = float("inf")
-    return custom_events
-
 def after_game_rewards(self, last_game_state):
     self.logger.info("Add end of round rewards")
     score = last_game_state["self"][1]
     scores = [ agent[1] for agent in last_game_state["others"] ]
     scores.append(score)
     placement = np.argsort(scores)[-1]
-    self.logger.info(f"Reached {placement + 1} place with score of {score}, all scores: {scores}")
+    self.logger.info(f"Reached {placement + 1} place")
     if placement + 1 < 3: 
         placement_reward = (1 / (placement + 1) * self.memory.game_rewards[ad.PLACEMENT_REWARD]) 
     else: 

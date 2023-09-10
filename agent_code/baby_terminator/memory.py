@@ -22,10 +22,10 @@ class ReplayMemory:
         # set all rewarded events to 0 
         self.rewarded_event_counts = dict.fromkeys(game_rewards, 0)
         self.game_rewards = game_rewards
-        self.shortest_path_to_coin = float("inf")
-        self.shortest_path_to_enemy = float("inf")
-        self.shortest_path_to_crate = float("inf")
-        self.shortest_path_out_of_explosion_zone = float("inf")
+        self.shortest_paths_to_coin = []
+        self.shortest_paths_to_enemy = []
+        self.shortest_paths_to_crate = []
+        self.shortest_paths_out_of_explosion = []
         self.rewards_after_round = []
         self.rewards_of_round = []
         self.steps_since_last_update = 0
