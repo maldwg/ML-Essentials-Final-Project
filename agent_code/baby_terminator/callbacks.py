@@ -80,8 +80,8 @@ def act(self, game_state: dict) -> str:
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
         EPS_START = 0.9
-        EPS_END = 0.1
-        EPS_DECAY = 250
+        EPS_END = 0.05
+        EPS_DECAY = 300
         sample = random.random()
         # let the exploration decay but not below 15 %
         eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)
@@ -193,7 +193,7 @@ def state_to_features(self, game_state: dict) -> np.array:
     return features_tensor
 
 
-def normalize_data(data):
+def channelwise_normalize_data(data):
     """
     Normalizes the data using Z-score normalization to not rely on batchnorm
     Args:
@@ -201,8 +201,8 @@ def normalize_data(data):
     Returns:
     - normalized_data (numpy.ndarray or torch.Tensor): Normalized data.
     """
-    mean = data.mean()
-    std = data.std()
+    mean = data.mean(dim=(1, 2), keepdim=True)
+    std = data.std(dim=(1, 2), keepdim=True)
     
     normalized_data = (data - mean) / (std + 1e-7)  # Adding a small value to prevent division by zero
     

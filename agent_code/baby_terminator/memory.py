@@ -22,10 +22,10 @@ class ReplayMemory:
         # set all rewarded events to 0 
         self.rewarded_event_counts = dict.fromkeys(game_rewards, 0)
         self.game_rewards = game_rewards
-        self.shortest_path_to_coin = float("inf")
-        self.shortest_path_to_enemy = float("inf")
-        self.shortest_path_to_crate = float("inf")
-        self.shortest_path_out_of_explosion_zone = float("inf")
+        self.shortest_paths_to_coin = []
+        self.shortest_paths_to_enemy = []
+        self.shortest_paths_to_crate = []
+        self.shortest_paths_out_of_explosion = []
         self.rewards_after_round = []
         self.rewards_of_round = []
         self.steps_since_last_update = 0
@@ -33,16 +33,14 @@ class ReplayMemory:
 
     def push(self, *args):
         """Saves a transition."""
-        if len(self.memory) <= self.capacity:
+        if len(self.memory) < self.capacity:
             self.memory.append(None)
         self.memory[self.position] = Transition(*args)
         self.position = (self.position + 1) % self.capacity
 
     def sample(self, batch_size):
         # Exclude None values from sampled data
-        non_none_values = [item for item in self.memory if item is not None]
-
-        return random.sample(non_none_values, batch_size)
+        return random.sample(self.memory, batch_size)
 
     def __len__(self):
         return len(self.memory)

@@ -18,7 +18,7 @@ Help()
 
 AGENT=baby_terminator
 N_ROUNDS=100
-SCENARIO=classic
+SCENARIO=coin-heaven
 CONTINUE=false
 
 while getopts a:n:s:ch flag; do 
