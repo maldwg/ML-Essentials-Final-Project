@@ -113,11 +113,12 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     action = torch.tensor([ACTIONS.index(last_action)], device=device)
     reward = reward_from_events(self, events)
     # only give end of round rewards if the round was sufficiently long
-    if last_game_state['step'] > 30:
+    if last_game_state['step'] > 100:
         reward += after_game_rewards(self, last_game_state)
-    self.logger.info(f"Overall reward at end of round: {reward}")
     self.memory.rewards_of_round.append(reward)
-    self.memory.rewards_after_round.append(sum(self.memory.rewards_of_round))
+    overall_reward = sum(self.memory.rewards_of_round)
+    self.logger.info(f"Overall reward at end of round: {overall_reward}")
+    self.memory.rewards_after_round.append(overall_reward)
     # reset memory for next round
     self.memory.rewards_of_round = []
 

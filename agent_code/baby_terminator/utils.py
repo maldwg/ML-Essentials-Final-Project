@@ -57,7 +57,7 @@ game_rewards = {
         # e.MOVED_RIGHT: -0.1,
         # e.MOVED_UP: -0.1,
         
-        e.WAITED: -2,
+        e.WAITED: -10,
         
         # Only give points if enemy is attacked or crate is in explosion zone
         e.BOMB_DROPPED: -10,
