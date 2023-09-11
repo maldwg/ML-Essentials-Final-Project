@@ -73,7 +73,7 @@ game_rewards_not_normalized = {
         c.CRATE_IN_EXPLOSION_ZONE: 15,
         c.NOT_KILLED_BY_OWN_BOMB: 10,
         #TODO: event for trapping himself with bombs
-        # c.GUARANTEED_SUICIDE: -100,
+        c.GUARANTEED_SUICIDE: -100,
 
         # bomb related goals
         c.MOVED_TOWARDS_END_OF_EXPLOSION: 5,
@@ -278,7 +278,7 @@ def increment_event_counts(self, events):
 
 
 # Helper function to check if a position is blocked by walls or crates
-def is_blocked(position, game_state):
+def is_blocked(position, field):
     """
     Determines if a given position is blocked by walls or crates in the game state.
 
@@ -290,7 +290,7 @@ def is_blocked(position, game_state):
         bool: True if the position is blocked, False otherwise.
     """
     x,y  = position
-    return game_state['field'][x, y] == -1 or game_state['field'][x, y] == 1
+    return field[x, y] == -1 or field[x, y] == 1
 
 
 def is_action_valid(self, state, action):
