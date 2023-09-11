@@ -2,6 +2,7 @@ import numpy as np
 from agent_code.baby_terminator.path_finding import astar
 import events as e
 from . import custom_events as c
+from utils import is_blocked
 
 
 def custom_game_events(self, old_game_state, new_game_state, events, self_action):
