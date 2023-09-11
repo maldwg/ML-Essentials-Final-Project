@@ -54,7 +54,7 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
         potential_explosions = get_potential_explosions(new_game_state)
         # calculate astar to the shortest way out of explosion zone
         if (agent_x, agent_y) in potential_explosions:
-            self.logger.info("agent in explosion zone")
+            # self.logger.info("agent in explosion zone")
             if moved_towards_end_of_explosion(self, old_game_state, new_game_state):
                 events.append(c.MOVED_TOWARDS_END_OF_EXPLOSION)
             update_paths_out_of_explosion(self, new_game_state)
@@ -84,10 +84,10 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             in_new_explosion_zone = any([new_agent_pos in explosion_zones(new_game_state["field"], bomb_pos) for bomb_pos, _ in new_game_state["bombs"]])
 
         if not in_old_explosion_zone and in_new_explosion_zone and agent_moved:
-            self.logger.info(f"EXPLOSION ZONE ENTERED: {in_new_explosion_zone} < {in_old_explosion_zone}")
+            # self.logger.info(f"EXPLOSION ZONE ENTERED: {in_new_explosion_zone} < {in_old_explosion_zone}")
             custom_events.append("ENTERED_POTENTIAL_EXPLOSION_ZONE")
         elif in_old_explosion_zone and not in_new_explosion_zone and agent_moved:
-            self.logger.info(f"EXPLOSION ZONE LEFT: {in_new_explosion_zone} < {in_old_explosion_zone}")
+            # self.logger.info(f"EXPLOSION ZONE LEFT: {in_new_explosion_zone} < {in_old_explosion_zone}")
             custom_events.append("LEFT_POTENTIAL_EXPLOSION_ZONE")
             # set to inf since now the shortest path is not available anymore since we are not in an explosion radius
             self.memory.shortest_paths_out_of_explosion = []
@@ -135,7 +135,7 @@ def explosion_zones(field, bomb_pos):
 
 def update_paths_out_of_explosion(self, new_game_state):
     paths_out_of_explosion = get_all_paths_out_of_explosions(self, new_game_state)
-    self.logger.info(f"paths out of explosion: {paths_out_of_explosion}")
+    # self.logger.info(f"paths out of explosion: {paths_out_of_explosion}")
 
     if len(paths_out_of_explosion):
         # min -1 because astar path contains start position
@@ -154,7 +154,7 @@ def update_paths_out_of_explosion(self, new_game_state):
 
 def update_coin_paths(self, new_game_state, events):
     paths_to_coins = get_all_paths_to_coins(new_game_state)
-    self.logger.info(f"paths to coins: {paths_to_coins}")
+    # self.logger.info(f"paths to coins: {paths_to_coins}")
     # check if there is a coin reachable
     if len(paths_to_coins):
         # len - 1 because the starting point is always included in the path!

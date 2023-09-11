@@ -21,7 +21,7 @@ class ReplayMemory:
         self.steps_done = 0
         # set all rewarded events to 0 
         self.rewarded_event_counts = dict.fromkeys(game_rewards, 0)
-        self.game_rewards = game_rewards
+        # self.game_rewards = game_rewards
         self.shortest_paths_to_coin = []
         self.shortest_paths_to_enemy = []
         self.shortest_paths_to_crate = []

@@ -53,8 +53,8 @@ game_rewards_not_normalized = {
         # killing goals
         e.KILLED_OPPONENT: 75,
         e.OPPONENT_ELIMINATED: -2,        
-        e.KILLED_SELF: -100,
-        e.GOT_KILLED: -50,
+        e.KILLED_SELF: -75,
+        e.GOT_KILLED: -25,
 
         # correct actions
         e.INVALID_ACTION: -10,
@@ -64,29 +64,28 @@ game_rewards_not_normalized = {
         # coin goals
         e.COIN_FOUND: 10,
         e.COIN_COLLECTED: 25,
-        c.MOVED_TOWARDS_COIN: 7.5,
+        c.MOVED_TOWARDS_COIN: 2.5,
 
         # crate goals
         # crate destroyed im verhältnis zu coin found ändern, ggf. mehr für coin found als crate destroyed
         # little bit smaller since it is delayed --> adds up with the bomb_before_crate signal
-        e.CRATE_DESTROYED: 7.5,
-        c.CRATE_IN_EXPLOSION_ZONE: 12.5,
-        # TODO: add shortened path to a coin or enemy ?
-        # TODO: clarify: not explicitily enough
-        # points can be assigned dynamically (old_shortest_path - new_shortest_path) * reward
-        # ad.PATH_SHORTENED_TO_OBJECTIVE: 10,
+        e.CRATE_DESTROYED: 10,
+        c.CRATE_IN_EXPLOSION_ZONE: 15,
+        c.NOT_KILLED_BY_OWN_BOMB: 10,
+        #TODO: event for trapping himself with bombs
+        # c.GUARANTEED_SUICIDE: -100,
 
         # bomb related goals
-        c.MOVED_TOWARDS_END_OF_EXPLOSION: 2.5,
-        c.LEFT_POTENTIAL_EXPLOSION_ZONE: 10,
+        c.MOVED_TOWARDS_END_OF_EXPLOSION: 5,
+        c.LEFT_POTENTIAL_EXPLOSION_ZONE: 20,
         c.ENTERED_POTENTIAL_EXPLOSION_ZONE: -5,
         c.ATTACKED_ENEMY: 20,
 
         # penalize default actions otherwise too many watis and random moves
-        # e.MOVED_DOWN: -0.1,
-        # e.MOVED_LEFT: -0.1,
-        # e.MOVED_RIGHT: -0.1,
-        # e.MOVED_UP: -0.1,
+        e.MOVED_DOWN: -1,
+        e.MOVED_LEFT: -1,
+        e.MOVED_RIGHT: -1,
+        e.MOVED_UP: -1,
         
         e.WAITED: -10,
         
@@ -94,29 +93,53 @@ game_rewards_not_normalized = {
         e.BOMB_DROPPED: -10,
 
 }
-
+# for coin-heaven
 # game_rewards = {
-#         e.COIN_COLLECTED: 100,
-#         e.KILLED_OPPONENT: 500,
-#         e.MOVED_RIGHT: -1,
-#         e.MOVED_LEFT: -1,
-#         e.MOVED_UP: -1,
-#         e.MOVED_DOWN: -1,
-#         e.WAITED: -1,
-#         e.INVALID_ACTION: -10,
-#         e.BOMB_DROPPED: -1,
-#         e.KILLED_SELF: 0,
-#         e.GOT_KILLED: -700,
+
+        # # long term goal
+        # e.SURVIVED_ROUND: 100,
+        # c.SCORE_REWARD: 40,
+        # c.PLACEMENT_REWARD: 200,
+
+        # # killing goals
+        # e.KILLED_OPPONENT: 75,
+        # e.OPPONENT_ELIMINATED: -2,        
+        # e.KILLED_SELF: -100,
+        # e.GOT_KILLED: -50,
+
+        # # correct actions
+        # e.INVALID_ACTION: -10,
+        # # additional penalty when laying 2 bombs in a row
+        # c.UNALLOWED_BOMB: -10,
+
+        # # coin goals
+        # e.COIN_FOUND: 10,
+        # e.COIN_COLLECTED: 25,
+        # c.MOVED_TOWARDS_COIN: 2.5,
+
+        # # crate goals
+        # # crate destroyed im verhältnis zu coin found ändern, ggf. mehr für coin found als crate destroyed
+        # # little bit smaller since it is delayed --> adds up with the bomb_before_crate signal
+        # e.CRATE_DESTROYED: 7.5,
+        # c.CRATE_IN_EXPLOSION_ZONE: 12.5,
+
+        # # bomb related goals
+        # c.MOVED_TOWARDS_END_OF_EXPLOSION: 5,
+        # c.LEFT_POTENTIAL_EXPLOSION_ZONE: 20,
+        # c.ENTERED_POTENTIAL_EXPLOSION_ZONE: -5,
+        # c.ATTACKED_ENEMY: 20,
+
+        # # penalize default actions otherwise too many watis and random moves
+        # e.MOVED_DOWN: -1,
+        # e.MOVED_LEFT: -1,
+        # e.MOVED_RIGHT: -1,
+        # e.MOVED_UP: -1,
         
-#         ad.SCORE_REWARD: 0,
-#         ad.PLACEMENT_REWARD: 0,
-#         ad.UNALLOWED_BOMB: 0,
-#         ad.MOVED_TOWARDS_COIN: 0,
-#         ad.CRATE_IN_EXPLOSION_ZONE: 0,
-#         ad.MOVED_TOWARDS_END_OF_EXPLOSION: 0,
-#         ad.LEFT_POTENTIAL_EXPLOSION_ZONE: 0,
-#         ad.ENTERED_POTENTIAL_EXPLOSION_ZONE: 0,
-#         ad.ATTACKED_ENEMY: 0,
+        # e.WAITED: -10,
+        
+        # # Only give points if enemy is attacked or crate is in explosion zone
+        # e.BOMB_DROPPED: -10,
+
 #     }
 
 
@@ -207,9 +230,21 @@ game_rewards = game_rewards_not_normalized
 # }
 
 
+# deprecated
 def reshape_rewards(self):
+    """
+    Updates the global game rewards based on the frequency of events experienced so far.
+    Rewards are adjusted based on the difference between the average frequency of events
+    and the frequency of each individual event.
+
+    Args:
+        self: The object instance. 
+
+    Returns:
+        None. Updates the global game rewards in-place.
+    """
     self.logger.info("Updating rewards...")
-    # self.logger.info(f"old rewards: {self.memory.game_rewards}")
+    # self.logger.info(f"old rewards: {game_rewards}")
     # sum up all events so far seen
     event_counts = self.memory.rewarded_event_counts
     total_events = functools.reduce(lambda ac,k: ac+event_counts[k], event_counts, 0)
@@ -218,13 +253,24 @@ def reshape_rewards(self):
     average_event_fraction = np.mean(list(event_counts.values()))
     self.logger.info(f"Average occurrence: {average_event_fraction}")
     self.logger.info(f"fractioned event counts {event_counts}")
-    for event in self.memory.game_rewards:
-        bonus = abs(self.memory.game_rewards[event]) * (average_event_fraction - event_counts[event]) 
+    for event in game_rewards:
+        bonus = abs(game_rewards[event]) * (average_event_fraction - event_counts[event]) 
         # self.memory.game_rewards[event] += bonus
-    self.logger.info(f"Updated rewards: { self.memory.game_rewards}")
+    self.logger.info(f"Updated rewards: { game_rewards}")
+
 
 def increment_event_counts(self, events):
-    self.logger.info("Increment count of events in memory")
+    """
+    Increments the count of each event in the memory based on the provided events list.
+
+    Args:
+        self: The object instance.
+        events (list): List of events to be counted.
+
+    Returns:
+        None. Updates the event counts in the memory in-place.
+    """
+    # self.logger.info("Increment count of events in memory")
     for event in events:
         if event in self.memory.rewarded_event_counts:
             self.memory.rewarded_event_counts[event] += 1
@@ -233,5 +279,57 @@ def increment_event_counts(self, events):
 
 # Helper function to check if a position is blocked by walls or crates
 def is_blocked(position, game_state):
+    """
+    Determines if a given position is blocked by walls or crates in the game state.
+
+    Args:
+        position (tuple): A tuple representing the x and y coordinates.
+        game_state (dict): The current game state.
+
+    Returns:
+        bool: True if the position is blocked, False otherwise.
+    """
     x,y  = position
     return game_state['field'][x, y] == -1 or game_state['field'][x, y] == 1
+
+
+def is_action_valid(self, state, action):
+    """
+    Checks if a given action is valid based on the current state of the game.
+    
+    Args:
+        self: The object instance.
+        state (dict): The current game state.
+        action (str): The action to be checked ('UP', 'DOWN', 'RIGHT', 'LEFT', 'WAIT', 'BOMB').
+
+    Returns:
+        bool: True if the action is valid in the current state, False otherwise.
+    """
+    # self.logger.debug("checking if action is valid")
+    field=state["field"]
+
+    bomb_positions = [ pos[0] for pos in state["bombs"] ]
+    enemy_positions = [pos [0] for pos in state["others"] ]
+
+    bomb_allowed=state["self"][2]
+    position = np.array(state["self"][-1])
+
+    action_dict = {
+        "UP": np.array([0, -1]),
+        "DOWN": np.array([0, 1]),
+        "RIGHT": np.array([1, 0]),
+        "LEFT": np.array([-1, 0]),
+        "BOMB": np.array([0, 0]),
+        "WAIT": np.array([0, 0])
+    }
+
+    # check positions
+
+    position += action_dict[action]
+    empty_spot = not (field[position[0], position[1]] in [-1, 1]) and not ((position[0], position[1]) in bomb_positions) and not ((position[0], position[1]) in enemy_positions)
+    valid_bomb_dropped = bomb_allowed if action == "BOMB" else True 
+
+    return empty_spot and valid_bomb_dropped 
+
+
+

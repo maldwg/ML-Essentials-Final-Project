@@ -14,7 +14,7 @@ from .memory import ReplayMemory
 
 import math
 
-from .utils import ACTIONS, device, DIRECTIONS
+from .utils import ACTIONS, device, DIRECTIONS, is_action_valid
 from .path_finding import astar
 
 
@@ -103,6 +103,9 @@ def act(self, game_state: dict) -> str:
         else:
             self.logger.info("Exploration")
             action = np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
+            while not is_action_valid(self, game_state, action):
+                self.logger.info(f"{action} is invalid... choosing again")
+                action = np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
             self.logger.info(f"Choose random action {action}")
             return action
 
