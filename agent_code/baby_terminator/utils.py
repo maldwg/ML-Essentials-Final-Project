@@ -51,10 +51,10 @@ game_rewards_not_normalized = {
         c.PLACEMENT_REWARD: 200,
 
         # killing goals
-        e.KILLED_OPPONENT: 75,
+        e.KILLED_OPPONENT: 150,
         e.OPPONENT_ELIMINATED: -2,        
-        e.KILLED_SELF: -75,
-        e.GOT_KILLED: -25,
+        e.KILLED_SELF: -150,
+        e.GOT_KILLED: -35,
 
         # correct actions
         e.INVALID_ACTION: -10,
@@ -62,7 +62,7 @@ game_rewards_not_normalized = {
         c.UNALLOWED_BOMB: -10,
 
         # coin goals
-        e.COIN_FOUND: 10,
+        e.COIN_FOUND: 15,
         e.COIN_COLLECTED: 25,
         c.MOVED_TOWARDS_COIN: 2.5,
 
@@ -71,15 +71,15 @@ game_rewards_not_normalized = {
         # little bit smaller since it is delayed --> adds up with the bomb_before_crate signal
         e.CRATE_DESTROYED: 10,
         c.CRATE_IN_EXPLOSION_ZONE: 15,
-        c.NOT_KILLED_BY_OWN_BOMB: 10,
+        c.NOT_KILLED_BY_OWN_BOMB: 5,
         #TODO: event for trapping himself with bombs
-        c.GUARANTEED_SUICIDE: -100,
+        c.GUARANTEED_SUICIDE: -200,
 
         # bomb related goals
         c.MOVED_TOWARDS_END_OF_EXPLOSION: 5,
-        c.LEFT_POTENTIAL_EXPLOSION_ZONE: 20,
+        c.LEFT_POTENTIAL_EXPLOSION_ZONE: 10,
         c.ENTERED_POTENTIAL_EXPLOSION_ZONE: -5,
-        c.ATTACKED_ENEMY: 20,
+        c.ATTACKED_ENEMY: 30,
 
         # penalize default actions otherwise too many watis and random moves
         e.MOVED_DOWN: -1,
