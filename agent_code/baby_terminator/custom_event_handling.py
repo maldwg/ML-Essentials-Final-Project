@@ -120,8 +120,6 @@ def agent_trapped_by_explosion(self, field, bomb_position):
             break
         if free_neighbour(self, field, (x - left, y), explosion_tiles):
             return False
-        else:
-            break
     for right in range(1, 4):
         self.logger.info(f"next check right: {(x + right, y)}")
         if field[x + right, y] in [-1, 1]:
@@ -129,8 +127,6 @@ def agent_trapped_by_explosion(self, field, bomb_position):
             break
         if free_neighbour(self, field, (x + right, y), explosion_tiles):
             return False
-        else:
-            break
     for up in range(1, 4):
         self.logger.info(f"next check up: {(x, y - up)}")
         if field[x, y - up] in [-1, 1]:
@@ -138,8 +134,6 @@ def agent_trapped_by_explosion(self, field, bomb_position):
             break
         if free_neighbour(self, field, (x, y - up), explosion_tiles):
             return False
-        else:
-            break
     for down in range(1, 4):
         self.logger.info(f"next check down: {(x, y + down)}")
         if field[x, y + down] in [-1, 1]:
@@ -147,8 +141,6 @@ def agent_trapped_by_explosion(self, field, bomb_position):
             break
         if free_neighbour(self, field, (x, y + down), explosion_tiles):
             return False
-        else:
-            break
     self.logger.info("Did not find a free neighbouring tile")
     return True
 
@@ -164,7 +156,7 @@ def free_neighbour(self, field, position, explosion_tiles):
                 if field[x+dx, y+dy] == 0 and (x+dx, y+dy) not in explosion_tiles:
                     self.logger.info(f"Found a free neighbour {(x+dx, y+dy)}")
                     return True
-    self.logger.info(f"Did not find a free neighbour for tile {(x, y)}")
+    self.logger.info(f"Did not find a free neighbour that is not in the explosion radius for tile {(x, y)}")
     return False 
 
 def free_tiles_beneath_explosion(self, field, potential_explosions):
