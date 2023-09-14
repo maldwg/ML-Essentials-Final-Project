@@ -58,7 +58,7 @@ print(f"Memmory length: {len(memory.memory)}")
 invalid_counter = 0
 for step in memory.memory:
     # reward is the size ov invalid step (we dont know for sure this is invalid though)
-    if step[-1] == -10:
+    if step[-1] == -12.5:
         invalid_counter += 1
 print(f"invalid step percentage: { 100 * (invalid_counter / len(memory.memory))} %")
 

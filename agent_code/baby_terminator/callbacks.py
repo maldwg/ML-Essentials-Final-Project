@@ -80,7 +80,7 @@ def act(self, game_state: dict) -> str:
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
         EPS_START = 0.9
-        EPS_END = 0.05
+        EPS_END = 0.1
         EPS_DECAY = 300
         sample = random.random()
         eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)

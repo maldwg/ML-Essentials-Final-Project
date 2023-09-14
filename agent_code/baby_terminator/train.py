@@ -139,13 +139,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     # increment episode count
     self.number_of_executed_episodes += 1
 
-    # Store the model
-    if self.number_of_executed_episodes == last_game_state["number_rounds"]:
-        gc.disable()
-        with gzip.open('my-saved-model.pkl.gz', 'wb') as f:
-            pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], f,  protocol=pickle.HIGHEST_PROTOCOL)
-            # self.logger.debug("Dumped pickle")
-        gc.enable()
+
             
     # with open("my-saved-model.pt", "wb") as file:
     #     pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], file)
@@ -156,6 +150,14 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.memory.loss_after_episode.append(self.loss)
 
     # increment_event_counts(self, events)
+
+    # Store the model
+    if self.number_of_executed_episodes == last_game_state["number_rounds"]:
+        gc.disable()
+        with gzip.open('my-saved-model.pkl.gz', 'wb') as f:
+            pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], f,  protocol=pickle.HIGHEST_PROTOCOL)
+            # self.logger.debug("Dumped pickle")
+        gc.enable()
 
 def after_game_rewards(self, last_game_state):
     self.logger.info("Add end of round rewards")
