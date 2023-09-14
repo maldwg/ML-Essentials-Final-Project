@@ -45,17 +45,6 @@ class ReplayMemory:
             self.memory.pop(random.randrange(len(self.memory)))
         # append new transition in all cases
         self.memory.append(Transition(*args))
-   
-    def reward_based_push(self, *args):
-        """
-        Saves a transition by deleting the transition with the lowest reward.
-        TBD and to be clarified if good
-        """
-        if len(self.memory) >= self.capacity:
-            # delete a random element
-            self.memory.pop(random.randrange(len(self.memory)))
-        # append new transition in all cases
-        self.memory.append(Transition(*args))
 
 
     def sample(self, batch_size):

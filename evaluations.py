@@ -54,6 +54,13 @@ with gzip.open(model_path, 'rb') as f:
     policy_net,_,_, memory = pickle.load(f)
 
 print(f"Model has remembered {memory.steps_done} steps")
+print(f"Memmory length: {len(memory.memory)}")
+invalid_counter = 0
+for step in memory.memory:
+    # reward is the size ov invalid step (we dont know for sure this is invalid though)
+    if step[-1] == -10:
+        invalid_counter += 1
+print(f"invalid step percentage: { 100 * (invalid_counter / len(memory.memory))} %")
 
  
 ########################################################

@@ -84,7 +84,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         self.logger.info(f"overall reward of step {reward}")
         reward = torch.tensor(reward, device=device)
         # push the state to the memory in order to be able to learn from it 
-        self.memory.push(state, action, next_state, reward)
+        self.memory.random_push(state, action, next_state, reward)
 
         # needs to be before optimize otherwise the events occured are not taken into account
         increment_event_counts(self, events)
@@ -112,8 +112,8 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     state = state_to_features(self, last_game_state)
     action = torch.tensor([ACTIONS.index(last_action)], device=device)
     reward = reward_from_events(self, events)
-    # only give end of round rewards if the round was sufficiently long
-    if last_game_state['step'] > 100 and (last_game_state["others"] or e.OPPONENT_ELIMINATED in events):
+    # only give end of round rewards if the round was sufficiently long, agent did not kill himslef, all other agents are dead
+    if last_game_state['step'] > 401 and ( not last_game_state["others"] and e.OPPONENT_ELIMINATED in events) and e.KILLED_SELF not in events:
         reward += after_game_rewards(self, last_game_state)
     self.memory.rewards_of_round.append(reward)
     overall_reward = sum(self.memory.rewards_of_round)
@@ -123,7 +123,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.memory.rewards_of_round = []
 
     reward = torch.tensor(reward, device=device)
-    self.memory.push(state, action, None, reward)
+    self.memory.random_push(state, action, None, reward)
     self.logger.info(f"Round ended --> newest shortest path was reset")
     self.memory.shortest_paths_out_of_explosion = []
     self.memory.shortest_paths_to_coin = []
@@ -258,6 +258,6 @@ def optimize_model(self):
 
     # Dynamically adjust UPDATE_FREQUENCY via exp function only after the network has been updated once
     if self.memory.steps_since_last_update == 0:
-        self.memory.update_frequency = int(500 * np.exp(0.0001 * self.memory.steps_done))
+        self.memory.update_frequency = int(500 * np.exp(0.00001 * self.memory.steps_done))
         # Ensure there's a maximum limit for UPDATE_FREQUENCY to prevent very infrequent updates
-        self.memory.update_frequency = min(self.memory.update_frequency, 5000)
+        self.memory.update_frequency = min(self.memory.update_frequency, 3500)

@@ -3,7 +3,7 @@
 AGENT=baby_terminator
 # Different number of rounds to learn the game incrementally on each scenario
 # larger nr of round vs weak agents to learn the scenario deeper
-CHECKPOINT=250
+CHECKPOINT=75
 currentdatetime=$(date +"%Y%m%d%H%M")
 
 
@@ -14,13 +14,51 @@ PARENT_DIR=agent_code/$AGENT/checkpoints/$currentdatetime
 mkdir -p $PARENT_DIR
 
 
-# for idx in {1..2}
+for idx in {1..2}
+do
+    rounds=$(( CHECKPOINT * idx ))
+    echo "new upper bound is ${rounds} rounds"
+    mkdir -p  $PARENT_DIR/$rounds
+    echo "Train the agent... ))"
+    python main.py play --agents baby_terminator --n-rounds=$CHECKPOINT --train 1 --scenario coin-heaven --no-gui
+    pid=$(pgrep -f "python main.py play")
+    tail --pid="$pid" -f /dev/null
+    echo "Training finished"
+    echo "copy the old model"
+    cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$rounds/
+    echo "evaluate the agent"
+    python evaluations.py
+    cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
+    echo "---------------------------------------------------"
+done
+
+
+for idx in {1..2}
+do
+    rounds=$(( CHECKPOINT * idx ))
+    echo "new upper bound is ${rounds} rounds"
+    mkdir -p  $PARENT_DIR/$rounds
+    echo "Train the agent... ))"
+    python main.py play --agents baby_terminator peaceful_agent peaceful_agent coin_collector_agent --n-rounds=$CHECKPOINT --train 1 --scenario coin-heaven --no-gui
+    pid=$(pgrep -f "python main.py play")
+    tail --pid="$pid" -f /dev/null
+    echo "Training finished"
+    echo "copy the old model"
+    cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$rounds/
+    echo "evaluate the agent"
+    python evaluations.py
+    cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
+    echo "---------------------------------------------------"
+done
+
+
+# for idx in {3..4}
 # do
 #     rounds=$(( CHECKPOINT * idx ))
 #     echo "new upper bound is ${rounds} rounds"
 #     mkdir -p  $PARENT_DIR/$rounds
 #     echo "Train the agent... ))"
-#     python main.py play --agents baby_terminator peaceful_agent peaceful_agent peaceful_agent --n-rounds=$CHECKPOINT --train 1 --scenario coin-heaven --no-gui
+#     python main.py play --agents baby_terminator coin_collector_agent coin_collector_agent coin_collector_agent --n-rounds=$CHECKPOINT --train 1 --scenario coin-heaven --no-gui
 #     pid=$(pgrep -f "python main.py play")
 #     tail --pid="$pid" -f /dev/null
 #     echo "Training finished"
@@ -33,20 +71,21 @@ mkdir -p $PARENT_DIR
 # done
 
 
-for idx in {3..50}
-do
-    rounds=$(( CHECKPOINT * idx ))
-    echo "new upper bound is ${rounds} rounds"
-    mkdir -p  $PARENT_DIR/$rounds
-    echo "Train the agent... ))"
-    python main.py play --agents baby_terminator peaceful_agent peaceful_agent peaceful_agent --n-rounds=$CHECKPOINT --train 1 --scenario loot-crate --no-gui
-    pid=$(pgrep -f "python main.py play")
-    tail --pid="$pid" -f /dev/null
-    echo "Training finished"
-    echo "copy the old model"
-    cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$rounds/
-    echo "evaluate the agent"
-    python evaluations.py
-    cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
-    echo "---------------------------------------------------"
-done
+
+# for idx in {1..50}
+# do
+#     rounds=$(( CHECKPOINT * idx ))
+#     echo "new upper bound is ${rounds} rounds"
+#     mkdir -p  $PARENT_DIR/$rounds
+#     echo "Train the agent... ))"
+#     python main.py play --agents baby_terminator peaceful_agent peaceful_agent peaceful_agent --n-rounds=$CHECKPOINT --train 1 --scenario classic --no-gui
+#     pid=$(pgrep -f "python main.py play")
+#     tail --pid="$pid" -f /dev/null
+#     echo "Training finished"
+#     echo "copy the old model"
+#     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$rounds/
+#     echo "evaluate the agent"
+#     python evaluations.py
+#     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
+#     echo "---------------------------------------------------"
+# done

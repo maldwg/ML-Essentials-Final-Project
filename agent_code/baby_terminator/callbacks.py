@@ -43,7 +43,7 @@ def setup(self):
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
             self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.0001, weight_decay=1e-5)
-            self.memory = ReplayMemory(1500)
+            self.memory = ReplayMemory(1000000)
 
             weights = np.random.rand(len(ACTIONS))
             self.model = weights / weights.sum()
@@ -83,7 +83,6 @@ def act(self, game_state: dict) -> str:
         EPS_END = 0.05
         EPS_DECAY = 300
         sample = random.random()
-        # let the exploration decay but not below 15 %
         eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)
         self.memory.steps_done += 1
 
