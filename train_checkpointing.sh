@@ -35,7 +35,7 @@ for idx in {4..10}
 do
     rounds=$(( CHECKPOINT * idx ))
     echo "new upper bound is ${rounds} rounds"
-    mkdir -p  $PARENT_DIR/$currentdatetime/$rounds
+    mkdir -p  $PARENT_DIR/$rounds
     echo "Train the agent... ))"
     python main.py play --agents baby_terminator --n-rounds=$CHECKPOINT --train 1 --scenario loot-crate --no-gui
     sleep 30
