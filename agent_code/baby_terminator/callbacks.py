@@ -43,7 +43,7 @@ def setup(self):
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
             self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.0001, weight_decay=1e-5)
-            self.memory = ReplayMemory(1000000)
+            self.memory = ReplayMemory(100000)
 
             weights = np.random.rand(len(ACTIONS))
             self.model = weights / weights.sum()

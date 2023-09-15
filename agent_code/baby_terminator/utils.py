@@ -79,6 +79,7 @@ game_rewards_not_normalized = {
         c.ATTACKED_ENEMY: 50,
         c.GUARANTEED_SUICIDE: -150,
         c.NOT_KILLED_BY_OWN_BOMB: 5,
+        c.STAYED_IN_EXPLOSION_RADIUS: -5,
 
         # penalize default actions otherwise too many watis and random moves
         e.MOVED_DOWN: -2,
