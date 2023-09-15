@@ -75,7 +75,7 @@ game_rewards_not_normalized = {
         # bomb related goals
         c.MOVED_TOWARDS_END_OF_EXPLOSION: 5,
         c.LEFT_POTENTIAL_EXPLOSION_ZONE: 30,
-        c.ENTERED_POTENTIAL_EXPLOSION_ZONE: -10,
+        c.ENTERED_POTENTIAL_EXPLOSION_ZONE: -40,
         c.ATTACKED_ENEMY: 50,
         c.GUARANTEED_SUICIDE: -150,
         c.NOT_KILLED_BY_OWN_BOMB: 5,
