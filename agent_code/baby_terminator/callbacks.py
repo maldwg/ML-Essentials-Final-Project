@@ -179,6 +179,16 @@ def state_to_features(self, game_state: dict) -> np.array:
                     if inPlayArea(field, x+dx, y+dy) and (dx*dy == 0 and field[x+dx, y+dy] != 9):
                         rgb_map[:, x+dx, y+dy] = [0, 255, 222]
 
+
+
+
+    # add shortest path of coin to map 
+    for path in self.memory.shortest_paths_to_coin:
+        rgb_map[:, path[1]] = [155, 255, 0]
+
+    for path in self.memory.shortest_paths_out_of_explosion:
+        rgb_map[:, path[1]] = [102, 0, 102]
+
     # # Assuming new_array is the RGB image
     # import matplotlib.pyplot as plt
     # plt.imshow(rgb_map.transpose(1, 2, 0))  # Transpose to (height, width, channels) for display
