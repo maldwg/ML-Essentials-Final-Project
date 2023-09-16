@@ -43,7 +43,7 @@ def setup(self):
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
             self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.0001, weight_decay=1e-5)
-            self.memory = ReplayMemory(100000)
+            self.memory = ReplayMemory(10000)
 
             weights = np.random.rand(len(ACTIONS))
             self.model = weights / weights.sum()
@@ -80,8 +80,8 @@ def act(self, game_state: dict) -> str:
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
         EPS_START = 0.9
-        EPS_END = 0.1
-        EPS_DECAY = 300
+        EPS_END = 0.05
+        EPS_DECAY = 500
         sample = random.random()
         eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)
         self.memory.steps_done += 1
