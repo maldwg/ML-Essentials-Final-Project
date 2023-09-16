@@ -53,13 +53,13 @@ game_rewards_not_normalized = {
         # killing goals
         e.KILLED_OPPONENT: 200,
         e.OPPONENT_ELIMINATED: -2,        
-        e.KILLED_SELF: -100,
-        e.GOT_KILLED: -50,
+        e.KILLED_SELF: -125,
+        e.GOT_KILLED: -75,
 
         # correct actions
         e.INVALID_ACTION: -12.5,
         # additional penalty when laying 2 bombs in a row
-        c.UNALLOWED_BOMB: -10,
+        c.UNALLOWED_BOMB: -15,
 
         # coin goals
         e.COIN_FOUND: 15,
@@ -69,29 +69,29 @@ game_rewards_not_normalized = {
         # crate goals
         # crate destroyed im verhältnis zu coin found ändern, ggf. mehr für coin found als crate destroyed
         # little bit smaller since it is delayed --> adds up with the bomb_before_crate signal
-        e.CRATE_DESTROYED: 20,
-        c.CRATE_IN_EXPLOSION_ZONE: 25,
+        e.CRATE_DESTROYED: 15,
+        c.CRATE_IN_EXPLOSION_ZONE: 15,
 
         # bomb related goals
-        c.MOVED_TOWARDS_END_OF_EXPLOSION: 5,
-        c.LEFT_POTENTIAL_EXPLOSION_ZONE: 35,
-        c.ENTERED_POTENTIAL_EXPLOSION_ZONE: -50,
+        c.MOVED_TOWARDS_END_OF_EXPLOSION: 4,
+        c.LEFT_POTENTIAL_EXPLOSION_ZONE: 10,
+        c.ENTERED_POTENTIAL_EXPLOSION_ZONE: -30,
         c.ATTACKED_ENEMY: 50,
         c.GUARANTEED_SUICIDE: -150,
-        c.NOT_KILLED_BY_OWN_BOMB: 10,
-        c.STAYED_IN_EXPLOSION_RADIUS: -10,
+        c.NOT_KILLED_BY_OWN_BOMB: 5,
+        c.STAYED_IN_EXPLOSION_RADIUS: -5,
 
         # penalize default actions otherwise too many watis and random moves
-        e.MOVED_DOWN: -2,
-        e.MOVED_LEFT: -2,
-        e.MOVED_RIGHT: -2,
-        e.MOVED_UP: -2,
+        e.MOVED_DOWN: -2.5,
+        e.MOVED_LEFT: -2.5,
+        e.MOVED_RIGHT: -2.5,
+        e.MOVED_UP: -2.5,
         
         e.WAITED: -7.5,
         
         # Only give points if enemy is attacked or crate is in explosion zone
         # prevent unneccesary bomb dropping 
-        e.BOMB_DROPPED: -20,
+        e.BOMB_DROPPED: -30,
 
 #     }
 
