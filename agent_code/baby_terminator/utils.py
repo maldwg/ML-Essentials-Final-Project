@@ -70,17 +70,17 @@ game_rewards_not_normalized = {
         # crate goals
         # crate destroyed im verhältnis zu coin found ändern, ggf. mehr für coin found als crate destroyed
         # little bit smaller since it is delayed --> adds up with the bomb_before_crate signal
-        e.CRATE_DESTROYED: 20,
-        c.CRATE_IN_EXPLOSION_ZONE: 25,
+        e.CRATE_DESTROYED: 10,
+        c.CRATE_IN_EXPLOSION_ZONE: 15,
 
         # bomb related goals
         # amortize bomb dropping and leaving explosion zone -> no big gain from dropping random bombs and leaving
         c.MOVED_TOWARDS_END_OF_EXPLOSION: 5,
-        c.LEFT_POTENTIAL_EXPLOSION_ZONE: 35,
+        c.LEFT_POTENTIAL_EXPLOSION_ZONE: 5,
         c.ENTERED_POTENTIAL_EXPLOSION_ZONE: -50,
         c.ATTACKED_ENEMY: 50,
         c.GUARANTEED_SUICIDE: -150,
-        c.NOT_KILLED_BY_OWN_BOMB: 10,
+        c.NOT_KILLED_BY_OWN_BOMB: 5,
         # c.STAYED_IN_EXPLOSION_RADIUS: -10,
         # TODO: Stayed outside explosion zone
         # agent often moves back into explosion after bomb exploded
@@ -98,7 +98,7 @@ game_rewards_not_normalized = {
         
         # Only give points if enemy is attacked or crate is in explosion zone
         # prevent unneccesary bomb dropping 
-        e.BOMB_DROPPED: -20,
+        e.BOMB_DROPPED: -30,
 
 #     }
 
