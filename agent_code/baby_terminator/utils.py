@@ -56,42 +56,49 @@ game_rewards_not_normalized = {
         e.KILLED_SELF: -100,
         e.GOT_KILLED: -50,
 
-        # correct actions
+        # incentivize correct actions
         e.INVALID_ACTION: -12.5,
         # additional penalty when laying 2 bombs in a row
         c.UNALLOWED_BOMB: -10,
 
         # coin goals
-        e.COIN_FOUND: 10,
+        e.COIN_FOUND: 15,
         e.COIN_COLLECTED: 65,
-        c.MOVED_TOWARDS_COIN: 3,
+        c.MOVED_TOWARDS_COIN: 3.5,
+        # c.MOVED_AWAY_FROM_COIN: -5,
 
         # crate goals
         # crate destroyed im verhältnis zu coin found ändern, ggf. mehr für coin found als crate destroyed
         # little bit smaller since it is delayed --> adds up with the bomb_before_crate signal
         e.CRATE_DESTROYED: 7.5,
-        c.CRATE_IN_EXPLOSION_ZONE: 12.5,
+        c.CRATE_IN_EXPLOSION_ZONE: 25,
 
         # bomb related goals
+        # amortize bomb dropping and leaving explosion zone -> no big gain from dropping random bombs and leaving
         c.MOVED_TOWARDS_END_OF_EXPLOSION: 5,
-        c.LEFT_POTENTIAL_EXPLOSION_ZONE: 30,
+        c.LEFT_POTENTIAL_EXPLOSION_ZONE: 10,
         c.ENTERED_POTENTIAL_EXPLOSION_ZONE: -40,
         c.ATTACKED_ENEMY: 50,
         c.GUARANTEED_SUICIDE: -150,
         c.NOT_KILLED_BY_OWN_BOMB: 5,
-        c.STAYED_IN_EXPLOSION_RADIUS: -5,
+        # c.STAYED_IN_EXPLOSION_RADIUS: -5,
+        # TODO: Stayed outside explosion zone
+        # agent often moves back into explosion after bomb exploded
+        c.STAYED_OUTSIDE_ACTIVE_EXPLOSION: 7.5,
+        # c.ENTERED_ACTIVE_EXPLOSION: -20,
 
         # penalize default actions otherwise too many watis and random moves
-        e.MOVED_DOWN: -2,
-        e.MOVED_LEFT: -2,
-        e.MOVED_RIGHT: -2,
-        e.MOVED_UP: -2,
+        e.MOVED_DOWN: -2.5,
+        e.MOVED_LEFT: -2.5,
+        e.MOVED_RIGHT: -2.5,
+        e.MOVED_UP: -2.5,
         
-        e.WAITED: -7.5,
+        # amortize waiting and moving to wait
+        e.WAITED: -5,
         
         # Only give points if enemy is attacked or crate is in explosion zone
         # prevent unneccesary bomb dropping 
-        e.BOMB_DROPPED: -15,
+        e.BOMB_DROPPED: -20,
 
 #     }
 

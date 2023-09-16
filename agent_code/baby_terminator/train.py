@@ -129,6 +129,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.memory.shortest_paths_to_coin = []
     self.memory.shortest_paths_to_enemy = []
     self.memory.shortest_paths_to_crate = []
+    self.memory.left_explosion_zone = False
     optimize_model(self)
 
 
