@@ -217,14 +217,14 @@ def update_paths_out_of_explosion(self, new_game_state):
         minimum_path_length = path_lengths.min()
         minimum_path_indices = np.where(path_lengths == minimum_path_length)
         shortest_paths_out_of_explosion = [paths_out_of_explosion[i] for i in minimum_path_indices[0]]
-        self.logger.info(f"shortest path out of explosion: {shortest_paths_out_of_explosion}")
-        self.logger.info(min(paths_out_of_explosion, key=len))
 
         if len(self.memory.shortest_paths_out_of_explosion) == 0:
             self.memory.shortest_paths_out_of_explosion = shortest_paths_out_of_explosion
         if len(self.memory.shortest_paths_out_of_explosion[0]) - 1 > minimum_path_length:
-            self.memory.shorest_paths_out_of_explosion = shortest_paths_out_of_explosion
+            self.memory.shortest_paths_out_of_explosion = shortest_paths_out_of_explosion
 
+        self.logger.info(f"shortest path out of explosion: {shortest_paths_out_of_explosion}")
+        self.logger.info(min(paths_out_of_explosion, key=len))
 
 def update_coin_paths(self, new_game_state, events):
     paths_to_coins = get_all_paths_to_coins(new_game_state)

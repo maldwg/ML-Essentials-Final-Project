@@ -167,10 +167,10 @@ def after_game_rewards(self, last_game_state):
     placement = np.argsort(scores)[-1]
     self.logger.info(f"Reached {placement + 1} place")
     if placement + 1 < 3: 
-        placement_reward = (1 / (placement + 1) * game_rewards[ad.PLACEMENT_REWARD]) 
+        placement_reward = (1 / (placement + 1) * self.memory.game_rewards[ad.PLACEMENT_REWARD]) 
     else: 
         placement_reward = 0
-    score_reward = (score * game_rewards[ad.SCORE_REWARD])
+    score_reward = (score * self.memory.game_rewards[ad.SCORE_REWARD])
     self.logger.info(f"Score reward: {score_reward}")
     self.logger.info(f"placement reward: {placement_reward}")
     return placement_reward + score_reward
@@ -185,9 +185,11 @@ def reward_from_events(self, events: List[str]) -> int:
     
     reward_sum = 0
     rewarded_events = []
+    # self.memory.recalculate_rewards(events)
+    # self.logger.info(f"recalculated rewards,new rewards: {self.memory.game_rewards}")
     for event in events:
-        if event in game_rewards:
-            reward_sum += game_rewards[event]
+        if event in self.memory.game_rewards:
+            reward_sum += self.memory.game_rewards[event]
             rewarded_events.append(event)
     self.logger.info(f"Awarded {reward_sum} for the {len(rewarded_events)} events {', '.join(rewarded_events)}")
     return reward_sum

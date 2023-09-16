@@ -1,4 +1,5 @@
 from .utils import Transition, game_rewards
+from . import custom_events as c
 import random
 
 class ReplayMemory:
@@ -21,7 +22,8 @@ class ReplayMemory:
         self.steps_done = 0
         # set all rewarded events to 0 
         self.rewarded_event_counts = dict.fromkeys(game_rewards, 0)
-        # self.game_rewards = game_rewards
+        self.game_rewards = game_rewards
+        self.game_rewards_original = game_rewards.copy()
         self.shortest_paths_to_coin = []
         self.shortest_paths_to_enemy = []
         self.shortest_paths_to_crate = []
@@ -30,6 +32,14 @@ class ReplayMemory:
         self.rewards_of_round = []
         self.steps_since_last_update = 0
         self.update_frequency = 500 
+
+
+
+    def recalculate_rewards(self, events):
+        if c.MOVED_TOWARDS_COIN in events:
+            self.game_rewards[c.MOVED_TOWARDS_COIN] = 1 / ( len(self.shortest_paths_to_coin[0]) - 1) * self.game_rewards_original[c.MOVED_TOWARDS_COIN]
+        if c.MOVED_TOWARDS_END_OF_EXPLOSION in events:
+            self.game_rewards[c.MOVED_TOWARDS_END_OF_EXPLOSION] = 1 / ( len(self.shortest_paths_out_of_explosion[0]) - 1) * self.game_rewards_original[c.MOVED_TOWARDS_END_OF_EXPLOSION]
 
     def push(self, *args):
         """Saves a transition."""
@@ -53,3 +63,4 @@ class ReplayMemory:
 
     def __len__(self):
         return len(self.memory)
+

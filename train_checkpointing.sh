@@ -3,7 +3,7 @@
 AGENT=baby_terminator
 # Different number of rounds to learn the game incrementally on each scenario
 # larger nr of round vs weak agents to learn the scenario deeper
-CHECKPOINT=200
+CHECKPOINT=100
 
 rm agent_code/$AGENT/logs/all.log
 touch agent_code/$AGENT/logs/all.log
@@ -57,13 +57,13 @@ mkdir -p $PARENT_DIR
 # done
 
 currentdatetime=$(date +"%Y%m%d%H%M")
-for idx in {4..10}
+for idx in {1..20}
 do
     rounds=$(( CHECKPOINT * idx ))
     echo "new upper bound is ${rounds} rounds"
     mkdir -p  $PARENT_DIR/$rounds
     echo "Train the agent... ))"
-    python main.py play --agents baby_terminator --n-rounds=$CHECKPOINT --train 1 --scenario loot-crate --no-gui
+    python main.py play --agents baby_terminator --n-rounds=$CHECKPOINT --train 1 --scenario coin-heaven --no-gui
     sleep 30
     echo "Training finished"
     echo "copy the old model"

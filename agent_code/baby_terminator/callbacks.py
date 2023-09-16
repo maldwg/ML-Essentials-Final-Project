@@ -17,6 +17,8 @@ import math
 from .utils import ACTIONS, device, DIRECTIONS, is_action_valid
 from .path_finding import astar
 
+from .custom_event_handling import get_all_paths_out_of_explosions, get_all_paths_to_coins
+
 
 def setup(self):
     """
@@ -180,14 +182,18 @@ def state_to_features(self, game_state: dict) -> np.array:
                         rgb_map[:, x+dx, y+dy] = [0, 255, 222]
 
 
+    agent_x, agent_y = game_state["self"][-1]
+    
+    # paths_to_coins = get_all_paths_to_coins(self, game_state)
 
+    # paths_out_of_explosions = get_all_paths_out_of_explosions(self, game_state)
 
     # add shortest path of coin to map 
     for path in self.memory.shortest_paths_to_coin:
-        rgb_map[:, path[1]] = [155, 255, 0]
+        rgb_map[:, path[1][0],path[1][1] ] = [155, 255, 0]
 
     for path in self.memory.shortest_paths_out_of_explosion:
-        rgb_map[:, path[1]] = [102, 0, 102]
+        rgb_map[:, path[1][1], path[1][1]] = [102, 0, 102]
 
     # # Assuming new_array is the RGB image
     # import matplotlib.pyplot as plt
