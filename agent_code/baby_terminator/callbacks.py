@@ -45,7 +45,7 @@ def setup(self):
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
             self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.0001, weight_decay=1e-5)
-            self.memory = ReplayMemory(10000)
+            self.memory = ReplayMemory(1500)
 
             weights = np.random.rand(len(ACTIONS))
             self.model = weights / weights.sum()
@@ -182,18 +182,18 @@ def state_to_features(self, game_state: dict) -> np.array:
                         rgb_map[:, x+dx, y+dy] = [0, 255, 222]
 
 
-    agent_x, agent_y = game_state["self"][-1]
+    # agent_x, agent_y = game_state["self"][-1]
     
     # paths_to_coins = get_all_paths_to_coins(self, game_state)
 
     # paths_out_of_explosions = get_all_paths_out_of_explosions(self, game_state)
 
     # add shortest path of coin to map 
-    for path in self.memory.shortest_paths_to_coin:
-        rgb_map[:, path[1][0],path[1][1] ] = [155, 255, 0]
+    # for path in self.memory.shortest_paths_to_coin:
+    #     rgb_map[:, path[1][0],path[1][1] ] = [155, 255, 0]
 
-    for path in self.memory.shortest_paths_out_of_explosion:
-        rgb_map[:, path[1][1], path[1][1]] = [102, 0, 102]
+    # for path in self.memory.shortest_paths_out_of_explosion:
+    #     rgb_map[:, path[1][1], path[1][1]] = [102, 0, 102]
 
     # # Assuming new_array is the RGB image
     # import matplotlib.pyplot as plt

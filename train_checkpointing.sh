@@ -57,7 +57,7 @@ mkdir -p $PARENT_DIR
 # done
 
 currentdatetime=$(date +"%Y%m%d%H%M")
-for idx in {1..20}
+for idx in {1..3}
 do
     rounds=$(( CHECKPOINT * idx ))
     echo "new upper bound is ${rounds} rounds"

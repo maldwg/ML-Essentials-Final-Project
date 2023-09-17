@@ -84,7 +84,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         self.logger.info(f"overall reward of step {reward}")
         reward = torch.tensor(reward, device=device)
         # push the state to the memory in order to be able to learn from it 
-        self.memory.random_push(state, action, next_state, reward)
+        self.memory.push(state, action, next_state, reward)
 
         # needs to be before optimize otherwise the events occured are not taken into account
         increment_event_counts(self, events)
@@ -123,7 +123,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.memory.rewards_of_round = []
 
     reward = torch.tensor(reward, device=device)
-    self.memory.random_push(state, action, None, reward)
+    self.memory.push(state, action, None, reward)
     self.logger.info(f"Round ended --> newest shortest path was reset")
     self.memory.shortest_paths_out_of_explosion = []
     self.memory.shortest_paths_to_coin = []

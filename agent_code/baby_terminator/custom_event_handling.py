@@ -37,14 +37,14 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
     if old_game_state is not None:
 
         # check whether agent left an explosion zone last step or was adjacent to an active explosion
-        if agent_stayed_outside_explosion_zone(new_game_state):
-            # check whether agent left an explosion zone last step or was adjacent to an active explosion
-            if self.memory.left_explosion_zone or agent_was_adjacent_to_active_explosion(self, old_game_state):
-                custom_events.append(c.STAYED_OUTSIDE_ACTIVE_EXPLOSION)
-        else:
-            custom_events.append(c.ENTERED_ACTIVE_EXPLOSION)
-        # reset explosion zone trigger
-        self.memory.left_explosion_zone = False
+        # if agent_stayed_outside_explosion_zone(new_game_state):
+        #     # check whether agent left an explosion zone last step or was adjacent to an active explosion
+        #     if self.memory.left_explosion_zone or agent_was_adjacent_to_active_explosion(self, old_game_state):
+        #         custom_events.append(c.STAYED_OUTSIDE_ACTIVE_EXPLOSION)
+        # else:
+        #     custom_events.append(c.ENTERED_ACTIVE_EXPLOSION)
+        # # reset explosion zone trigger
+        # self.memory.left_explosion_zone = False
 
         if unallowed_bomb(self_action, old_game_state):
             custom_events.append(c.UNALLOWED_BOMB)
