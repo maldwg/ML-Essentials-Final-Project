@@ -33,6 +33,7 @@ class ReplayMemory:
         self.rewards_of_round = []
         self.steps_since_last_update = 0
         self.update_frequency = 500 
+        self.transitions_of_round = []
 
 
 

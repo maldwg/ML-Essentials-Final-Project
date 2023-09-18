@@ -75,6 +75,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     state = state_to_features(self, old_game_state)
     if state is not None:
         action = torch.tensor([ACTIONS.index(self_action)], device=device)
+        self.logger.info(f"Used action {action} in callbacks")
         reward = reward_from_events(self, events)
         self.memory.rewards_of_round.append(reward)
         if new_game_state is None:
@@ -84,7 +85,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         self.logger.info(f"overall reward of step {reward}")
         reward = torch.tensor(reward, device=device)
         # push the state to the memory in order to be able to learn from it 
-        self.memory.push(state, action, next_state, reward)
+        self.memory.transitions_of_round.append(Transition(state, action, next_state, reward))
 
         # needs to be before optimize otherwise the events occured are not taken into account
         increment_event_counts(self, events)
@@ -111,6 +112,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     state = state_to_features(self, last_game_state)
     action = torch.tensor([ACTIONS.index(last_action)], device=device)
+    self.logger.info(f"used {action} as last action")
     reward = reward_from_events(self, events)
     # only give end of round rewards if the round was sufficiently long, agent did not kill himslef, all other agents are dead
     if last_game_state['step'] > 401 and ( not last_game_state["others"] and e.OPPONENT_ELIMINATED in events) and e.KILLED_SELF not in events:
@@ -123,7 +125,9 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.memory.rewards_of_round = []
 
     reward = torch.tensor(reward, device=device)
-    self.memory.push(state, action, None, reward)
+    self.memory.transitions_of_round.append(Transition(state, action, None, reward))
+    self.memory.memory.append(self.memory.transitions_of_round)
+    self.memory.transitions_of_round = []
     self.logger.info(f"Round ended --> newest shortest path was reset")
     self.memory.shortest_paths_out_of_explosion = []
     self.memory.shortest_paths_to_coin = []
@@ -156,7 +160,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     if self.number_of_executed_episodes == last_game_state["number_rounds"]:
         gc.disable()
         with gzip.open('my-saved-model.pkl.gz', 'wb') as f:
-            pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], f,  protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump([self.policy_net, self.optimizer, self.memory], f,  protocol=pickle.HIGHEST_PROTOCOL)
             # self.logger.debug("Dumped pickle")
         gc.enable()
 
@@ -202,45 +206,45 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    BATCH_SIZE = 128
     GAMMA = 0.333
 
-    if len(self.memory) < BATCH_SIZE:
-        # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
+    if len(self.memory) < 1:
         return
-    transitions = self.memory.sample(BATCH_SIZE)
-    # "online learning" by always including the last step to ensure we learn from this experience
-    # transitions.append(self.memory.memory[-1])
-    batch = Transition(*zip(*transitions))
+    
+    episode = self.memory.sample(1)[0]
+    self.logger.info(f"length of episode {len(episode)}")
+    states = [ transition.state for transition in episode ]
+    actions = [ transition.action for transition in episode ]
+    rewards = [ transition.reward for transition in episode ]
 
-    non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
-                                          batch.next_state)), device=device, dtype=torch.bool)
-    non_final_next_states = torch.stack([s for s in batch.next_state
-                                                if s is not None]).float()
+    # Compute the returns G_t for each timestep in the episode
+    returns = np.zeros_like(rewards, dtype=np.float32)
+    G = 0
+    for t in reversed(range(len(rewards))):
+        G = rewards[t] + GAMMA * G
+        returns[t] = G
 
-    # self.logger.info(f"Encountered {non_final_next_states.size()} non final next states")
+    # Convert everything to tensors
+    # TODO: check if stack needs to be applied to rewards and actions
+    states = torch.stack(states).float().to(device)
+    actions = torch.tensor(actions).to(device)
+    returns = torch.tensor(returns).float().to(device)
 
-    state_batch = torch.stack(batch.state).float()
-    action_batch = torch.stack(batch.action)
-    reward_batch = torch.stack(batch.reward)
+    self.logger.info(f"actions: {actions}")
 
-    # self.logger.info(f"Action-batch: {action_batch} | reward-batch: {reward_batch}")
-    # Compute Q value for all actions taken in the batch
-    state_action_values = self.policy_net(state_batch).gather(1, action_batch)
+    # Compute the log probabilities of the taken actions under the current policy
+    network_output = self.policy_net(states)
+    self.logger.info(f"network output {network_output}")
+    gathered = network_output.gather(1, actions.unsqueeze(-1))
+    self.logger.info(f"gathered:{gathered}")
+    log_probs = torch.log(gathered)
+    self.logger.info(f"log-probs: {log_probs}")
 
-    # compute the expected Q values
-    next_state_values = torch.zeros(BATCH_SIZE, device=device)
-    with torch.no_grad():
-        next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0]
-    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+    # Compute the policy gradient loss
+    loss = -torch.mean(log_probs * returns)
 
-    # compute loss
-    loss = nn.functional.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
-    # self.logger.info(f"Q value of: {expected_state_action_values}")
     self.logger.info(f"Loss of {loss}")
 
-    # Add Q value to object
-    self.q_value = expected_state_action_values
     # Add loss to object
     self.loss = loss
 
@@ -249,20 +253,3 @@ def optimize_model(self):
     loss.backward()
     torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
     self.optimizer.step()
-
-    # Check if it's time to update the target network
-    if self.memory.steps_since_last_update >= self.memory.update_frequency:
-        self.logger.info("Update target network")
-        self.target_net.load_state_dict(self.policy_net.state_dict())
-        self.target_net.eval()
-        # Reset the steps since last update
-        self.memory.steps_since_last_update = 0
-    else:
-        # Increment the counter
-        self.memory.steps_since_last_update += 1
-
-    # Dynamically adjust UPDATE_FREQUENCY via exp function only after the network has been updated once
-    if self.memory.steps_since_last_update == 0:
-        self.memory.update_frequency = int(500 * np.exp(0.00001 * self.memory.steps_done))
-        # Ensure there's a maximum limit for UPDATE_FREQUENCY to prevent very infrequent updates
-        self.memory.update_frequency = min(self.memory.update_frequency, 3500)

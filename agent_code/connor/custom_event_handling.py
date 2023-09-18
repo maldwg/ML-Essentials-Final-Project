@@ -7,8 +7,20 @@ from .utils import is_blocked
 
 def custom_game_events(self, old_game_state, new_game_state, events, self_action):
     custom_events = []
+    valid_move = e.INVALID_ACTION not in events
     in_old_explosion_zone = False
     in_new_explosion_zone = False
+    # init with high value so if no bomb was in old state but one is discovered in new one, there is no penalty since 0 would be < distance to bomb
+    old_distance_to_bomb = 1000
+    new_distance_to_bomb = 1000
+    # init with high value as safe space is set to ~3
+    closest_bomb = 1000
+    safe_distance = 2
+    # init with high value so if no coin was in old state but one is discovered in new one, there is no penalty since 0 would be < distance to coin
+    old_distance_to_coin = 1000
+    new_distance_to_coin = 1000
+    old_distance_to_enemy = 1000
+    new_distance_to_enemy = 1000
 
     # if new is none something went wrong
     if new_game_state is None:

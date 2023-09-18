@@ -6,8 +6,8 @@ import gc
 import numpy as np
 import gzip 
 
-from .model import QNetwork, FullyConnectedQNetwork
-from .hyperparameters import read_hyperparameters
+# TODO: rename qnetwork
+from .model import QNetwork
 import torch
 import torch.optim as optim
 
@@ -15,7 +15,7 @@ from .memory import ReplayMemory
 
 import math
 
-from .utils import ACTIONS, device, DIRECTIONS, is_action_valid, calculate_eps_threshold
+from .utils import ACTIONS, device, DIRECTIONS, is_action_valid
 from .path_finding import astar
 
 from .custom_event_handling import get_all_paths_out_of_explosions, get_all_paths_to_coins
@@ -41,28 +41,25 @@ def setup(self):
         if not os.path.isfile("my-saved-model.pkl.gz"):
             self.logger.info("Setting up model from scratch.")
             # init policy and target network 
-            hyperparameters = read_hyperparameters()
-            self.policy_net = QNetwork.Builder().input_output_dimensions(17, 17, 3, 6).add_convolution(*hyperparameters[0]).add_convolution(*hyperparameters[1]).set_head_dropout(0).build().to(device)
-            self.target_net = QNetwork.Builder().input_output_dimensions(17, 17, 3, 6).add_convolution(*hyperparameters[0]).add_convolution(*hyperparameters[1]).set_head_dropout(0).build().to(device)
-            self.target_net.load_state_dict(self.policy_net.state_dict())
-            self.target_net.eval()
-            self.optimizer = optim.Adam(self.policy_net.parameters(), *hyperparameters[3])
-            self.memory = ReplayMemory(*hyperparameters[4])
+            self.policy_net = QNetwork(17, 17, 6).to(device)
+            self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.000001, weight_decay=1e-5)
+            self.memory = ReplayMemory(1500)
+
+            weights = np.random.rand(len(ACTIONS))
+            self.model = weights / weights.sum()
         else:
             self.logger.info("Using existing model to generate new generation")
             # with open("my-saved-model.pt", "rb") as file:
-            #     self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
             gc.disable()
             with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
-                self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(f)
+                self.policy_net, self.optimizer, self.memory = pickle.load(f)
             gc.enable()
     else:
         self.logger.info("Loading model from saved state, no training")
         # with open("my-saved-model.pt", "rb") as file:
-        #     self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
         gc.disable()
         with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
-            self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(f)
+            self.policy_net, self.optimizer, self.memory = pickle.load(f)
         gc.enable()
 
 
@@ -80,10 +77,14 @@ def act(self, game_state: dict) -> str:
     # self.logger.info(game_state)
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
-        eps_threshold = calculate_eps_threshold(self, EPS_START=0.9, EPS_END=0.1, EPS_DECAY=300)
+        EPS_START = 0.9
+        EPS_END = 0.05
+        EPS_DECAY = 500
         sample = random.random()
-
-        if sample > eps_threshold:
+        eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)
+        self.memory.steps_done += 1
+        # TODO: remove epsioln greedy pretty
+        if True:
             self.logger.info("Exploitation")
             with torch.no_grad():
                 state_features = state_to_features(self, game_state)
@@ -91,11 +92,12 @@ def act(self, game_state: dict) -> str:
                 # self.logger.info("Game state transformed")
                 # self.logger.info(state_features)
                 # Pass features through policy network
-                q_values = self.policy_net(state_features)
-                self.logger.info(f"Q-values: {q_values} | Max Value chosen: {q_values.max(1)[1]} | Chosen view: {q_values.max(1)[1].view(1,1)} | Item: {q_values.max(1)[1].view(1,1).item()}")
-                action = q_values.max(1)[1].view(1, 1)
-                self.logger.info(f"Chose {ACTIONS[action.item()]} as best value ")
-                self.memory.steps_done += 1
+                probs = self.policy_net(state_features)
+                self.logger.info(f"probs: {probs}")
+                action = torch.multinomial(probs, num_samples=1)
+                self.logger.info(f"Propability distribution: {probs} | action chosen: {action}")
+                # TODO: check if this is the correct return 
+                self.logger.info(f"TODO check action return: {ACTIONS[action.item()]}")
                 return ACTIONS[action.item()]
         else:
             self.logger.info("Exploration")
@@ -104,7 +106,6 @@ def act(self, game_state: dict) -> str:
                 self.logger.info(f"{action} is invalid... choosing again")
                 action = np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
             self.logger.info(f"Choose random action {action}")
-            self.memory.steps_done += 1
             return action
 
     else:
@@ -114,12 +115,10 @@ def act(self, game_state: dict) -> str:
             state_features = state_to_features(self, game_state)
             state_features = state_features.unsqueeze(0).to(device)
             # Pass features through policy network           
-            q_values = self.policy_net(state_features)
-            self.logger.info(f"Q-values: {q_values} | Max Value chosen: {q_values.max(1)[1]} | Chosen view: {q_values.max(1)[1].view(1,1)} | Item: {q_values.max(1)[1].view(1,1).item()}")
-            action = q_values.max(1)[1].view(1, 1)
-            self.logger.info(f"Chose {ACTIONS[action.item()]} as best value ")
+            probs = self.policy_net(state_features)
+            action = torch.multinomial(probs, num_samples=1)
+            self.logger.info(f"Propability distribution: {probs} | action chosen: {action}")
             return ACTIONS[action.item()]
-        
 
 def state_to_features(self, game_state: dict) -> np.array:
     """
@@ -202,7 +201,6 @@ def state_to_features(self, game_state: dict) -> np.array:
     # Convert the NumPy array to a torch tensor
     features_tensor = torch.from_numpy(rgb_map).float()
 
-    # TODO: Maybe use min_max_scale?
     # Resize the tensor to have a shape of [3, 17, 17]
     features_tensor = features_tensor.view(3, 17, 17)
 
