@@ -63,7 +63,7 @@ do
     echo "new upper bound is ${rounds} rounds"
     mkdir -p  $PARENT_DIR/$rounds
     echo "Train the agent... ))"
-    python main.py play --agents baby_terminator --n-rounds=$CHECKPOINT --train 1 --scenario loot-crate --no-gui
+    python main.py play --agents baby_terminator --n-rounds=$CHECKPOINT --train 1 --scenario coin-heaven --no-gui
     sleep 30
     echo "Training finished"
     echo "copy the old model"

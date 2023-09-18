@@ -1,249 +1,337 @@
-2023-09-17 17:56:03,096 [BombeRLeWorld] INFO: Initializing game world
-2023-09-17 17:56:05,215 [BombeRLeWorld] INFO: STARTING ROUND #1
-2023-09-17 17:56:05,222 [BombeRLeWorld] INFO: STARTING STEP 1
-2023-09-17 17:56:05,234 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.01s.
-2023-09-17 17:56:05,235 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:05,332 [BombeRLeWorld] INFO: STARTING STEP 2
-2023-09-17 17:56:05,338 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:05,338 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:05,424 [BombeRLeWorld] INFO: STARTING STEP 3
-2023-09-17 17:56:05,427 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
-2023-09-17 17:56:05,427 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:05,522 [BombeRLeWorld] INFO: STARTING STEP 4
-2023-09-17 17:56:05,525 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:05,525 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:05,624 [BombeRLeWorld] INFO: STARTING STEP 5
-2023-09-17 17:56:05,626 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:05,626 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:05,722 [BombeRLeWorld] INFO: STARTING STEP 6
-2023-09-17 17:56:05,725 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:05,725 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:05,823 [BombeRLeWorld] INFO: STARTING STEP 7
-2023-09-17 17:56:05,826 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:05,826 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:05,922 [BombeRLeWorld] INFO: STARTING STEP 8
-2023-09-17 17:56:05,925 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:05,925 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:06,023 [BombeRLeWorld] INFO: STARTING STEP 9
-2023-09-17 17:56:06,027 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
-2023-09-17 17:56:06,028 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:06,123 [BombeRLeWorld] INFO: STARTING STEP 10
-2023-09-17 17:56:06,126 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:06,126 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:06,223 [BombeRLeWorld] INFO: STARTING STEP 11
-2023-09-17 17:56:06,227 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:06,227 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:06,323 [BombeRLeWorld] INFO: STARTING STEP 12
-2023-09-17 17:56:06,326 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:06,326 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:06,423 [BombeRLeWorld] INFO: STARTING STEP 13
-2023-09-17 17:56:06,426 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:06,426 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:06,523 [BombeRLeWorld] INFO: STARTING STEP 14
-2023-09-17 17:56:06,526 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:06,526 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:06,624 [BombeRLeWorld] INFO: STARTING STEP 15
-2023-09-17 17:56:06,626 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:06,626 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:06,724 [BombeRLeWorld] INFO: STARTING STEP 16
-2023-09-17 17:56:06,726 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:06,726 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:06,826 [BombeRLeWorld] INFO: STARTING STEP 17
-2023-09-17 17:56:06,829 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:06,829 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:06,924 [BombeRLeWorld] INFO: STARTING STEP 18
-2023-09-17 17:56:06,926 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
-2023-09-17 17:56:06,926 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:07,025 [BombeRLeWorld] INFO: STARTING STEP 19
-2023-09-17 17:56:07,028 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
-2023-09-17 17:56:07,028 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:07,124 [BombeRLeWorld] INFO: STARTING STEP 20
-2023-09-17 17:56:07,127 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
-2023-09-17 17:56:07,127 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:07,224 [BombeRLeWorld] INFO: STARTING STEP 21
-2023-09-17 17:56:07,227 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
-2023-09-17 17:56:07,227 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:07,325 [BombeRLeWorld] INFO: STARTING STEP 22
-2023-09-17 17:56:07,328 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
-2023-09-17 17:56:07,328 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:07,426 [BombeRLeWorld] INFO: STARTING STEP 23
-2023-09-17 17:56:07,429 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:07,429 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:07,524 [BombeRLeWorld] INFO: STARTING STEP 24
-2023-09-17 17:56:07,527 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:07,527 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:07,625 [BombeRLeWorld] INFO: STARTING STEP 25
-2023-09-17 17:56:07,627 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:07,627 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:07,724 [BombeRLeWorld] INFO: STARTING STEP 26
-2023-09-17 17:56:07,727 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:07,727 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:07,825 [BombeRLeWorld] INFO: STARTING STEP 27
-2023-09-17 17:56:07,827 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:07,827 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:07,927 [BombeRLeWorld] INFO: STARTING STEP 28
-2023-09-17 17:56:07,930 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:07,930 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:08,030 [BombeRLeWorld] INFO: STARTING STEP 29
-2023-09-17 17:56:08,033 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
-2023-09-17 17:56:08,033 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:08,033 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (15, 7) and receives 1 point
-2023-09-17 17:56:08,126 [BombeRLeWorld] INFO: STARTING STEP 30
-2023-09-17 17:56:08,128 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
-2023-09-17 17:56:08,128 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:08,226 [BombeRLeWorld] INFO: STARTING STEP 31
-2023-09-17 17:56:08,228 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:08,228 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:08,327 [BombeRLeWorld] INFO: STARTING STEP 32
-2023-09-17 17:56:08,330 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:08,330 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:08,426 [BombeRLeWorld] INFO: STARTING STEP 33
-2023-09-17 17:56:08,428 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
-2023-09-17 17:56:08,428 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:08,526 [BombeRLeWorld] INFO: STARTING STEP 34
-2023-09-17 17:56:08,529 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:08,529 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:08,629 [BombeRLeWorld] INFO: STARTING STEP 35
-2023-09-17 17:56:08,632 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
-2023-09-17 17:56:08,632 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:08,727 [BombeRLeWorld] INFO: STARTING STEP 36
-2023-09-17 17:56:08,729 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:08,730 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:08,827 [BombeRLeWorld] INFO: STARTING STEP 37
-2023-09-17 17:56:08,829 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:08,829 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:08,927 [BombeRLeWorld] INFO: STARTING STEP 38
-2023-09-17 17:56:08,929 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
-2023-09-17 17:56:08,929 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:09,028 [BombeRLeWorld] INFO: STARTING STEP 39
-2023-09-17 17:56:09,034 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.01s.
-2023-09-17 17:56:09,034 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:09,127 [BombeRLeWorld] INFO: STARTING STEP 40
-2023-09-17 17:56:09,129 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:09,129 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:09,230 [BombeRLeWorld] INFO: STARTING STEP 41
-2023-09-17 17:56:09,236 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:09,236 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:09,328 [BombeRLeWorld] INFO: STARTING STEP 42
-2023-09-17 17:56:09,330 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:09,330 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:09,427 [BombeRLeWorld] INFO: STARTING STEP 43
-2023-09-17 17:56:09,430 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:09,430 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:09,528 [BombeRLeWorld] INFO: STARTING STEP 44
-2023-09-17 17:56:09,530 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:09,530 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:09,628 [BombeRLeWorld] INFO: STARTING STEP 45
-2023-09-17 17:56:09,631 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:09,631 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:09,729 [BombeRLeWorld] INFO: STARTING STEP 46
-2023-09-17 17:56:09,731 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:09,731 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:09,830 [BombeRLeWorld] INFO: STARTING STEP 47
-2023-09-17 17:56:09,833 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:09,833 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:09,929 [BombeRLeWorld] INFO: STARTING STEP 48
-2023-09-17 17:56:09,932 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
-2023-09-17 17:56:09,932 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:10,029 [BombeRLeWorld] INFO: STARTING STEP 49
-2023-09-17 17:56:10,031 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:10,031 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:10,129 [BombeRLeWorld] INFO: STARTING STEP 50
-2023-09-17 17:56:10,132 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:10,132 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:10,232 [BombeRLeWorld] INFO: STARTING STEP 51
-2023-09-17 17:56:10,235 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:10,235 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:10,329 [BombeRLeWorld] INFO: STARTING STEP 52
-2023-09-17 17:56:10,332 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:10,332 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:10,430 [BombeRLeWorld] INFO: STARTING STEP 53
-2023-09-17 17:56:10,433 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:10,433 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:10,530 [BombeRLeWorld] INFO: STARTING STEP 54
-2023-09-17 17:56:10,532 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:10,532 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:10,631 [BombeRLeWorld] INFO: STARTING STEP 55
-2023-09-17 17:56:10,634 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:10,634 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:10,730 [BombeRLeWorld] INFO: STARTING STEP 56
-2023-09-17 17:56:10,733 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:10,733 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:10,830 [BombeRLeWorld] INFO: STARTING STEP 57
-2023-09-17 17:56:10,833 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:10,833 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:10,930 [BombeRLeWorld] INFO: STARTING STEP 58
-2023-09-17 17:56:10,933 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:10,933 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:11,031 [BombeRLeWorld] INFO: STARTING STEP 59
-2023-09-17 17:56:11,034 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:11,034 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:11,131 [BombeRLeWorld] INFO: STARTING STEP 60
-2023-09-17 17:56:11,133 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:11,133 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:11,231 [BombeRLeWorld] INFO: STARTING STEP 61
-2023-09-17 17:56:11,234 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:11,234 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:11,332 [BombeRLeWorld] INFO: STARTING STEP 62
-2023-09-17 17:56:11,334 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:11,334 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:11,431 [BombeRLeWorld] INFO: STARTING STEP 63
-2023-09-17 17:56:11,434 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:11,434 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:11,531 [BombeRLeWorld] INFO: STARTING STEP 64
-2023-09-17 17:56:11,534 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:11,534 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:11,631 [BombeRLeWorld] INFO: STARTING STEP 65
-2023-09-17 17:56:11,634 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:11,634 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:11,731 [BombeRLeWorld] INFO: STARTING STEP 66
-2023-09-17 17:56:11,734 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:11,734 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:11,832 [BombeRLeWorld] INFO: STARTING STEP 67
-2023-09-17 17:56:11,835 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:11,835 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:11,934 [BombeRLeWorld] INFO: STARTING STEP 68
-2023-09-17 17:56:11,937 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:11,937 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:12,032 [BombeRLeWorld] INFO: STARTING STEP 69
-2023-09-17 17:56:12,035 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:12,035 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:12,132 [BombeRLeWorld] INFO: STARTING STEP 70
-2023-09-17 17:56:12,135 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
-2023-09-17 17:56:12,135 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:12,232 [BombeRLeWorld] INFO: STARTING STEP 71
-2023-09-17 17:56:12,235 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:12,235 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:12,333 [BombeRLeWorld] INFO: STARTING STEP 72
-2023-09-17 17:56:12,336 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:12,336 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:12,433 [BombeRLeWorld] INFO: STARTING STEP 73
-2023-09-17 17:56:12,435 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
-2023-09-17 17:56:12,436 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:12,533 [BombeRLeWorld] INFO: STARTING STEP 74
-2023-09-17 17:56:12,535 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:12,535 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:12,633 [BombeRLeWorld] INFO: STARTING STEP 75
-2023-09-17 17:56:12,635 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:12,635 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:12,733 [BombeRLeWorld] INFO: STARTING STEP 76
-2023-09-17 17:56:12,736 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:12,736 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:12,833 [BombeRLeWorld] INFO: STARTING STEP 77
-2023-09-17 17:56:12,836 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
-2023-09-17 17:56:12,836 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:12,934 [BombeRLeWorld] INFO: STARTING STEP 78
-2023-09-17 17:56:12,936 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:12,936 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:13,033 [BombeRLeWorld] INFO: STARTING STEP 79
-2023-09-17 17:56:13,036 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:13,036 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:13,134 [BombeRLeWorld] INFO: STARTING STEP 80
-2023-09-17 17:56:13,136 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:13,136 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:13,234 [BombeRLeWorld] INFO: STARTING STEP 81
-2023-09-17 17:56:13,237 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
-2023-09-17 17:56:13,237 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
-2023-09-17 17:56:13,334 [BombeRLeWorld] INFO: STARTING STEP 82
-2023-09-17 17:56:13,338 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
-2023-09-17 17:56:13,338 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:36,422 [BombeRLeWorld] INFO: Initializing game world
+2023-09-18 14:26:38,026 [BombeRLeWorld] INFO: STARTING ROUND #1
+2023-09-18 14:26:38,036 [BombeRLeWorld] INFO: STARTING STEP 1
+2023-09-18 14:26:38,039 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:38,039 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:38,039 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (1, 14) and receives 1 point
+2023-09-18 14:26:38,131 [BombeRLeWorld] INFO: STARTING STEP 2
+2023-09-18 14:26:38,133 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
+2023-09-18 14:26:38,133 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:38,133 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (1, 15) and receives 1 point
+2023-09-18 14:26:38,231 [BombeRLeWorld] INFO: STARTING STEP 3
+2023-09-18 14:26:38,233 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:38,233 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:38,233 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (2, 15) and receives 1 point
+2023-09-18 14:26:38,331 [BombeRLeWorld] INFO: STARTING STEP 4
+2023-09-18 14:26:38,333 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:38,334 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:38,433 [BombeRLeWorld] INFO: STARTING STEP 5
+2023-09-18 14:26:38,436 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:38,436 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:38,436 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (4, 15) and receives 1 point
+2023-09-18 14:26:38,533 [BombeRLeWorld] INFO: STARTING STEP 6
+2023-09-18 14:26:38,535 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:38,535 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:38,535 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (5, 15) and receives 1 point
+2023-09-18 14:26:38,634 [BombeRLeWorld] INFO: STARTING STEP 7
+2023-09-18 14:26:38,637 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:38,637 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:38,732 [BombeRLeWorld] INFO: STARTING STEP 8
+2023-09-18 14:26:38,734 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:38,734 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:38,833 [BombeRLeWorld] INFO: STARTING STEP 9
+2023-09-18 14:26:38,835 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:38,835 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:38,835 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (4, 13) and receives 1 point
+2023-09-18 14:26:38,932 [BombeRLeWorld] INFO: STARTING STEP 10
+2023-09-18 14:26:38,935 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:38,935 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:38,935 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (3, 13) and receives 1 point
+2023-09-18 14:26:39,033 [BombeRLeWorld] INFO: STARTING STEP 11
+2023-09-18 14:26:39,035 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:39,035 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:39,133 [BombeRLeWorld] INFO: STARTING STEP 12
+2023-09-18 14:26:39,135 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:39,135 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:39,135 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (1, 13) and receives 1 point
+2023-09-18 14:26:39,234 [BombeRLeWorld] INFO: STARTING STEP 13
+2023-09-18 14:26:39,236 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:39,236 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:39,333 [BombeRLeWorld] INFO: STARTING STEP 14
+2023-09-18 14:26:39,335 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:39,336 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:39,434 [BombeRLeWorld] INFO: STARTING STEP 15
+2023-09-18 14:26:39,436 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:39,436 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:39,436 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (2, 11) and receives 1 point
+2023-09-18 14:26:39,534 [BombeRLeWorld] INFO: STARTING STEP 16
+2023-09-18 14:26:39,536 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:39,536 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:39,634 [BombeRLeWorld] INFO: STARTING STEP 17
+2023-09-18 14:26:39,636 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:39,636 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:39,636 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (3, 10) and receives 1 point
+2023-09-18 14:26:39,734 [BombeRLeWorld] INFO: STARTING STEP 18
+2023-09-18 14:26:39,736 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:39,736 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:39,736 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (3, 9) and receives 1 point
+2023-09-18 14:26:39,835 [BombeRLeWorld] INFO: STARTING STEP 19
+2023-09-18 14:26:39,837 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:39,837 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:39,837 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (3, 8) and receives 1 point
+2023-09-18 14:26:39,935 [BombeRLeWorld] INFO: STARTING STEP 20
+2023-09-18 14:26:39,937 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
+2023-09-18 14:26:39,937 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:40,037 [BombeRLeWorld] INFO: STARTING STEP 21
+2023-09-18 14:26:40,039 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:40,039 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:40,039 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (2, 9) and receives 1 point
+2023-09-18 14:26:40,135 [BombeRLeWorld] INFO: STARTING STEP 22
+2023-09-18 14:26:40,137 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:40,137 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:40,235 [BombeRLeWorld] INFO: STARTING STEP 23
+2023-09-18 14:26:40,237 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
+2023-09-18 14:26:40,237 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:40,335 [BombeRLeWorld] INFO: STARTING STEP 24
+2023-09-18 14:26:40,337 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
+2023-09-18 14:26:40,337 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:40,436 [BombeRLeWorld] INFO: STARTING STEP 25
+2023-09-18 14:26:40,438 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:40,438 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:40,438 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (4, 11) and receives 1 point
+2023-09-18 14:26:40,536 [BombeRLeWorld] INFO: STARTING STEP 26
+2023-09-18 14:26:40,538 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:40,538 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:40,538 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (5, 11) and receives 1 point
+2023-09-18 14:26:40,636 [BombeRLeWorld] INFO: STARTING STEP 27
+2023-09-18 14:26:40,638 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:40,638 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:40,736 [BombeRLeWorld] INFO: STARTING STEP 28
+2023-09-18 14:26:40,738 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:40,738 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:40,836 [BombeRLeWorld] INFO: STARTING STEP 29
+2023-09-18 14:26:40,839 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:40,839 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:40,839 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (7, 10) and receives 1 point
+2023-09-18 14:26:40,937 [BombeRLeWorld] INFO: STARTING STEP 30
+2023-09-18 14:26:40,939 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:40,939 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:41,037 [BombeRLeWorld] INFO: STARTING STEP 31
+2023-09-18 14:26:41,039 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:41,039 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:41,039 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (7, 8) and receives 1 point
+2023-09-18 14:26:41,138 [BombeRLeWorld] INFO: STARTING STEP 32
+2023-09-18 14:26:41,140 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:41,140 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:41,140 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (7, 7) and receives 1 point
+2023-09-18 14:26:41,237 [BombeRLeWorld] INFO: STARTING STEP 33
+2023-09-18 14:26:41,239 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:41,239 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:41,239 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (8, 7) and receives 1 point
+2023-09-18 14:26:41,337 [BombeRLeWorld] INFO: STARTING STEP 34
+2023-09-18 14:26:41,339 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:41,339 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:41,438 [BombeRLeWorld] INFO: STARTING STEP 35
+2023-09-18 14:26:41,440 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:41,440 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:41,440 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (10, 7) and receives 1 point
+2023-09-18 14:26:41,538 [BombeRLeWorld] INFO: STARTING STEP 36
+2023-09-18 14:26:41,540 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:41,540 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:41,638 [BombeRLeWorld] INFO: STARTING STEP 37
+2023-09-18 14:26:41,640 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:41,640 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:41,640 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (9, 6) and receives 1 point
+2023-09-18 14:26:41,738 [BombeRLeWorld] INFO: STARTING STEP 38
+2023-09-18 14:26:41,740 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:41,741 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:41,838 [BombeRLeWorld] INFO: STARTING STEP 39
+2023-09-18 14:26:41,840 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:41,840 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:41,938 [BombeRLeWorld] INFO: STARTING STEP 40
+2023-09-18 14:26:41,940 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:41,940 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:41,940 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (7, 5) and receives 1 point
+2023-09-18 14:26:42,038 [BombeRLeWorld] INFO: STARTING STEP 41
+2023-09-18 14:26:42,041 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:42,041 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:42,139 [BombeRLeWorld] INFO: STARTING STEP 42
+2023-09-18 14:26:42,141 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:42,141 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:42,141 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (7, 3) and receives 1 point
+2023-09-18 14:26:42,239 [BombeRLeWorld] INFO: STARTING STEP 43
+2023-09-18 14:26:42,241 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:42,241 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:42,340 [BombeRLeWorld] INFO: STARTING STEP 44
+2023-09-18 14:26:42,342 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:42,342 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:42,342 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (9, 3) and receives 1 point
+2023-09-18 14:26:42,440 [BombeRLeWorld] INFO: STARTING STEP 45
+2023-09-18 14:26:42,442 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:42,442 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:42,540 [BombeRLeWorld] INFO: STARTING STEP 46
+2023-09-18 14:26:42,542 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:42,542 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:42,542 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (11, 3) and receives 1 point
+2023-09-18 14:26:42,640 [BombeRLeWorld] INFO: STARTING STEP 47
+2023-09-18 14:26:42,642 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:42,642 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:42,740 [BombeRLeWorld] INFO: STARTING STEP 48
+2023-09-18 14:26:42,743 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:42,743 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:42,743 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (13, 3) and receives 1 point
+2023-09-18 14:26:42,840 [BombeRLeWorld] INFO: STARTING STEP 49
+2023-09-18 14:26:42,842 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
+2023-09-18 14:26:42,842 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:42,940 [BombeRLeWorld] INFO: STARTING STEP 50
+2023-09-18 14:26:42,943 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
+2023-09-18 14:26:42,943 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:43,041 [BombeRLeWorld] INFO: STARTING STEP 51
+2023-09-18 14:26:43,043 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
+2023-09-18 14:26:43,043 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:43,144 [BombeRLeWorld] INFO: STARTING STEP 52
+2023-09-18 14:26:43,146 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
+2023-09-18 14:26:43,146 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:43,146 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (13, 7) and receives 1 point
+2023-09-18 14:26:43,241 [BombeRLeWorld] INFO: STARTING STEP 53
+2023-09-18 14:26:43,243 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:43,243 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:43,342 [BombeRLeWorld] INFO: STARTING STEP 54
+2023-09-18 14:26:43,344 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:43,344 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:43,345 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (15, 7) and receives 1 point
+2023-09-18 14:26:43,441 [BombeRLeWorld] INFO: STARTING STEP 55
+2023-09-18 14:26:43,443 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:43,443 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:43,443 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (15, 6) and receives 1 point
+2023-09-18 14:26:43,542 [BombeRLeWorld] INFO: STARTING STEP 56
+2023-09-18 14:26:43,544 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
+2023-09-18 14:26:43,544 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:43,642 [BombeRLeWorld] INFO: STARTING STEP 57
+2023-09-18 14:26:43,644 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
+2023-09-18 14:26:43,644 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:43,743 [BombeRLeWorld] INFO: STARTING STEP 58
+2023-09-18 14:26:43,747 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action DOWN in 0.00s.
+2023-09-18 14:26:43,747 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:43,747 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (15, 9) and receives 1 point
+2023-09-18 14:26:43,842 [BombeRLeWorld] INFO: STARTING STEP 59
+2023-09-18 14:26:43,845 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:43,845 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:43,943 [BombeRLeWorld] INFO: STARTING STEP 60
+2023-09-18 14:26:43,946 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:43,946 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:44,043 [BombeRLeWorld] INFO: STARTING STEP 61
+2023-09-18 14:26:44,045 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:44,045 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:44,045 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (12, 9) and receives 1 point
+2023-09-18 14:26:44,143 [BombeRLeWorld] INFO: STARTING STEP 62
+2023-09-18 14:26:44,145 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:44,145 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:44,243 [BombeRLeWorld] INFO: STARTING STEP 63
+2023-09-18 14:26:44,245 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:44,245 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:44,245 [BombeRLeWorld] INFO: Agent <baby_terminator> picked up coin at (10, 9) and receives 1 point
+2023-09-18 14:26:44,344 [BombeRLeWorld] INFO: STARTING STEP 64
+2023-09-18 14:26:44,346 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:44,346 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:44,444 [BombeRLeWorld] INFO: STARTING STEP 65
+2023-09-18 14:26:44,446 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:44,446 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:44,545 [BombeRLeWorld] INFO: STARTING STEP 66
+2023-09-18 14:26:44,547 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:44,547 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:44,644 [BombeRLeWorld] INFO: STARTING STEP 67
+2023-09-18 14:26:44,646 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:44,647 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:44,745 [BombeRLeWorld] INFO: STARTING STEP 68
+2023-09-18 14:26:44,747 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:44,747 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:44,845 [BombeRLeWorld] INFO: STARTING STEP 69
+2023-09-18 14:26:44,847 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:44,847 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:44,945 [BombeRLeWorld] INFO: STARTING STEP 70
+2023-09-18 14:26:44,947 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:44,948 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:45,045 [BombeRLeWorld] INFO: STARTING STEP 71
+2023-09-18 14:26:45,047 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:45,048 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:45,146 [BombeRLeWorld] INFO: STARTING STEP 72
+2023-09-18 14:26:45,149 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action UP in 0.00s.
+2023-09-18 14:26:45,149 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:45,246 [BombeRLeWorld] INFO: STARTING STEP 73
+2023-09-18 14:26:45,248 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:45,248 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:45,346 [BombeRLeWorld] INFO: STARTING STEP 74
+2023-09-18 14:26:45,348 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:45,348 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:45,446 [BombeRLeWorld] INFO: STARTING STEP 75
+2023-09-18 14:26:45,448 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:45,448 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:45,546 [BombeRLeWorld] INFO: STARTING STEP 76
+2023-09-18 14:26:45,548 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:45,548 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:45,646 [BombeRLeWorld] INFO: STARTING STEP 77
+2023-09-18 14:26:45,648 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:45,649 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:45,747 [BombeRLeWorld] INFO: STARTING STEP 78
+2023-09-18 14:26:45,749 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:45,749 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:45,847 [BombeRLeWorld] INFO: STARTING STEP 79
+2023-09-18 14:26:45,849 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:45,849 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:45,947 [BombeRLeWorld] INFO: STARTING STEP 80
+2023-09-18 14:26:45,949 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:45,949 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:46,047 [BombeRLeWorld] INFO: STARTING STEP 81
+2023-09-18 14:26:46,049 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:46,049 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:46,148 [BombeRLeWorld] INFO: STARTING STEP 82
+2023-09-18 14:26:46,150 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:46,150 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:46,248 [BombeRLeWorld] INFO: STARTING STEP 83
+2023-09-18 14:26:46,250 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:46,250 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:46,349 [BombeRLeWorld] INFO: STARTING STEP 84
+2023-09-18 14:26:46,351 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:46,351 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:46,448 [BombeRLeWorld] INFO: STARTING STEP 85
+2023-09-18 14:26:46,450 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:46,450 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:46,548 [BombeRLeWorld] INFO: STARTING STEP 86
+2023-09-18 14:26:46,550 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:46,550 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:46,648 [BombeRLeWorld] INFO: STARTING STEP 87
+2023-09-18 14:26:46,650 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:46,650 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:46,748 [BombeRLeWorld] INFO: STARTING STEP 88
+2023-09-18 14:26:46,750 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:46,750 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:46,848 [BombeRLeWorld] INFO: STARTING STEP 89
+2023-09-18 14:26:46,850 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:46,850 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:46,949 [BombeRLeWorld] INFO: STARTING STEP 90
+2023-09-18 14:26:46,951 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:46,951 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:47,049 [BombeRLeWorld] INFO: STARTING STEP 91
+2023-09-18 14:26:47,051 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:47,051 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:47,149 [BombeRLeWorld] INFO: STARTING STEP 92
+2023-09-18 14:26:47,151 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:47,151 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:47,250 [BombeRLeWorld] INFO: STARTING STEP 93
+2023-09-18 14:26:47,253 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:47,253 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:47,350 [BombeRLeWorld] INFO: STARTING STEP 94
+2023-09-18 14:26:47,352 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:47,352 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:47,450 [BombeRLeWorld] INFO: STARTING STEP 95
+2023-09-18 14:26:47,452 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:47,452 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:47,550 [BombeRLeWorld] INFO: STARTING STEP 96
+2023-09-18 14:26:47,552 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:47,552 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:47,650 [BombeRLeWorld] INFO: STARTING STEP 97
+2023-09-18 14:26:47,652 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:47,652 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:47,750 [BombeRLeWorld] INFO: STARTING STEP 98
+2023-09-18 14:26:47,752 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:47,752 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:47,850 [BombeRLeWorld] INFO: STARTING STEP 99
+2023-09-18 14:26:47,852 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action LEFT in 0.00s.
+2023-09-18 14:26:47,852 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:47,951 [BombeRLeWorld] INFO: STARTING STEP 100
+2023-09-18 14:26:47,953 [BombeRLeWorld] INFO: Agent <baby_terminator> chose action RIGHT in 0.00s.
+2023-09-18 14:26:47,953 [BombeRLeWorld] INFO: Agent <baby_terminator> stayed within acceptable think time.
+2023-09-18 14:26:47,953 [BombeRLeWorld] INFO: Maximum number of steps reached, wrap up round
+2023-09-18 14:26:47,953 [BombeRLeWorld] INFO: WRAPPING UP ROUND #1
+2023-09-18 14:26:53,262 [BombeRLeWorld] INFO: SHUT DOWN
