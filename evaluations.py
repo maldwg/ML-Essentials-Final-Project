@@ -53,6 +53,20 @@ create_directory_if_not_exists(figure_evaluation_dir)
 with gzip.open(model_path, 'rb') as f:
     policy_net,_,_, memory = pickle.load(f)
 
+
+# transition = memory.memory[35]
+# state, action, next_state, reward = transition
+# plt.imshow(state.numpy().transpose(1, 2, 0))  
+# plt.axis('off')  
+# plt.title("state")
+# plt.savefig("./old-state.png")
+# plt.imshow(next_state.numpy().transpose(1, 2, 0))  
+# plt.axis('off')  
+# plt.title("next-state")
+# plt.savefig("./new-state.png")
+# print(action)
+# print(reward)
+
 print(f"Model has remembered {memory.steps_done} steps")
 print(f"Memmory length: {len(memory.memory)}")
 invalid_counter = 0

@@ -84,7 +84,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         self.logger.info(f"overall reward of step {reward}")
         reward = torch.tensor(reward, device=device)
         # push the state to the memory in order to be able to learn from it 
-        self.memory.random_push(state, action, next_state, reward)
+        self.memory.push(state, action, next_state, reward)
 
         # needs to be before optimize otherwise the events occured are not taken into account
         increment_event_counts(self, events)
@@ -123,7 +123,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.memory.rewards_of_round = []
 
     reward = torch.tensor(reward, device=device)
-    self.memory.random_push(state, action, None, reward)
+    self.memory.push(state, action, None, reward)
     self.logger.info(f"Round ended --> newest shortest path was reset")
     self.memory.shortest_paths_out_of_explosion = []
     self.memory.shortest_paths_to_coin = []
@@ -168,10 +168,10 @@ def after_game_rewards(self, last_game_state):
     placement = np.argsort(scores)[-1]
     self.logger.info(f"Reached {placement + 1} place")
     if placement + 1 < 3: 
-        placement_reward = (1 / (placement + 1) * game_rewards[ad.PLACEMENT_REWARD]) 
+        placement_reward = (1 / (placement + 1) * self.memory.game_rewards[ad.PLACEMENT_REWARD]) 
     else: 
         placement_reward = 0
-    score_reward = (score * game_rewards[ad.SCORE_REWARD])
+    score_reward = (score * self.memory.game_rewards[ad.SCORE_REWARD])
     self.logger.info(f"Score reward: {score_reward}")
     self.logger.info(f"placement reward: {placement_reward}")
     return placement_reward + score_reward
@@ -186,9 +186,11 @@ def reward_from_events(self, events: List[str]) -> int:
     
     reward_sum = 0
     rewarded_events = []
+    # self.memory.recalculate_rewards(events)
+    # self.logger.info(f"recalculated rewards,new rewards: {self.memory.game_rewards}")
     for event in events:
-        if event in game_rewards:
-            reward_sum += game_rewards[event]
+        if event in self.memory.game_rewards:
+            reward_sum += self.memory.game_rewards[event]
             rewarded_events.append(event)
     self.logger.info(f"Awarded {reward_sum} for the {len(rewarded_events)} events {', '.join(rewarded_events)}")
     return reward_sum
@@ -201,7 +203,7 @@ def optimize_model(self):
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
     BATCH_SIZE = 128
-    GAMMA = 0.999
+    GAMMA = 0.333
 
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn

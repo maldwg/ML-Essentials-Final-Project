@@ -25,14 +25,14 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
     if old_game_state is not None:
 
         # check whether agent left an explosion zone last step or was adjacent to an active explosion
-        if agent_stayed_outside_explosion_zone(new_game_state):
-            # check whether agent left an explosion zone last step or was adjacent to an active explosion
-            if self.memory.left_explosion_zone or agent_was_adjacent_to_active_explosion(self, old_game_state):
-                custom_events.append(c.STAYED_OUTSIDE_ACTIVE_EXPLOSION)
-        else:
-            custom_events.append(c.ENTERED_ACTIVE_EXPLOSION)
-        # reset explosion zone trigger
-        self.memory.left_explosion_zone = False
+        # if agent_stayed_outside_explosion_zone(new_game_state):
+        #     # check whether agent left an explosion zone last step or was adjacent to an active explosion
+        #     if self.memory.left_explosion_zone or agent_was_adjacent_to_active_explosion(self, old_game_state):
+        #         custom_events.append(c.STAYED_OUTSIDE_ACTIVE_EXPLOSION)
+        # else:
+        #     custom_events.append(c.ENTERED_ACTIVE_EXPLOSION)
+        # # reset explosion zone trigger
+        # self.memory.left_explosion_zone = False
 
         if unallowed_bomb(self_action, old_game_state):
             custom_events.append(c.UNALLOWED_BOMB)
@@ -227,14 +227,14 @@ def update_paths_out_of_explosion(self, new_game_state):
         minimum_path_length = path_lengths.min()
         minimum_path_indices = np.where(path_lengths == minimum_path_length)
         shortest_paths_out_of_explosion = [paths_out_of_explosion[i] for i in minimum_path_indices[0]]
-        self.logger.info(f"shortest path out of explosion: {shortest_paths_out_of_explosion}")
-        self.logger.info(min(paths_out_of_explosion, key=len))
 
         if len(self.memory.shortest_paths_out_of_explosion) == 0:
             self.memory.shortest_paths_out_of_explosion = shortest_paths_out_of_explosion
         if len(self.memory.shortest_paths_out_of_explosion[0]) - 1 > minimum_path_length:
-            self.memory.shorest_paths_out_of_explosion = shortest_paths_out_of_explosion
+            self.memory.shortest_paths_out_of_explosion = shortest_paths_out_of_explosion
 
+        self.logger.info(f"shortest path out of explosion: {shortest_paths_out_of_explosion}")
+        self.logger.info(min(paths_out_of_explosion, key=len))
 
 def update_coin_paths(self, new_game_state, events):
     paths_to_coins = get_all_paths_to_coins(new_game_state)
