@@ -2,7 +2,6 @@ import torch
 from collections import namedtuple, deque
 import events as e
 from . import custom_events as c
-from .hyperparameters import read_hyperparameters
 import functools
 import numpy as np
 import math
