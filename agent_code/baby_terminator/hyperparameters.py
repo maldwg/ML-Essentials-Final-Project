@@ -1,3 +1,5 @@
+import json
+
 from enum import Enum
 
 
@@ -27,3 +29,9 @@ class EpsilonGreedy(Enum):
 class Train(Enum):
     BATCH_SIZE = "BATCH_SIZE"
     GAMMA = "GAMMA"
+
+
+def read_hyperparameters():
+    with open("./parameters.json", "r") as f:
+       hyperparameters = json.load(f) 
+    return hyperparameters
