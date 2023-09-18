@@ -7,6 +7,7 @@ import numpy as np
 import gzip 
 
 from .model import QNetwork, FullyConnectedQNetwork
+from .hyperparameters import read_hyperparameters
 import torch
 import torch.optim as optim
 
@@ -38,12 +39,13 @@ def setup(self):
         if not os.path.isfile("my-saved-model.pkl.gz"):
             self.logger.info("Setting up model from scratch.")
             # init policy and target network 
-            self.policy_net = QNetwork.Builder().input_output_dimensions(17, 17, 3, 6).add_convolution(16, 3, 1, 2).add_convolution(32, 3, 1, 2, 0.3).set_head_dropout(0.3).build().to(device)
-            self.target_net = QNetwork.Builder().input_output_dimensions(17, 17, 3, 6).add_convolution(16, 3, 1, 2).add_convolution(32, 3, 1, 2, 0.3).set_head_dropout(0.3).build().to(device)
+            hyperparameters = read_hyperparameters()
+            self.policy_net = QNetwork.Builder().input_output_dimensions(17, 17, 3, 6).add_convolution(*hyperparameters[0]).add_convolution(*hyperparameters[1]).set_head_dropout(0).build().to(device)
+            self.target_net = QNetwork.Builder().input_output_dimensions(17, 17, 3, 6).add_convolution(*hyperparameters[0]).add_convolution(*hyperparameters[1]).set_head_dropout(0).build().to(device)
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
-            self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.0001, weight_decay=1e-5)
-            self.memory = ReplayMemory(100000)
+            self.optimizer = optim.Adam(self.policy_net.parameters(), *hyperparameters[3])
+            self.memory = ReplayMemory(*hyperparameters[4])
         else:
             self.logger.info("Using existing model to generate new generation")
             # with open("my-saved-model.pt", "rb") as file:
