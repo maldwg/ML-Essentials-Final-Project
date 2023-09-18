@@ -36,18 +36,18 @@ def setup(self):
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
     self.steps_done = 0
+    hyperparameters = read_hyperparameters()
     if self.train:
         self.logger.info("Training mode selected")
         if not os.path.isfile("my-saved-model.pkl.gz"):
             self.logger.info("Setting up model from scratch.")
             # init policy and target network 
-            hyperparameters = read_hyperparameters()
-            self.policy_net = QNetwork.Builder().input_output_dimensions(17, 17, 3, 6).add_convolution(*hyperparameters[0]).add_convolution(*hyperparameters[1]).set_head_dropout(0).build().to(device)
-            self.target_net = QNetwork.Builder().input_output_dimensions(17, 17, 3, 6).add_convolution(*hyperparameters[0]).add_convolution(*hyperparameters[1]).set_head_dropout(0).build().to(device)
+            self.policy_net = QNetwork.Builder().input_output_dimensions(17, 17, 3, 6).add_convolution(**hyperparameters[0]).add_convolution(**hyperparameters[1]).set_head_dropout(0).build().to(device)
+            self.target_net = QNetwork.Builder().input_output_dimensions(17, 17, 3, 6).add_convolution(**hyperparameters[0]).add_convolution(**hyperparameters[1]).set_head_dropout(0).build().to(device)
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
-            self.optimizer = optim.Adam(self.policy_net.parameters(), *hyperparameters[3])
-            self.memory = ReplayMemory(*hyperparameters[4])
+            self.optimizer = optim.Adam(self.policy_net.parameters(), **hyperparameters[2])
+            self.memory = ReplayMemory(**hyperparameters[3])
         else:
             self.logger.info("Using existing model to generate new generation")
             # with open("my-saved-model.pt", "rb") as file:
@@ -64,6 +64,9 @@ def setup(self):
         with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
             self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(f)
         gc.enable()
+    
+    self.memory.eps_decay_params = hyperparameters[4]
+    self.memory.train_params = hyperparameters[5]
 
 
 def act(self, game_state: dict) -> str:
@@ -80,7 +83,7 @@ def act(self, game_state: dict) -> str:
     # self.logger.info(game_state)
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
-        eps_threshold = calculate_eps_threshold(self, EPS_START=0.9, EPS_END=0.1, EPS_DECAY=300)
+        eps_threshold = calculate_eps_threshold(self, **self.memory.eps_decay_params)
         sample = random.random()
 
         if sample > eps_threshold:

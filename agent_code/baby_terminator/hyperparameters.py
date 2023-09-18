@@ -33,5 +33,5 @@ class Train(Enum):
 
 def read_hyperparameters():
     with open("./parameters.json", "r") as f:
-       hyperparameters = json.load(f) 
+       hyperparameters = json.load(f)
     return hyperparameters
