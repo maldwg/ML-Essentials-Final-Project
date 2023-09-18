@@ -9,11 +9,11 @@ class QNetwork(nn.Module):
         self.padding = 2
 
         self.conv1 = nn.Conv2d(3, 16, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
-        self.dropout1 = nn.Dropout(0.3)
+        # self.dropout1 = nn.Dropout(0.3)
 
         self.conv2 = nn.Conv2d(16, 32, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
         #self.pooling2 = nn.MaxPool2d(self.kernel_size, self.stride)
-        self.dropout2 = nn.Dropout(0.3)
+        # self.dropout2 = nn.Dropout(0.3)
 
         # self.conv3 = nn.Conv2d(32, 64, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
         # self.pooling3 = nn.MaxPool2d(self.kernel_size, self.stride)
@@ -48,11 +48,11 @@ class QNetwork(nn.Module):
     def forward(self, x):
         x = nn.functional.relu(self.conv1(x))
         # x = self.pooling1(x)
-        x = self.dropout1(x)
+        # x = self.dropout1(x)
 
         x = nn.functional.relu(self.conv2(x))
         # x = self.pooling2(x)
-        x = self.dropout2(x)
+        # x = self.dropout2(x)
 
         # x = nn.functional.relu(self.conv3(x))
         # x = self.pooling3(x)
