@@ -2,6 +2,7 @@ import torch
 from collections import namedtuple, deque
 import events as e
 from . import custom_events as c
+from .hyperparameters import read_hyperparameters
 import functools
 import numpy as np
 import math
@@ -43,7 +44,6 @@ def z_normalize_rewards(rewards: dict) -> dict:
     normalized_rewards = {key: (value - mean) / std_dev for key, value in rewards.items()}
 
     return normalized_rewards
-
 
 
 game_rewards_not_normalized = {
