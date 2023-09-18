@@ -14,7 +14,7 @@ from .memory import ReplayMemory
 
 import math
 
-from .utils import ACTIONS, device, DIRECTIONS, is_action_valid
+from .utils import ACTIONS, device, DIRECTIONS, is_action_valid, calculate_eps_threshold
 from .path_finding import astar
 
 
@@ -76,12 +76,8 @@ def act(self, game_state: dict) -> str:
     # self.logger.info(game_state)
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
-        EPS_START = 0.9
-        EPS_END = 0.1
-        EPS_DECAY = 300
+        eps_threshold = calculate_eps_threshold(self, EPS_START=0.9, EPS_END=0.1, EPS_DECAY=300)
         sample = random.random()
-        eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)
-        self.memory.steps_done += 1
 
         if sample > eps_threshold:
             self.logger.info("Exploitation")
@@ -95,6 +91,7 @@ def act(self, game_state: dict) -> str:
                 self.logger.info(f"Q-values: {q_values} | Max Value chosen: {q_values.max(1)[1]} | Chosen view: {q_values.max(1)[1].view(1,1)} | Item: {q_values.max(1)[1].view(1,1).item()}")
                 action = q_values.max(1)[1].view(1, 1)
                 self.logger.info(f"Chose {ACTIONS[action.item()]} as best value ")
+                self.memory.steps_done += 1
                 return ACTIONS[action.item()]
         else:
             self.logger.info("Exploration")
@@ -103,6 +100,7 @@ def act(self, game_state: dict) -> str:
                 self.logger.info(f"{action} is invalid... choosing again")
                 action = np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
             self.logger.info(f"Choose random action {action}")
+            self.memory.steps_done += 1
             return action
 
     else:

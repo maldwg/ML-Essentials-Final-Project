@@ -4,6 +4,8 @@ import events as e
 from . import custom_events as c
 import functools
 import numpy as np
+import math
+
 
 DIRECTIONS = [(1, 0), (0, 1), (-1, 0 ), (0, -1)]
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
@@ -397,4 +399,5 @@ def is_action_valid(self, state, action):
     return empty_spot and valid_bomb_dropped 
 
 
-
+def calculate_eps_threshold(self, EPS_START, EPS_END, EPS_DECAY):
+    return EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)
