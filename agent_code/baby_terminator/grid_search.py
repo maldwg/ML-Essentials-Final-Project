@@ -1,7 +1,12 @@
 import json
+import subprocess
+import gzip
+import pickle
 
 from copy import deepcopy
 from itertools import product
+
+import numpy as np
 
 import hyperparameters
 
@@ -28,14 +33,25 @@ intervals = {
 
 
 def search():
+    top_ten_mean_rewards = []
     for json_dump in create_dicts():
         with open("./parameters.json", "w") as f:
             f.write(json_dump)
 
-        # main.py aufrufen
+        # call main.py
+        p_main = subprocess.Popen("python main.py play --agents baby_terminator --n-rounds=200 --train 1 --scenario coin-heaven --no-gui")
+        exit_code = p_main.wait()
         # eval
-        # avg reward berechnen
-        # wenn top ten, wegkopieren
+        if exit_code == 0:
+            with gzip.open("./my-saved-model.pkl.gz", 'rb') as f:
+                _, _, _, memory = pickle.load(f)
+            # avg reward berechnen
+            mean_reward = np.mean(memory.rewards_of_round[-10:])
+            # wenn top ten, wegkopieren
+            top_ten_mean_rewards.append(mean_reward)
+            if len(top_ten_mean_rewards) == 10:
+                top_ten_mean_rewards.pop(min(top_ten_mean_rewards))
+                
 
 
 def create_dicts():
