@@ -50,8 +50,7 @@ def search():
             # wenn top ten, wegkopieren
             top_ten_mean_rewards.append(mean_reward)
             if len(top_ten_mean_rewards) == 10:
-                top_ten_mean_rewards.pop(min(top_ten_mean_rewards))
-                
+                top_ten_mean_rewards.pop(min(top_ten_mean_rewards))        
 
 
 def create_dicts():

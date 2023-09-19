@@ -1,6 +1,4 @@
-import torch
 from torch import nn
-
 
 class Convolution(nn.Module):
     def __init__(self, input_channels, output_channels, kernel_size, stride, padding, dropout=0):
@@ -43,14 +41,6 @@ class QNetwork(nn.Module):
             calculate the Output height or width of a convolutional layer
             """
             return (padding * 2 + size - kernel_size + stride) // stride 
-
-        def conv2d_size_out_with_pooling(size, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding):
-            """
-            calculate the Output height or width of a convolutional layer
-            """
-            cnn_output =  (padding * 2 + size - kernel_size + stride) // stride 
-            pooling_output = (cnn_output - kernel_size + stride ) // stride
-            return pooling_output
         
         convw = conv2d_size_out(conv2d_size_out(w))
         convh = conv2d_size_out(conv2d_size_out(h))

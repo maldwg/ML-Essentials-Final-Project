@@ -1,4 +1,4 @@
-from collections import namedtuple, deque
+from collections import deque
 
 import pickle
 import gc
@@ -12,16 +12,9 @@ import events as e
 from . import custom_events as ad
 from .callbacks import state_to_features
 
-from .model import QNetwork
-from .memory import ReplayMemory
-
 import torch
 from torch import nn
 from .utils import *
-
-from .path_finding import astar
-
-
 
 
 # Hyper parameters -- DO modify
@@ -70,7 +63,6 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     if old_game_state is None:
         self.logger.info("State is none in game events occurred")
         return
-    # self.logger.info(f"Game field:\n{old_game_state}")
     # get the input for the CNN
     state = state_to_features(self, old_game_state)
     if state is not None:
@@ -132,32 +124,19 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.memory.left_explosion_zone = False
     optimize_model(self)
 
-
-    # # synch the target network with the policy network 
-    # self.target_net.load_state_dict(self.policy_net.state_dict())
-    # self.target_net.eval()
-
     # increment episode count
     self.number_of_executed_episodes += 1
-
-
-            
-    # with open("my-saved-model.pt", "wb") as file:
-    #     pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], file)
 
     # Add Q value to memory
     self.memory.q_value_after_episode.append(self.q_value)
     # Add loss to memory
     self.memory.loss_after_episode.append(self.loss)
 
-    # increment_event_counts(self, events)
-
     # Store the model
     if self.number_of_executed_episodes == last_game_state["number_rounds"]:
         gc.disable()
         with gzip.open('my-saved-model.pkl.gz', 'wb') as f:
             pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], f,  protocol=pickle.HIGHEST_PROTOCOL)
-            # self.logger.debug("Dumped pickle")
         gc.enable()
 
 def after_game_rewards(self, last_game_state):
@@ -186,8 +165,6 @@ def reward_from_events(self, events: List[str]) -> int:
     
     reward_sum = 0
     rewarded_events = []
-    # self.memory.recalculate_rewards(events)
-    # self.logger.info(f"recalculated rewards,new rewards: {self.memory.game_rewards}")
     for event in events:
         if event in self.memory.game_rewards:
             reward_sum += self.memory.game_rewards[event]
@@ -202,7 +179,6 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    
     BATCH_SIZE, GAMMA = self.memory.train_params.values()
 
     if len(self.memory) < BATCH_SIZE:
@@ -210,7 +186,6 @@ def optimize_model(self):
         return
     transitions = self.memory.sample(BATCH_SIZE)
     # "online learning" by always including the last step to ensure we learn from this experience
-    # transitions.append(self.memory.memory[-1])
     batch = Transition(*zip(*transitions))
 
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
@@ -218,13 +193,10 @@ def optimize_model(self):
     non_final_next_states = torch.stack([s for s in batch.next_state
                                                 if s is not None]).float()
 
-    # self.logger.info(f"Encountered {non_final_next_states.size()} non final next states")
-
     state_batch = torch.stack(batch.state).float()
     action_batch = torch.stack(batch.action)
     reward_batch = torch.stack(batch.reward)
 
-    # self.logger.info(f"Action-batch: {action_batch} | reward-batch: {reward_batch}")
     # Compute Q value for all actions taken in the batch
     state_action_values = self.policy_net(state_batch).gather(1, action_batch)
 
@@ -236,7 +208,6 @@ def optimize_model(self):
 
     # compute loss
     loss = nn.functional.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
-    # self.logger.info(f"Q value of: {expected_state_action_values}")
     self.logger.info(f"Loss of {loss}")
 
     # Add Q value to object
