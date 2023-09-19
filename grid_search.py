@@ -60,6 +60,7 @@ def save_model(model_id, score):
 
 def search():
     grid_search_model_id = 1
+    print(f"Now testing model {grid_search_model_id}")
     top_ten_models = []
     for json_dump in create_dicts():
         with open(f"{BASE_PATH}/parameters.json", "w") as f:

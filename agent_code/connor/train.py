@@ -217,18 +217,23 @@ def optimize_model(self):
     actions = [ transition.action for transition in episode ]
     rewards = [ transition.reward for transition in episode ]
 
-    # Compute the returns G_t (discounted return) for each timestep in the episode
+    # Compute the returns G_t for each timestep in the episode
     returns = np.zeros_like(rewards, dtype=np.float32)
-    G = 0
-    for t, reward in enumerate(rewards):
-        G += (GAMMA ** t) * reward
+    for t in range(len(rewards)):
+        G = 0
+        pw = 0
+        for r in rewards[t:]:
+            G = G + GAMMA**pw * r
+            pw += 1
         returns[t] = G
+
 
     # Convert everything to tensors
     # TODO: check if stack needs to be applied to rewards and actions
     states = torch.stack(states).float().to(device)
     actions = torch.tensor(actions).to(device)
     returns = torch.tensor(returns).float().to(device)
+    # TODO: normalize returns via zscore
 
     self.logger.info(f"actions: {actions}")
 
@@ -237,13 +242,15 @@ def optimize_model(self):
     self.logger.info(f"network output {network_output}")
     gathered = network_output.gather(1, actions.unsqueeze(-1))
     self.logger.info(f"gathered:{gathered}")
+    # TODO: do wqe need to use the former actions or calculate the new ones
     log_probs = torch.log(gathered)
     self.logger.info(f"log-probs: {log_probs}")
 
-    # Compute the policy gradient loss
-    loss = -torch.mean(log_probs * returns)
 
-    self.logger.info(f"Loss of {loss}")
+    loss = log_probs * returns
+    loss = loss.sum()
+
+    self.logger.info(f"Loss per step in episode {loss}")
 
     # Add loss to object
     self.loss = loss
