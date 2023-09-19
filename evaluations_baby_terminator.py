@@ -14,7 +14,7 @@ create_directory_if_not_exists(figure_evaluation_dir)
 
 
 with gzip.open(model_path, 'rb') as f:
-    policy_net,_,_, memory = pickle.load(f)
+    policy_net, _, _, memory = pickle.load(f)
 
 print(f"Model has remembered {memory.steps_done} steps")
 print(f"Memmory length: {len(memory.memory)}")

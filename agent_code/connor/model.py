@@ -65,7 +65,8 @@ class QNetwork(nn.Module):
         # x = self.dropout5(x)
 
         x = self.head(x.view(x.size(0), -1))
-        x = F.softmax(x)
+        x = F.softmax(x, dim=-1)
+
         return x 
 
 

@@ -217,11 +217,11 @@ def optimize_model(self):
     actions = [ transition.action for transition in episode ]
     rewards = [ transition.reward for transition in episode ]
 
-    # Compute the returns G_t for each timestep in the episode
+    # Compute the returns G_t (discounted return) for each timestep in the episode
     returns = np.zeros_like(rewards, dtype=np.float32)
     G = 0
-    for t in reversed(range(len(rewards))):
-        G = rewards[t] + GAMMA * G
+    for t, reward in enumerate(rewards):
+        G += (GAMMA ** t) * reward
         returns[t] = G
 
     # Convert everything to tensors
