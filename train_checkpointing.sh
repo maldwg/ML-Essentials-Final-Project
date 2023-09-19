@@ -25,7 +25,7 @@ mkdir -p $PARENT_DIR
 #     echo "copy the old model"
 #     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$currentdatetime/$rounds/
 #     echo "evaluate the agent"
-#     python evaluations.py
+#     python evaluations_$AGENT.py
 #     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 #     echo "---------------------------------------------------"
 #     rounds=$(( CHECKPOINT * idx + CHECKPOINT ))
@@ -38,7 +38,7 @@ mkdir -p $PARENT_DIR
 #     echo "copy the old model"
 #     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$currentdatetime/$rounds/
 #     echo "evaluate the agent"
-#     python evaluations.py
+#     python evaluations_$AGENT.py
 #     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 #     echo "---------------------------------------------------"
 #     rounds=$(( CHECKPOINT * idx + 2 * CHECKPOINT))
@@ -51,7 +51,7 @@ mkdir -p $PARENT_DIR
 #     echo "copy the old model"
 #     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$currentdatetime/$rounds/
 #     echo "evaluate the agent"
-#     python evaluations.py
+#     python evaluations_$AGENT.py
 #     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 #     echo "---------------------------------------------------"
 # done
@@ -69,7 +69,7 @@ do
     echo "copy the old model"
     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$currentdatetime/$rounds/
     echo "evaluate the agent"
-    python evaluations.py
+    python evaluations_$AGENT.py
     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
     echo "---------------------------------------------------"
 done
@@ -90,7 +90,7 @@ done
 #     echo "copy the old model"
 #     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$currentdatetime/$rounds/
 #     echo "evaluate the agent"
-#     python evaluations.py
+#     python evaluations_$AGENT.py
 #     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 #     echo "---------------------------------------------------"
 # done
@@ -108,7 +108,7 @@ done
 #     echo "copy the old model"
 #     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$currentdatetime/$rounds/
 #     echo "evaluate the agent"
-#     python evaluations.py
+#     python evaluations_$AGENT.py
 #     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 #     echo "---------------------------------------------------"
 # done
@@ -126,7 +126,7 @@ done
 #     echo "copy the old model"
 #     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$currentdatetime/$rounds/
 #     echo "evaluate the agent"
-#     python evaluations.py
+#     python evaluations_$AGENT.py
 #     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 #     echo "---------------------------------------------------"
 # done
@@ -144,7 +144,7 @@ done
 #     echo "copy the old model"
 #     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$currentdatetime/$rounds/
 #     echo "evaluate the agent"
-#     python evaluations.py
+#     python evaluations_$AGENT.py
 #     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 #     echo "---------------------------------------------------"
 # done
@@ -162,7 +162,7 @@ done
 #     echo "copy the old model"
 #     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$currentdatetime/$rounds/
 #     echo "evaluate the agent"
-#     python evaluations.py
+#     python evaluations_$AGENT.py
 #     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 #     echo "---------------------------------------------------"
 # done
@@ -181,7 +181,7 @@ done
 #     echo "copy the old model"
 #     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$rounds/
 #     echo "evaluate the agent"
-#     python evaluations.py
+#     python evaluations_$AGENT.py
 #     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 #     echo "---------------------------------------------------"
 # done
@@ -201,7 +201,7 @@ done
 #     echo "copy the old model"
 #     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$rounds/
 #     echo "evaluate the agent"
-#     python evaluations.py
+#     python evaluations_$AGENT.py
 #     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 #     echo "---------------------------------------------------"
 # done
@@ -221,7 +221,7 @@ done
 #     echo "copy the old model"
 #     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$rounds/
 #     echo "evaluate the agent"
-#     python evaluations.py
+#     python evaluations_$AGENT.py
 #     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 #     echo "---------------------------------------------------"
 # done
@@ -240,7 +240,7 @@ done
 #     echo "copy the old model"
 #     cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$rounds/
 #     echo "evaluate the agent"
-#     python evaluations.py
+#     python evaluations_$AGENT.py
 #     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 #     echo "---------------------------------------------------"
 # done

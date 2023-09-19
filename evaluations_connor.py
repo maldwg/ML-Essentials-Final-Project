@@ -1,47 +1,10 @@
 import pickle
 from matplotlib.pylab import plt
 import numpy as np
-import math
 import torch
 import gzip
-import os
 
-def create_directory_if_not_exists(directory_path):
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
-
-def round_to_nearest_multiple(number):
-    """
-    Round a number to the nearest multiple of 10, 100, 1000, etc.
-
-    Args:
-        number (int): The number to be rounded.
-
-    Returns:
-        int: The rounded number.
-
-    If the input number is less than 10, it remains unchanged.
-
-    Examples:
-        >>> round_to_nearest_multiple(12)
-        10
-        >>> round_to_nearest_multiple(235)
-        240
-        >>> round_to_nearest_multiple(2348)
-        2400
-        >>> round_to_nearest_multiple(27)
-        30
-        >>> round_to_nearest_multiple(2735)
-        2700
-        >>> round_to_nearest_multiple(9859)
-        9900
-    """
-    if number < 10:
-        return number  # Numbers less than 10 remain unchanged
-
-    order_of_magnitude = int((10 ** (int(math.log10(number)))) / 10)
-    rounded_number = round(number / order_of_magnitude) * order_of_magnitude
-    return rounded_number
+from evaluations_utils import create_directory_if_not_exists, round_to_nearest_multiple
 
 AGENT_NAME = "connor"
 
@@ -51,37 +14,7 @@ create_directory_if_not_exists(figure_evaluation_dir)
 
 
 with gzip.open(model_path, 'rb') as f:
-    policy_net,_, memory = pickle.load(f)
-
-for name, param in policy_net.named_parameters():
-    if param.requires_grad and "bias" not in name:
-        plt.figure(figsize=(15, 4))
-        plt.title(name)
-        plt.hist(param.data.cpu().numpy().flatten(), bins=100)
-        plt.savefig(f"{figure_evaluation_dir}{AGENT_NAME}_{name}_weights.png")
-        plt.clf()
-
-
-for name, param in policy_net.named_parameters():
-    if torch.isnan(param.grad).any():
-        print(f"NaN gradient in {name}")
-    if torch.isinf(param.grad).any():
-        print(f"Infinite gradient in {name}")
-    print(name, param.grad.norm())
-
-
-# transition = memory.memory[35]
-# state, action, next_state, reward = transition
-# plt.imshow(state.numpy().transpose(1, 2, 0))  
-# plt.axis('off')  
-# plt.title("state")
-# plt.savefig("./old-state.png")
-# plt.imshow(next_state.numpy().transpose(1, 2, 0))  
-# plt.axis('off')  
-# plt.title("next-state")
-# plt.savefig("./new-state.png")
-# print(action)
-# print(reward)
+    policy_net,_,_, memory = pickle.load(f)
 
 print(f"Model has remembered {memory.steps_done} steps")
 print(f"Memmory length: {len(memory.memory)}")
@@ -91,6 +24,47 @@ for step in memory.memory:
     if step[-1] == -12.5:
         invalid_counter += 1
 print(f"invalid step percentage: { 100 * (invalid_counter / len(memory.memory))} %")
+
+ 
+########################################################
+# Plot Q values
+########################################################
+# get q_value and calc mean
+q_value_after_episode = memory.q_value_after_episode
+mean_q_values_after_episode = []
+for batch_q_value in q_value_after_episode:
+    # Check that None is not passed
+    if isinstance(batch_q_value, torch.Tensor):
+        mean_q_value_after_episode = torch.mean(batch_q_value).item()
+        mean_q_values_after_episode.append(mean_q_value_after_episode)
+
+rounded_max_x = round_to_nearest_multiple(len(mean_q_values_after_episode))
+tick_interval = int(rounded_max_x / 5)
+if tick_interval == 0:
+    tick_interval = 1
+
+if rounded_max_x < len(mean_q_values_after_episode): 
+    stop_x_tick = rounded_max_x + tick_interval + 1
+else:
+    stop_x_tick = rounded_max_x + 1
+
+# Generate a sequence of integers to represent the epoch numbers
+epochs = range(1, len(mean_q_values_after_episode) + 1)
+plt.plot(epochs, mean_q_values_after_episode, label='Mean Q Value after each episode')
+ 
+# Add in a title and axes labels
+plt.title('Q Value after Episodes')
+plt.xlabel('Episodes')
+plt.ylabel('Q Value')
+
+# Set the tick locations
+plt.xticks(np.arange(0, stop_x_tick, tick_interval))
+ 
+# Display the plot and safe
+plt.legend(loc='best')
+plt.savefig(f"{figure_evaluation_dir}{AGENT_NAME}_q_values.png")
+plt.clf()
+
 
 ########################################################
 # Plot loss values

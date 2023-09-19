@@ -1,47 +1,10 @@
 import pickle
 from matplotlib.pylab import plt
 import numpy as np
-import math
 import torch
 import gzip
-import os
 
-def create_directory_if_not_exists(directory_path):
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
-
-def round_to_nearest_multiple(number):
-    """
-    Round a number to the nearest multiple of 10, 100, 1000, etc.
-
-    Args:
-        number (int): The number to be rounded.
-
-    Returns:
-        int: The rounded number.
-
-    If the input number is less than 10, it remains unchanged.
-
-    Examples:
-        >>> round_to_nearest_multiple(12)
-        10
-        >>> round_to_nearest_multiple(235)
-        240
-        >>> round_to_nearest_multiple(2348)
-        2400
-        >>> round_to_nearest_multiple(27)
-        30
-        >>> round_to_nearest_multiple(2735)
-        2700
-        >>> round_to_nearest_multiple(9859)
-        9900
-    """
-    if number < 10:
-        return number  # Numbers less than 10 remain unchanged
-
-    order_of_magnitude = int((10 ** (int(math.log10(number)))) / 10)
-    rounded_number = round(number / order_of_magnitude) * order_of_magnitude
-    return rounded_number
+from evaluations_utils import create_directory_if_not_exists, round_to_nearest_multiple
 
 AGENT_NAME = "baby_terminator"
 
@@ -52,20 +15,6 @@ create_directory_if_not_exists(figure_evaluation_dir)
 
 with gzip.open(model_path, 'rb') as f:
     policy_net,_,_, memory = pickle.load(f)
-
-
-# transition = memory.memory[35]
-# state, action, next_state, reward = transition
-# plt.imshow(state.numpy().transpose(1, 2, 0))  
-# plt.axis('off')  
-# plt.title("state")
-# plt.savefig("./old-state.png")
-# plt.imshow(next_state.numpy().transpose(1, 2, 0))  
-# plt.axis('off')  
-# plt.title("next-state")
-# plt.savefig("./new-state.png")
-# print(action)
-# print(reward)
 
 print(f"Model has remembered {memory.steps_done} steps")
 print(f"Memmory length: {len(memory.memory)}")
