@@ -98,6 +98,24 @@ game_rewards_not_normalized = {
     }
 
 
+def increment_event_counts(self, events):
+    """
+    Increments the count of each event in the memory based on the provided events list.
+
+    Args:
+        self: The object instance.
+        events (list): List of events to be counted.
+
+    Returns:
+        None. Updates the event counts in the memory in-place.
+    """
+    # self.logger.info("Increment count of events in memory")
+    for event in events:
+        if event in self.memory.rewarded_event_counts:
+            self.memory.rewarded_event_counts[event] += 1
+    # self.logger.info(f"incremented events: {self.memory.rewarded_event_counts}")
+
+
 # Helper function to check if a position is blocked by walls or crates
 def is_blocked(position, field):
     """
