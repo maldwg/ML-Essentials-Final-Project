@@ -2,7 +2,6 @@ import numpy as np
 from agent_code.baby_terminator.path_finding import astar
 import events as e
 from . import custom_events as c
-from .utils import is_blocked
 
 
 def custom_game_events(self, old_game_state, new_game_state, events, self_action):
@@ -24,16 +23,6 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
     # append all events that can be calculated in the steps before the last one
     if old_game_state is not None:
 
-        # check whether agent left an explosion zone last step or was adjacent to an active explosion
-        # if agent_stayed_outside_explosion_zone(new_game_state):
-        #     # check whether agent left an explosion zone last step or was adjacent to an active explosion
-        #     if self.memory.left_explosion_zone or agent_was_adjacent_to_active_explosion(self, old_game_state):
-        #         custom_events.append(c.STAYED_OUTSIDE_ACTIVE_EXPLOSION)
-        # else:
-        #     custom_events.append(c.ENTERED_ACTIVE_EXPLOSION)
-        # # reset explosion zone trigger
-        # self.memory.left_explosion_zone = False
-
         if unallowed_bomb(self_action, old_game_state):
             custom_events.append(c.UNALLOWED_BOMB)
 
@@ -52,7 +41,6 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
         # update paths to all coins
         update_coin_paths(self, new_game_state, events)
 
-
         # check if there are bombs on the filed, if not skip calculations
         if old_game_state["bombs"]:
             in_old_explosion_zone = any([old_agent_pos in explosion_zones(old_game_state["field"], bomb_pos) for bomb_pos, _ in old_game_state["bombs"]])
@@ -61,10 +49,8 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             in_new_explosion_zone = any([new_agent_pos in explosion_zones(new_game_state["field"], bomb_pos) for bomb_pos, _ in new_game_state["bombs"]])
 
         if not in_old_explosion_zone and in_new_explosion_zone and agent_moved:
-            # self.logger.info(f"EXPLOSION ZONE ENTERED: {in_new_explosion_zone} < {in_old_explosion_zone}")
             custom_events.append("ENTERED_POTENTIAL_EXPLOSION_ZONE")
         elif in_old_explosion_zone and not in_new_explosion_zone and agent_moved:
-            # self.logger.info(f"EXPLOSION ZONE LEFT: {in_new_explosion_zone} < {in_old_explosion_zone}")
             custom_events.append("LEFT_POTENTIAL_EXPLOSION_ZONE")
             self.memory.left_explosion_zone = True
             # set to inf since now the shortest path is not available anymore since we are not in an explosion radius
@@ -102,7 +88,6 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
                     self.logger.info("crate in explosion zone")
                     events.append(c.CRATE_IN_EXPLOSION_ZONE)
 
-        
         if e.BOMB_DROPPED in events:
             # since the agent dropped the bomb the bomb is ath the agents position
             bomb_position = (agent_x, agent_y)
@@ -190,8 +175,6 @@ def free_tiles_beneath_explosion(self, field, potential_explosions):
                         neighbours.append((x+dx, y+dy))
     return neighbours
 
-
-
 def explosion_zones(field, bomb_pos):
     """Returns a list of coordinates that will be affected by the bomb's explosion."""
     x, y = bomb_pos
@@ -219,7 +202,6 @@ def explosion_zones(field, bomb_pos):
 
 def update_paths_out_of_explosion(self, new_game_state):
     paths_out_of_explosion = get_all_paths_out_of_explosions(self, new_game_state)
-    # self.logger.info(f"paths out of explosion: {paths_out_of_explosion}")
 
     if len(paths_out_of_explosion):
         # min -1 because astar path contains start position
@@ -238,7 +220,6 @@ def update_paths_out_of_explosion(self, new_game_state):
 
 def update_coin_paths(self, new_game_state, events):
     paths_to_coins = get_all_paths_to_coins(new_game_state)
-    # self.logger.info(f"paths to coins: {paths_to_coins}")
     # check if there is a coin reachable
     if len(paths_to_coins):
         # len - 1 because the starting point is always included in the path!
@@ -302,10 +283,7 @@ def agent_in_front_of_crate(self, field, agent_pos):
             # check only vertical and horizontal lines
             if dx * dy == 0:
                 if field[dx + agent_x][dy + agent_y] == 1:
-                    # self.logger.info(f"{dx + agent_x}, {dy + agent_y}")
-                    # self.logger.info("agent before crate")
                     return True
-    # self.logger.info("Agent not in front of crate")
     return False
 
 

@@ -6,20 +6,14 @@ import gc
 import numpy as np
 import gzip 
 
-from .model import QNetwork, FullyConnectedQNetwork
+from .model import QNetwork
 
 import torch
 import torch.optim as optim
 
 from .memory import ReplayMemory
 
-import math
-
-from .utils import ACTIONS, device, DIRECTIONS, is_action_valid, calculate_eps_threshold, read_hyperparameters
-from .path_finding import astar
-
-from .custom_event_handling import get_all_paths_out_of_explosions, get_all_paths_to_coins
-
+from .utils import ACTIONS, device, is_action_valid, calculate_eps_threshold, read_hyperparameters
 
 def setup(self):
     """
@@ -50,16 +44,12 @@ def setup(self):
             self.memory = ReplayMemory(**hyperparameters[3])
         else:
             self.logger.info("Using existing model to generate new generation")
-            # with open("my-saved-model.pt", "rb") as file:
-            #     self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
             gc.disable()
             with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
                 self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(f)
             gc.enable()
     else:
         self.logger.info("Loading model from saved state, no training")
-        # with open("my-saved-model.pt", "rb") as file:
-        #     self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
         gc.disable()
         with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
             self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(f)
@@ -80,7 +70,6 @@ def act(self, game_state: dict) -> str:
     """
     self.logger.info(50*"----")
     # Exploration vs exploitation
-    # self.logger.info(game_state)
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
         eps_threshold = calculate_eps_threshold(self, **self.memory.eps_decay_params)
@@ -91,8 +80,6 @@ def act(self, game_state: dict) -> str:
             with torch.no_grad():
                 state_features = state_to_features(self, game_state)
                 state_features = state_features.unsqueeze(0).to(device)
-                # self.logger.info("Game state transformed")
-                # self.logger.info(state_features)
                 # Pass features through policy network
                 q_values = self.policy_net(state_features)
                 self.logger.info(f"Q-values: {q_values} | Max Value chosen: {q_values.max(1)[1]} | Chosen view: {q_values.max(1)[1].view(1,1)} | Item: {q_values.max(1)[1].view(1,1).item()}")
@@ -182,30 +169,9 @@ def state_to_features(self, game_state: dict) -> np.array:
                     if inPlayArea(field, x+dx, y+dy) and (dx*dy == 0 and field[x+dx, y+dy] != 9):
                         rgb_map[:, x+dx, y+dy] = [0, 255, 222]
 
-
-    # agent_x, agent_y = game_state["self"][-1]
-    
-    # paths_to_coins = get_all_paths_to_coins(self, game_state)
-
-    # paths_out_of_explosions = get_all_paths_out_of_explosions(self, game_state)
-
-    # add shortest path of coin to map 
-    # for path in self.memory.shortest_paths_to_coin:
-    #     rgb_map[:, path[1][0],path[1][1] ] = [155, 255, 0]
-
-    # for path in self.memory.shortest_paths_out_of_explosion:
-    #     rgb_map[:, path[1][1], path[1][1]] = [102, 0, 102]
-
-    # # Assuming new_array is the RGB image
-    # import matplotlib.pyplot as plt
-    # plt.imshow(rgb_map.transpose(1, 2, 0))  # Transpose to (height, width, channels) for display
-    # plt.axis('off')  # Turn off axis labels
-    # plt.show()
-
     # Convert the NumPy array to a torch tensor
     features_tensor = torch.from_numpy(rgb_map).float()
 
-    # TODO: Maybe use min_max_scale?
     # Resize the tensor to have a shape of [3, 17, 17]
     features_tensor = features_tensor.view(3, 17, 17)
 
@@ -236,6 +202,7 @@ def min_max_scale(data):
     maximum = torch.max(data)
 
     return (data - minimum) / (maximum - minimum)
+
 
 def inPlayArea(field, x, y):
     return (1 <= y < field.shape[0] - 1) and (1 <= x < field.shape[1] - 1)

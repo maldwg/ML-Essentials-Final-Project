@@ -12,6 +12,6 @@ touch agent_code/$AGENT/logs/all.log
 do
     echo "training on stage $STAGE"
     python main.py play --agents "$AGENT" $STAGE --n-rounds="$N_ROUNDS" --train 1  --no-gui --scenario "classic" 
-    python evaluations.py
+    python evaluations_$AGENT.py
     cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
 done

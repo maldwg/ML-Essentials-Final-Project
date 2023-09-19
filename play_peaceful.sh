@@ -1,1 +1,0 @@
-python main.py play --agents baby_terminator peaceful_agent peaceful_agent peaceful_agent

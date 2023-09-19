@@ -37,4 +37,4 @@ if $(test -f "$TRAIN_FILE") && [ "$CONTINUE" == false ] ; then
     echo "trained weights removed"
 fi
 python main.py play --agents "$AGENT" rule_based_agent rule_based_agent rule_based_agent --n-rounds="$N_ROUNDS" --train 1  --no-gui --scenario "$SCENARIO" &&
-python evaluations.py
+python evaluations_$AGENT.py

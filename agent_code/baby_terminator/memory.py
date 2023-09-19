@@ -37,12 +37,12 @@ class ReplayMemory:
         self.eps_decay_params = None
 
 
-
     def recalculate_rewards(self, events):
         if c.MOVED_TOWARDS_COIN in events:
             self.game_rewards[c.MOVED_TOWARDS_COIN] = 1 / ( len(self.shortest_paths_to_coin[0]) - 1) * self.game_rewards_original[c.MOVED_TOWARDS_COIN]
         if c.MOVED_TOWARDS_END_OF_EXPLOSION in events:
             self.game_rewards[c.MOVED_TOWARDS_END_OF_EXPLOSION] = 1 / ( len(self.shortest_paths_out_of_explosion[0]) - 1) * self.game_rewards_original[c.MOVED_TOWARDS_END_OF_EXPLOSION]
+
 
     def push(self, *args):
         """Saves a transition."""
@@ -50,6 +50,7 @@ class ReplayMemory:
             self.memory.append(None)
         self.memory[self.position] = Transition(*args)
         self.position = (self.position + 1) % self.capacity
+
 
     def random_push(self, *args):
         """Saves a transition by deleting a random one."""
@@ -64,6 +65,6 @@ class ReplayMemory:
         # Exclude None values from sampled data
         return random.sample(self.memory, batch_size)
 
+
     def __len__(self):
         return len(self.memory)
-
