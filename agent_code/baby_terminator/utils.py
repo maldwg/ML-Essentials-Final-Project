@@ -5,7 +5,7 @@ from . import custom_events as c
 import functools
 import numpy as np
 import math
-
+import json
 
 DIRECTIONS = [(1, 0), (0, 1), (-1, 0 ), (0, -1)]
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
@@ -490,3 +490,9 @@ def is_action_valid(self, state, action):
 
 def calculate_eps_threshold(self, EPS_START, EPS_END, EPS_DECAY):
     return EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)
+
+
+def read_hyperparameters():
+    with open("./parameters.json", "r") as f:
+       hyperparameters = json.load(f)
+    return hyperparameters

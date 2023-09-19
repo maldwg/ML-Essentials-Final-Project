@@ -7,7 +7,7 @@ import numpy as np
 import gzip 
 
 from .model import QNetwork, FullyConnectedQNetwork
-from .hyperparameters import read_hyperparameters
+
 import torch
 import torch.optim as optim
 
@@ -15,7 +15,7 @@ from .memory import ReplayMemory
 
 import math
 
-from .utils import ACTIONS, device, DIRECTIONS, is_action_valid, calculate_eps_threshold
+from .utils import ACTIONS, device, DIRECTIONS, is_action_valid, calculate_eps_threshold, read_hyperparameters
 from .path_finding import astar
 
 from .custom_event_handling import get_all_paths_out_of_explosions, get_all_paths_to_coins
