@@ -5,7 +5,7 @@ from . import custom_events as c
 import functools
 import numpy as np
 import math
-
+import json
 
 DIRECTIONS = [(1, 0), (0, 1), (-1, 0 ), (0, -1)]
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
@@ -98,6 +98,24 @@ game_rewards_not_normalized = {
     }
 
 
+def increment_event_counts(self, events):
+    """
+    Increments the count of each event in the memory based on the provided events list.
+
+    Args:
+        self: The object instance.
+        events (list): List of events to be counted.
+
+    Returns:
+        None. Updates the event counts in the memory in-place.
+    """
+    # self.logger.info("Increment count of events in memory")
+    for event in events:
+        if event in self.memory.rewarded_event_counts:
+            self.memory.rewarded_event_counts[event] += 1
+    # self.logger.info(f"incremented events: {self.memory.rewarded_event_counts}")
+
+
 # Helper function to check if a position is blocked by walls or crates
 def is_blocked(position, field):
     """
@@ -153,3 +171,9 @@ def is_action_valid(self, state, action):
 
 def calculate_eps_threshold(self, EPS_START, EPS_END, EPS_DECAY):
     return EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)
+
+
+def read_hyperparameters():
+    with open("./parameters.json", "r") as f:
+       hyperparameters = json.load(f)
+    return hyperparameters

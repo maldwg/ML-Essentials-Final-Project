@@ -7,13 +7,13 @@ import numpy as np
 import gzip 
 
 from .model import QNetwork
-from .hyperparameters import read_hyperparameters
+
 import torch
 import torch.optim as optim
 
 from .memory import ReplayMemory
 
-from .utils import ACTIONS, device, is_action_valid, calculate_eps_threshold
+from .utils import ACTIONS, device, is_action_valid, calculate_eps_threshold, read_hyperparameters
 
 def setup(self):
     """
