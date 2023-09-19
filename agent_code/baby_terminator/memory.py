@@ -13,7 +13,7 @@ class ReplayMemory:
     will be pushed
     """
     def __init__(self, capacity):
-        self.capacity = capacity
+        self.capacity = int(capacity)
         self.memory = []
         self.position = 0
         # Array for Q value after each episode
@@ -33,6 +33,8 @@ class ReplayMemory:
         self.rewards_of_round = []
         self.steps_since_last_update = 0
         self.update_frequency = 500 
+        self.train_params = None
+        self.eps_decay_params = None
 
 
 

@@ -45,7 +45,6 @@ def z_normalize_rewards(rewards: dict) -> dict:
     return normalized_rewards
 
 
-
 game_rewards_not_normalized = {
 
 
