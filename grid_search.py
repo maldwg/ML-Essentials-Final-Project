@@ -23,17 +23,17 @@ intervals = {
     hyperparameters.Convolution.PADDING.value: [2],
     hyperparameters.Convolution.DROPOUT.value: [0],
 
-    hyperparameters.Optimizer.LEARNING_RATE.value: [1e-3, 1e-4, 1e-5, 1e-6],
-    hyperparameters.Optimizer.WEIGHT_DECAY.value: [1e-4, 1e-5, 1e-6],
+    hyperparameters.Optimizer.LEARNING_RATE.value: [1e-3, 1e-4, 1e-5],
+    hyperparameters.Optimizer.WEIGHT_DECAY.value: [1e-5, 1e-6],
 
     hyperparameters.Memory.REPLAY_MEMORY_SIZE.value: [1e4, 1e5],
 
-    hyperparameters.EpsilonGreedy.EPS_START.value: [0.5, 0.25, 0.1, 0.05],
-    hyperparameters.EpsilonGreedy.EPS_END.value: [0.05, 0.01, 0.005],
-    hyperparameters.EpsilonGreedy.EPS_DECAY.value: [100, 500, 1e3, 1e4],
+    hyperparameters.EpsilonGreedy.EPS_START.value: [0.5, 0.25],
+    hyperparameters.EpsilonGreedy.EPS_END.value: [0.05, 0.01],
+    hyperparameters.EpsilonGreedy.EPS_DECAY.value: [100, 1e3],
 
     hyperparameters.Train.BATCH_SIZE.value: [128],
-    hyperparameters.Train.GAMMA.value: [0.66, 0.9, 0.95, 0.999]
+    hyperparameters.Train.GAMMA.value: [0.9, 0.999]
 }
 
 def delete_worst_model(model_id):
@@ -67,7 +67,7 @@ def search():
             f.write(json_dump)
             f.close()
         # call main.py
-        p_main = subprocess.Popen("python main.py play --agents baby_terminator --n-rounds=200 --train 1 --scenario coin-heaven --no-gui", shell=True)
+        p_main = subprocess.Popen("python main.py play --agents baby_terminator --n-rounds=150 --train 1 --scenario coin-heaven --no-gui", shell=True)
         exit_code = p_main.wait()
         # eval
         if exit_code == 0:
@@ -87,6 +87,10 @@ def search():
                     top_ten_models.remove((worst_model_id, worst_model_score))
                     top_ten_models.append((grid_search_model_id, mean_reward))
                     save_model(grid_search_model_id, mean_reward)
+                else: 
+                    # remove old model to be able to train new model from scratch
+                    os.remove(f"{BASE_PATH}/my-saved-model.pkl.gz")
+                    os.remove(f"{BASE_PATH}/parameters.json")
             else: 
                 # if list not yet full, save the model
                 top_ten_models.append((grid_search_model_id, mean_reward))
