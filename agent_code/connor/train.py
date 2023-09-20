@@ -21,6 +21,7 @@ from .utils import *
 
 from .path_finding import astar
 
+import random
 
 
 
@@ -72,7 +73,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         return
     # self.logger.info(f"Game field:\n{old_game_state}")
     # get the input for the CNN
-    state = state_to_features(self, old_game_state)
+    state = state_to_features(self, old_game_state).unsqueeze(0).to(device)
     if state is not None:
         action = torch.tensor([ACTIONS.index(self_action)], device=device)
         self.logger.info(f"Used action {action} in callbacks")
@@ -84,13 +85,18 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
             next_state = state_to_features(self, new_game_state)
         self.logger.info(f"overall reward of step {reward}")
         reward = torch.tensor(reward, device=device)
-        # push the state to the memory in order to be able to learn from it 
-        self.memory.transitions_of_round.append(Transition(state, action, next_state, reward))
+
+        probs = self.policy_net(state)
+        _, max_index = torch.max(probs, dim=1)
+        self.logger.info(f"log-probs: {torch.log(probs)}")
+        log_prob = torch.log(probs.squeeze(0)[max_index])
+        self.logger.info(f"log_probs squeezed and saved: {log_prob}")
+        self.memory.step_action_rewards.append((log_prob, reward))       
 
         # needs to be before optimize otherwise the events occured are not taken into account
         increment_event_counts(self, events)
 
-        optimize_model(self)     
+        # optimize_model(self)     
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -110,7 +116,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     custom_events = custom_game_events(self, None, last_game_state, events, last_action)
     events.extend(custom_events)
 
-    state = state_to_features(self, last_game_state)
+    state = state_to_features(self, last_game_state).unsqueeze(0).to(device)
     action = torch.tensor([ACTIONS.index(last_action)], device=device)
     self.logger.info(f"used {action} as last action")
     reward = reward_from_events(self, events)
@@ -124,7 +130,16 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     # reset memory for next round
     self.memory.rewards_of_round = []
 
+    probs = self.policy_net(state)
+    _, max_index = torch.max(probs, dim=1)
+    self.logger.info(f"log-probs: {torch.log(probs)}")
+    log_prob = torch.log(probs.squeeze(0)[max_index])
+    self.logger.info(f"log_probs squeezed and saved: {log_prob}")
+ 
     reward = torch.tensor(reward, device=device)
+    self.memory.step_action_rewards.append((log_prob, reward))       
+    self.memory.episode_action_rewards.append(self.memory.step_action_rewards)   
+
     self.memory.transitions_of_round.append(Transition(state, action, None, reward))
     self.memory.memory.append(self.memory.transitions_of_round)
     self.memory.transitions_of_round = []
@@ -133,6 +148,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.memory.shortest_paths_to_coin = []
     self.memory.shortest_paths_to_enemy = []
     self.memory.shortest_paths_to_crate = []
+    self.memory.step_action_rewards = []
     self.memory.left_explosion_zone = False
     optimize_model(self)
 
@@ -206,57 +222,37 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    GAMMA = 0.333
+    GAMMA = 0.999
+    BATCHSIZE = 1
 
-    if len(self.memory) < 1:
+    if len(self.memory.episode_action_rewards) < BATCHSIZE:
         return
     
-    episode = self.memory.sample(1)[0]
-    self.logger.info(f"length of episode {len(episode)}")
-    states = [ transition.state for transition in episode ]
-    actions = [ transition.action for transition in episode ]
-    rewards = [ transition.reward for transition in episode ]
-
+    episodes = random.sample(self.memory.episode_action_rewards, BATCHSIZE)
+    self.memory.episode_action_rewards = list(filter(lambda i: i not in episodes, self.memory.episode_action_rewards))
+    loss = torch.tensor([])
+    # iterate over each episode in batch
+    for episode in episodes:
     # Compute the returns G_t for each timestep in the episode
-    returns = np.zeros_like(rewards, dtype=np.float32)
-    for t in range(len(rewards)):
-        G = 0
-        pw = 0
-        for r in rewards[t:]:
-            G = G + GAMMA**pw * r
-            pw += 1
-        returns[t] = G
-
-
-    # Convert everything to tensors
-    # TODO: check if stack needs to be applied to rewards and actions
-    states = torch.stack(states).float().to(device)
-    actions = torch.tensor(actions).to(device)
-    returns = torch.tensor(returns).float().to(device)
-    # TODO: normalize returns via zscore
-
-    self.logger.info(f"actions: {actions}")
-
-    # Compute the log probabilities of the taken actions under the current policy
-    network_output = self.policy_net(states)
-    self.logger.info(f"network output {network_output}")
-    gathered = network_output.gather(1, actions.unsqueeze(-1))
-    self.logger.info(f"gathered:{gathered}")
-    # TODO: do wqe need to use the former actions or calculate the new ones
-    log_probs = torch.log(gathered)
-    self.logger.info(f"log-probs: {log_probs}")
-
-
-    loss = log_probs * returns
+        episode_loss = torch.zeros(len(episode))
+        # compute loss for each step by using discounted reward (G) and log_prob
+        for idx, (log_prob, reward) in enumerate(episode):
+            G = 0
+            pw = 0
+            for (_, r) in episode[idx:]:
+                G = G + GAMMA**pw * r
+                pw += 1
+            # append loss for step at right position 
+            episode_loss[idx] = log_prob * G
+        # append episode loss to batch loss tensor
+        loss = torch.cat((loss, episode_loss), dim=0)
     loss = loss.sum()
-
-    self.logger.info(f"Loss per step in episode {loss}")
 
     # Add loss to object
     self.loss = loss
 
     # back propagation
     self.optimizer.zero_grad()
-    loss.backward()
+    loss.backward(retain_graph=True)
     torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
     self.optimizer.step()

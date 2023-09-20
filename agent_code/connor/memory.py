@@ -35,6 +35,8 @@ class ReplayMemory:
         self.update_frequency = 500 
         self.transitions_of_round = []
 
+        self.step_action_rewards = []
+        self.episode_action_rewards = []
 
 
     def recalculate_rewards(self, events):

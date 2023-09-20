@@ -93,11 +93,13 @@ def act(self, game_state: dict) -> str:
                 # self.logger.info(state_features)
                 # Pass features through policy network
                 probs = self.policy_net(state_features)
+                
                 #action = torch.multinomial(probs, num_samples=1)
                 # Find the maximum value and its index
                 _, max_index = torch.max(probs, dim=1)
+
                 action = max_index.reshape(1, 1)
-                #self.logger.info(f"Propability distribution: {probs} | action chosen: {action}")
+                self.logger.info(f"Propability distribution: {probs} | action chosen: {action}")
                 return ACTIONS[action.item()]
         else:
             self.logger.info("Exploration")
