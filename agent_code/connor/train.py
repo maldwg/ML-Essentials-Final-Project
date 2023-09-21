@@ -222,8 +222,8 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    GAMMA = 0.999
-    BATCHSIZE = 1
+    GAMMA = 0.9
+    BATCHSIZE = 8
 
     if len(self.memory.episode_action_rewards) < BATCHSIZE:
         return
@@ -243,16 +243,19 @@ def optimize_model(self):
                 G = G + GAMMA**pw * r
                 pw += 1
             # append loss for step at right position 
-            episode_loss[idx] = log_prob * G
+            # TODO: check if this computation is the erorr
+            #TODO: compare with q value appproach why no error there
+            episode_loss[idx] = -log_prob * G
         # append episode loss to batch loss tensor
+        
         loss = torch.cat((loss, episode_loss), dim=0)
     loss = loss.sum()
-
+    print(loss)
     # Add loss to object
     self.loss = loss
 
     # back propagation
     self.optimizer.zero_grad()
-    loss.backward(retain_graph=True)
+    loss.backward()
     torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
     self.optimizer.step()
