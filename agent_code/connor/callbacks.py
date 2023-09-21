@@ -96,11 +96,11 @@ def act(self, game_state: dict) -> str:
                 
                 #action = torch.multinomial(probs, num_samples=1)
                 # Find the maximum value and its index
-                _, max_index = torch.max(probs, dim=1)
-
-                action = max_index.reshape(1, 1)
-                self.logger.info(f"Propability distribution: {probs} | action chosen: {action}")
-                return ACTIONS[action.item()]
+                action = torch.multinomial(probs, num_samples=1).item()
+                self.logger.info(f"chose action idx {action}")
+                self.logger.info(f"Propability distribution: {probs}")
+                self.logger.info(f"chose action {ACTIONS[action]}")
+                return ACTIONS[action]
         else:
             self.logger.info("Exploration")
             action = np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
@@ -118,9 +118,9 @@ def act(self, game_state: dict) -> str:
             state_features = state_features.unsqueeze(0).to(device)
             # Pass features through policy network           
             probs = self.policy_net(state_features)
-            action = torch.multinomial(probs, num_samples=1)
+            action = torch.multinomial(probs, num_samples=1).item()
             self.logger.info(f"Propability distribution: {probs} | action chosen: {action}")
-            return ACTIONS[action.item()]
+            return ACTIONS[action]
 
 def state_to_features(self, game_state: dict) -> np.array:
     """
