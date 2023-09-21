@@ -4,8 +4,7 @@ import random
 
 
 class ReplayMemory:
-    """
-    """
+    """ """
 
     def __init__(self):
         self.steps_done = 0

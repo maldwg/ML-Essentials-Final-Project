@@ -33,7 +33,7 @@ def setup(self):
         self.logger.info("Training mode selected")
         if not os.path.isfile("my-saved-model.pkl.gz"):
             self.logger.info("Setting up model from scratch.")
-    
+
             self.policy_net = PolicyGradientNetwork(17, 17, 6).to(device)
             self.optimizer = optim.Adam(
                 self.policy_net.parameters(), lr=0.0001, weight_decay=1e-5

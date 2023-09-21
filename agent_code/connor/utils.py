@@ -11,34 +11,28 @@ device = torch.device("cpu")
 game_rewards = {
     # long term goal
     e.SURVIVED_ROUND: 100,
-
     # killing goals
     e.KILLED_OPPONENT: 100,
     e.OPPONENT_ELIMINATED: -2,
     e.KILLED_SELF: -50,
     e.GOT_KILLED: -30,
-
     e.INVALID_ACTION: -10,
     # additional penalty when laying 2 bombs in a row
     c.UNALLOWED_BOMB: -10,
-
     # coin goals
     e.COIN_FOUND: 7.5,
     e.COIN_COLLECTED: 50,
     c.MOVED_TOWARDS_COIN: 2.5,
-
     # crate goals
     e.CRATE_DESTROYED: 7.5,
     c.CRATE_IN_EXPLOSION_ZONE: 10,
     c.NOT_KILLED_BY_OWN_BOMB: 7.5,
     c.GUARANTEED_SUICIDE: -100,
-
     # bomb related goals
     c.MOVED_TOWARDS_END_OF_EXPLOSION: 5,
     c.LEFT_POTENTIAL_EXPLOSION_ZONE: 10,
     c.ENTERED_POTENTIAL_EXPLOSION_ZONE: -5,
     c.ATTACKED_ENEMY: 30,
-
     e.MOVED_DOWN: -1.5,
     e.MOVED_LEFT: -1.5,
     e.MOVED_RIGHT: -1.5,
