@@ -1,24 +1,17 @@
 import os
-import pickle 
-import random
+import pickle
 import gc
 
 import numpy as np
-import gzip 
+import gzip
 
-# TODO: rename qnetwork
-from .model import QNetwork
+from .model import PolicyGradientNetwork
 import torch
 import torch.optim as optim
 
 from .memory import ReplayMemory
 
-import math
-
-from .utils import ACTIONS, device, DIRECTIONS, is_action_valid
-from .path_finding import astar
-
-from .custom_event_handling import get_all_paths_out_of_explosions, get_all_paths_to_coins
+from .utils import ACTIONS, device
 
 
 def setup(self):
@@ -40,25 +33,25 @@ def setup(self):
         self.logger.info("Training mode selected")
         if not os.path.isfile("my-saved-model.pkl.gz"):
             self.logger.info("Setting up model from scratch.")
-            # init policy and target network 
-            self.policy_net = QNetwork(17, 17, 6).to(device)
-            self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.0001, weight_decay=1e-5)
-            self.memory = ReplayMemory(1500)
+    
+            self.policy_net = PolicyGradientNetwork(17, 17, 6).to(device)
+            self.optimizer = optim.Adam(
+                self.policy_net.parameters(), lr=0.0001, weight_decay=1e-5
+            )
+            self.memory = ReplayMemory()
 
             weights = np.random.rand(len(ACTIONS))
             self.model = weights / weights.sum()
         else:
             self.logger.info("Using existing model to generate new generation")
-            # with open("my-saved-model.pt", "rb") as file:
             gc.disable()
-            with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
+            with gzip.open("my-saved-model.pkl.gz", "rb") as f:
                 self.policy_net, self.optimizer, self.memory = pickle.load(f)
             gc.enable()
     else:
         self.logger.info("Loading model from saved state, no training")
-        # with open("my-saved-model.pt", "rb") as file:
         gc.disable()
-        with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
+        with gzip.open("my-saved-model.pkl.gz", "rb") as f:
             self.policy_net, self.optimizer, self.memory = pickle.load(f)
         gc.enable()
 
@@ -72,60 +65,33 @@ def act(self, game_state: dict) -> str:
     :param game_state: The dictionary that describes everything on the board.
     :return: The action to take as a string.
     """
-    self.logger.info(50*"----")
-    # Exploration vs exploitation
-    # self.logger.info(game_state)
     if self.train:
-        # Use epsilon greedy strategy to determine whether to exploit or explore
-        EPS_START = 0.9
-        EPS_END = 0.05
-        EPS_DECAY = 500
-        sample = random.random()
-        eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)
-        self.memory.steps_done += 1
-        # TODO: remove epsioln greedy pretty
-        if True:
-            self.logger.info("Exploitation")
-            with torch.no_grad():
-                state_features = state_to_features(self, game_state)
-                state_features = state_features.unsqueeze(0).to(device)
-                # self.logger.info("Game state transformed")
-                # self.logger.info(state_features)
-                # Pass features through policy network
-                probs = self.policy_net(state_features)
-                
-                #action = torch.multinomial(probs, num_samples=1)
-                # Find the maximum value and its index
-                action = torch.multinomial(probs, num_samples=1).item()
-                self.logger.info(f"chose action idx {action}")
-                self.logger.info(f"Propability distribution: {probs}")
-                self.logger.info(f"chose action {ACTIONS[action]}")
-                return ACTIONS[action]
-        else:
-            self.logger.info("Exploration")
-            action = np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
-            while not is_action_valid(self, game_state, action):
-                self.logger.info(f"{action} is invalid... choosing again")
-                action = np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
-            self.logger.info(f"Choose random action {action}")
-            return action
-
-    else:
-        # exploit only in test mode
-        self.logger.info("Exploitation")
         with torch.no_grad():
             state_features = state_to_features(self, game_state)
             state_features = state_features.unsqueeze(0).to(device)
-            # Pass features through policy network           
-            probs = self.policy_net(state_features)
-            action = torch.multinomial(probs, num_samples=1).item()
-            self.logger.info(f"Propability distribution: {probs} | action chosen: {action}")
+            probabilities = self.policy_net(state_features)
+            # sample action according to softmax probability distribution output
+            action = torch.multinomial(probabilities, num_samples=1).item()
+            self.logger.info(f"chose action {ACTIONS[action]}")
+            self.memory.steps_done += 1
+
             return ACTIONS[action]
+
+    else:
+        with torch.no_grad():
+            state_features = state_to_features(self, game_state)
+            state_features = state_features.unsqueeze(0).to(device)
+            # Pass features through policy network
+            probabilities = self.policy_net(state_features)
+            # probabilities[0] because tensor is encapsulated in a list
+            _, max_index = torch.max(probabilities[0], dim=0)
+            action = max_index.item()
+            self.logger.info(f"chose action {ACTIONS[action]}")
+            return ACTIONS[action]
+
 
 def state_to_features(self, game_state: dict) -> np.array:
     """
-    *This is not a required function, but an idea to structure your code.*
-
     Converts the game state to the input of your model, i.e.
     a feature vector.
 
@@ -136,13 +102,14 @@ def state_to_features(self, game_state: dict) -> np.array:
     :param game_state:  A dictionary describing the current game board.
     :return: np.array
     """
+    self.logger.debug(f"Transforming the gamestate to RGB like picture")
     if game_state is None:
         return None
-    
-    field = game_state['field'].astype(np.float32)
-    field[field == 1.] = 11.
 
-    # The RGB map should contain:  
+    field = game_state["field"].astype(np.float32)
+    field[field == 1.0] = 11.0
+
+    # The RGB map should contain:
     # w = wall, e = empty, c = crate, a = agent, oa = other agents, b = bombs, co = coins
     # Define a mapping for the values: red, black and brown
     value_to_color = {-1: [255, 0, 0], 0: [0, 0, 0], 1: [210, 105, 30]}
@@ -163,42 +130,24 @@ def state_to_features(self, game_state: dict) -> np.array:
     rgb_map[:, agent_x, agent_y] = [1, 0, 255]
 
     # Add other agents at the specified coordinates with the color [249, 0, 249] = pink
-    for _, _, _, (x, y) in game_state['others']:
+    for _, _, _, (x, y) in game_state["others"]:
         rgb_map[:, x, y] = [249, 0, 249]
 
     # Add coins with the color [255, 255, 0] = yellow
-    for (x, y) in game_state['coins']:
+    for x, y in game_state["coins"]:
         rgb_map[:, x, y] = [255, 255, 0]
 
-    # Add not exploded bombs with the color [0, 255, 0] = green and exploding bombs with explosion zone [0, 255, 222] = türkis
-    for ((x, y), t) in game_state['bombs']:
+    # Add not exploded bombs with the color [0, 255, 0] = green and exploding bombs with explosion zone [0, 255, 222] = cyan
+    for (x, y), t in game_state["bombs"]:
         if t > 0:
             rgb_map[:, x, y] = [0, 255, 0]
         else:
             for dx in range(-3, 4):
-                for dy in range(-3, 4): 
-                    if inPlayArea(field, x+dx, y+dy) and (dx*dy == 0 and field[x+dx, y+dy] != 9):
-                        rgb_map[:, x+dx, y+dy] = [0, 255, 222]
-
-
-    # agent_x, agent_y = game_state["self"][-1]
-    
-    # paths_to_coins = get_all_paths_to_coins(self, game_state)
-
-    # paths_out_of_explosions = get_all_paths_out_of_explosions(self, game_state)
-
-    # add shortest path of coin to map 
-    # for path in self.memory.shortest_paths_to_coin:
-    #     rgb_map[:, path[1][0],path[1][1] ] = [155, 255, 0]
-
-    # for path in self.memory.shortest_paths_out_of_explosion:
-    #     rgb_map[:, path[1][1], path[1][1]] = [102, 0, 102]
-
-    # # Assuming new_array is the RGB image
-    # import matplotlib.pyplot as plt
-    # plt.imshow(rgb_map.transpose(1, 2, 0))  # Transpose to (height, width, channels) for display
-    # plt.axis('off')  # Turn off axis labels
-    # plt.show()
+                for dy in range(-3, 4):
+                    if inPlayArea(field, x + dx, y + dy) and (
+                        dx * dy == 0 and field[x + dx, y + dy] != 9
+                    ):
+                        rgb_map[:, x + dx, y + dy] = [0, 255, 222]
 
     # Convert the NumPy array to a torch tensor
     features_tensor = torch.from_numpy(rgb_map).float()
@@ -208,31 +157,6 @@ def state_to_features(self, game_state: dict) -> np.array:
 
     return features_tensor
 
-
-def channelwise_normalize_data(data):
-    """
-    Normalizes the data using Z-score normalization to not rely on batchnorm
-    Args:
-    - data (numpy.ndarray or torch.Tensor): Input data to be normalized.
-    Returns:
-    - normalized_data (numpy.ndarray or torch.Tensor): Normalized data.
-    """
-    mean = data.mean(dim=(1, 2), keepdim=True)
-    std = data.std(dim=(1, 2), keepdim=True)
-    
-    normalized_data = (data - mean) / (std + 1e-7)  # Adding a small value to prevent division by zero
-    
-    return normalized_data
-
-
-def min_max_scale(data):
-    """
-    Normalize the data by using a min max scaler strategie
-    """
-    minimum = torch.min(data)
-    maximum = torch.max(data)
-
-    return (data - minimum) / (maximum - minimum)
 
 def inPlayArea(field, x, y):
     return (1 <= y < field.shape[0] - 1) and (1 <= x < field.shape[1] - 1)
