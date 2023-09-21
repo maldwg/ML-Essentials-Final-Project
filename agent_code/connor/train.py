@@ -85,11 +85,12 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
             next_state = state_to_features(self, new_game_state)
         self.logger.info(f"overall reward of step {reward}")
         reward = torch.tensor(reward, device=device)
-
+        
         probs = self.policy_net(state)
-        _, max_index = torch.max(probs, dim=1)
+        self.logger.info(f"probs: {probs[0]}")
+        action = ACTIONS.index(self_action) 
         self.logger.info(f"log-probs: {torch.log(probs)}")
-        log_prob = torch.log(probs.squeeze(0)[max_index])
+        log_prob = torch.log(probs[0][action])
         self.logger.info(f"log_probs squeezed and saved: {log_prob}")
         self.memory.step_action_rewards.append((log_prob, reward))       
 
@@ -131,9 +132,9 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.memory.rewards_of_round = []
 
     probs = self.policy_net(state)
-    _, max_index = torch.max(probs, dim=1)
+    action = ACTIONS.index(last_action) 
     self.logger.info(f"log-probs: {torch.log(probs)}")
-    log_prob = torch.log(probs.squeeze(0)[max_index])
+    log_prob = torch.log(probs[0][action])
     self.logger.info(f"log_probs squeezed and saved: {log_prob}")
  
     reward = torch.tensor(reward, device=device)
@@ -223,7 +224,7 @@ def optimize_model(self):
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
     GAMMA = 0.9
-    BATCHSIZE = 8
+    BATCHSIZE = 4
 
     if len(self.memory.episode_action_rewards) < BATCHSIZE:
         return
@@ -245,6 +246,7 @@ def optimize_model(self):
             # append loss for step at right position 
             # TODO: check if this computation is the erorr
             #TODO: compare with q value appproach why no error there
+            print(log_prob)
             episode_loss[idx] = -log_prob * G
         # append episode loss to batch loss tensor
         
