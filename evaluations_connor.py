@@ -13,11 +13,11 @@ figure_evaluation_dir = "agent_code/" + AGENT_NAME + "/evaluation/"
 create_directory_if_not_exists(figure_evaluation_dir)
 
 
-with gzip.open(model_path, 'rb') as f:
+with gzip.open(model_path, "rb") as f:
     policy_net, _, memory = pickle.load(f)
 
 print(f"Model has remembered {memory.steps_done} steps")
-print(f"Memmory length: {len(memory.memory)}")
+print(f"Memmory length: {len(memory)}")
 
 
 ########################################################
@@ -37,28 +37,29 @@ tick_interval = int(rounded_max_x / 5)
 if tick_interval == 0:
     tick_interval = 1
 
-if rounded_max_x < len(mean_losses_after_episode): 
+if rounded_max_x < len(mean_losses_after_episode):
     stop_x_tick = rounded_max_x + tick_interval + 1
 else:
     stop_x_tick = rounded_max_x + 1
 
 epochs = range(1, len(mean_losses_after_episode) + 1)
-plt.plot(epochs, mean_losses_after_episode, label='Mean Loss after each episode')
+plt.plot(epochs, mean_losses_after_episode, label="Mean Loss after each episode")
 
-plt.title('Loss after Episodes')
-plt.xlabel('Episodes')
-plt.ylabel('Loss')
+plt.title("Loss after Episodes")
+plt.xlabel("Episodes")
+plt.ylabel("Loss")
 
 # Set the tick locations
 plt.xticks(np.arange(0, stop_x_tick, tick_interval))
 
 # Display the plot
-plt.legend(loc='best')
+plt.legend(loc="best")
 plt.savefig(f"{figure_evaluation_dir}{AGENT_NAME}_loss.png")
 plt.clf()
 
+
 ########################################################
-# Plot distribution of CNN weights 
+# Plot distribution of CNN weights
 ########################################################
 def plot_weights(model):
     for name, param in model.named_parameters():
@@ -69,33 +70,34 @@ def plot_weights(model):
             plt.savefig(f"{figure_evaluation_dir}{AGENT_NAME}_{name}_weights.png")
             plt.clf()
 
+
 plot_weights(policy_net)
 
 ########################################################
 # Plot rewards
 ########################################################
 rewards = memory.rewards_after_round
-rounds = [ x for x in range(1, len(rewards) + 1)]
+rounds = [x for x in range(1, len(rewards) + 1)]
 
 rounded_max_x = round_to_nearest_multiple(len(rewards))
 tick_interval = int(rounded_max_x / 5)
 if tick_interval == 0:
     tick_interval = 1
 
-if rounded_max_x < len(rewards): 
+if rounded_max_x < len(rewards):
     stop_x_tick = rounded_max_x + tick_interval + 1
 else:
     stop_x_tick = rounded_max_x + 1
 
-plt.title('Overall reward after Round')
-plt.xlabel('Round')
-plt.ylabel('Reward')
+plt.title("Overall reward after Round")
+plt.xlabel("Round")
+plt.ylabel("Reward")
 print(f"Length of overall trained rounds: {len(rewards)}")
-plt.plot(rounds, rewards, label='Reward of round')
+plt.plot(rounds, rewards, label="Reward of round")
 # Set the tick locations
 plt.xticks(np.arange(0, stop_x_tick, tick_interval))
 
 # Display the plot
-plt.legend(loc='best')
+plt.legend(loc="best")
 plt.savefig(f"{figure_evaluation_dir}{AGENT_NAME}_rewards.png")
 plt.clf()

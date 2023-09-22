@@ -36,7 +36,7 @@ def setup(self):
 
             self.policy_net = PolicyGradientNetwork(17, 17, 6).to(device)
             self.optimizer = optim.Adam(
-                self.policy_net.parameters(), lr=0.0001, weight_decay=1e-5
+                self.policy_net.parameters(), lr=0.00001, weight_decay=1e-5
             )
             self.memory = ReplayMemory()
 

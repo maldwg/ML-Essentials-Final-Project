@@ -7,16 +7,24 @@ from evaluations_utils import create_directory_if_not_exists, round_to_nearest_m
 import subprocess
 
 # parten directory containing all model files
-parent_directory = "agent_code/baby_terminator/checkpoints/350-coin-heaven-200-was-best/"
+parent_directory = (
+    "agent_code/baby_terminator/checkpoints/350-coin-heaven-200-was-best/"
+)
 pattern = "my-saved-model.pkl.gz"
 
 # dir for evaluation plots
-figure_evaluation_dir = "agent_code/baby_terminator/checkpoints/350-coin-heaven-200-was-best/evaluation/"
+figure_evaluation_dir = (
+    "agent_code/baby_terminator/checkpoints/350-coin-heaven-200-was-best/evaluation/"
+)
 create_directory_if_not_exists(figure_evaluation_dir)
 
-result = subprocess.run(["find", parent_directory, "-type", "f", "-name", pattern], capture_output=True, text=True)
+result = subprocess.run(
+    ["find", parent_directory, "-type", "f", "-name", pattern],
+    capture_output=True,
+    text=True,
+)
 if result.returncode == 0:
-    paths = result.stdout.strip().split('\n')
+    paths = result.stdout.strip().split("\n")
 else:
     print("Error occurred while searching for files.")
 
@@ -28,7 +36,7 @@ rewards = []
 
 # Iterate over each path
 for model_path in paths:
-    with gzip.open(model_path, 'rb') as f:
+    with gzip.open(model_path, "rb") as f:
         _, _, _, memory = pickle.load(f)
 
         # Get q_value and calc mean
@@ -72,11 +80,11 @@ for mean_q_values_after_episode in q_values:
     plt.plot(epochs, mean_q_values_after_episode, label=label)
     plt.xticks(np.arange(0, stop_x_tick, tick_interval))
 
-plt.title('Q Values after Episodes for top 10 Grid Search models')
-plt.xlabel('Episodes')
-plt.ylabel('Q Value')
+plt.title("Q Values after Episodes for top 10 Grid Search models")
+plt.xlabel("Episodes")
+plt.ylabel("Q Value")
 
-plt.legend(loc='best')
+plt.legend(loc="best")
 plt.savefig(f"{figure_evaluation_dir}grid_search_top_10_q_values.png")
 plt.clf()
 
@@ -98,11 +106,11 @@ for mean_losses_after_episode in losses:
     plt.plot(epochs, mean_losses_after_episode, label=label)
     plt.xticks(np.arange(0, stop_x_tick, tick_interval))
 
-plt.title('Loss after Episodes for top 10 Grid Search models')
-plt.xlabel('Episodes')
-plt.ylabel('Loss')
+plt.title("Loss after Episodes for top 10 Grid Search models")
+plt.xlabel("Episodes")
+plt.ylabel("Loss")
 
-plt.legend(loc='best')
+plt.legend(loc="best")
 plt.savefig(f"{figure_evaluation_dir}grid_search_top_10_loss.png")
 plt.clf()
 
@@ -121,13 +129,13 @@ for rewards_after_round in rewards:
     else:
         stop_x_tick = rounded_max_x + 1
 
-    plt.plot(rounds, rewards_after_round, label='Reward of round')
+    plt.plot(rounds, rewards_after_round, label="Reward of round")
     plt.xticks(np.arange(0, stop_x_tick, tick_interval))
 
-plt.title('Overall reward after Round')
-plt.xlabel('Round')
-plt.ylabel('Reward')
+plt.title("Overall reward after Round")
+plt.xlabel("Round")
+plt.ylabel("Reward")
 
-plt.legend(loc='best')
+plt.legend(loc="best")
 plt.savefig(f"{figure_evaluation_dir}grid_search_top_10_rewards.png")
 plt.clf()

@@ -1,9 +1,11 @@
 import os
 import math
 
+
 def create_directory_if_not_exists(directory_path):
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
+
 
 def round_to_nearest_multiple(number):
     """

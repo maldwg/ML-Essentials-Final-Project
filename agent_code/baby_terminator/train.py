@@ -21,6 +21,7 @@ from .utils import *
 TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
 
+
 def setup_training(self):
     """
     Initialise self for training purpose.
@@ -38,8 +39,13 @@ def setup_training(self):
     self.number_of_executed_episodes = 0
 
 
-
-def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
+def game_events_occurred(
+    self,
+    old_game_state: dict,
+    self_action: str,
+    new_game_state: dict,
+    events: List[str],
+):
     """
     Called once per step to allow intermediate rewards based on game events.
 
@@ -56,10 +62,14 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
-    custom_events = custom_game_events(self, old_game_state, new_game_state, events, self_action)
+    custom_events = custom_game_events(
+        self, old_game_state, new_game_state, events, self_action
+    )
     events.extend(custom_events)
     self.logger.info("Game events occurred")
-    self.logger.debug(f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}')
+    self.logger.debug(
+        f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}'
+    )
     if old_game_state is None:
         self.logger.info("State is none in game events occurred")
         return
@@ -75,13 +85,13 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
             next_state = state_to_features(self, new_game_state)
         self.logger.info(f"overall reward of step {reward}")
         reward = torch.tensor(reward, device=device)
-        # push the state to the memory in order to be able to learn from it 
+        # push the state to the memory in order to be able to learn from it
         self.memory.push(state, action, next_state, reward)
 
         # needs to be before optimize otherwise the events occured are not taken into account
         increment_event_counts(self, events)
 
-        optimize_model(self)     
+        optimize_model(self)
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -97,7 +107,9 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     :param self: The same object that is passed to all of your callbacks.
     """
-    self.logger.debug(f'Encountered event(s) {", ".join(map(repr, events))} in final step')
+    self.logger.debug(
+        f'Encountered event(s) {", ".join(map(repr, events))} in final step'
+    )
     custom_events = custom_game_events(self, None, last_game_state, events, last_action)
     events.extend(custom_events)
 
@@ -105,7 +117,11 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     action = torch.tensor([ACTIONS.index(last_action)], device=device)
     reward = reward_from_events(self, events)
     # only give end of round rewards if the round was sufficiently long, agent did not kill himslef, all other agents are dead
-    if last_game_state['step'] > 401 and ( not last_game_state["others"] and e.OPPONENT_ELIMINATED in events) and e.KILLED_SELF not in events:
+    if (
+        last_game_state["step"] > 401
+        and (not last_game_state["others"] and e.OPPONENT_ELIMINATED in events)
+        and e.KILLED_SELF not in events
+    ):
         reward += after_game_rewards(self, last_game_state)
     self.memory.rewards_of_round.append(reward)
     overall_reward = sum(self.memory.rewards_of_round)
@@ -135,25 +151,33 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     # Store the model
     if self.number_of_executed_episodes == last_game_state["number_rounds"]:
         gc.disable()
-        with gzip.open('my-saved-model.pkl.gz', 'wb') as f:
-            pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], f,  protocol=pickle.HIGHEST_PROTOCOL)
+        with gzip.open("my-saved-model.pkl.gz", "wb") as f:
+            pickle.dump(
+                [self.policy_net, self.target_net, self.optimizer, self.memory],
+                f,
+                protocol=pickle.HIGHEST_PROTOCOL,
+            )
         gc.enable()
+
 
 def after_game_rewards(self, last_game_state):
     self.logger.info("Add end of round rewards")
     score = last_game_state["self"][1]
-    scores = [ agent[1] for agent in last_game_state["others"] ]
+    scores = [agent[1] for agent in last_game_state["others"]]
     scores.append(score)
     placement = np.argsort(scores)[-1]
     self.logger.info(f"Reached {placement + 1} place")
-    if placement + 1 < 3: 
-        placement_reward = (1 / (placement + 1) * self.memory.game_rewards[ad.PLACEMENT_REWARD]) 
-    else: 
+    if placement + 1 < 3:
+        placement_reward = (
+            1 / (placement + 1) * self.memory.game_rewards[ad.PLACEMENT_REWARD]
+        )
+    else:
         placement_reward = 0
-    score_reward = (score * self.memory.game_rewards[ad.SCORE_REWARD])
+    score_reward = score * self.memory.game_rewards[ad.SCORE_REWARD]
     self.logger.info(f"Score reward: {score_reward}")
     self.logger.info(f"placement reward: {placement_reward}")
     return placement_reward + score_reward
+
 
 def reward_from_events(self, events: List[str]) -> int:
     """
@@ -162,14 +186,16 @@ def reward_from_events(self, events: List[str]) -> int:
     Here you can modify the rewards your agent get so as to en/discourage
     certain behavior.
     """
-    
+
     reward_sum = 0
     rewarded_events = []
     for event in events:
         if event in self.memory.game_rewards:
             reward_sum += self.memory.game_rewards[event]
             rewarded_events.append(event)
-    self.logger.info(f"Awarded {reward_sum} for the {len(rewarded_events)} events {', '.join(rewarded_events)}")
+    self.logger.info(
+        f"Awarded {reward_sum} for the {len(rewarded_events)} events {', '.join(rewarded_events)}"
+    )
     return reward_sum
 
 
@@ -188,10 +214,14 @@ def optimize_model(self):
     # "online learning" by always including the last step to ensure we learn from this experience
     batch = Transition(*zip(*transitions))
 
-    non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
-                                          batch.next_state)), device=device, dtype=torch.bool)
-    non_final_next_states = torch.stack([s for s in batch.next_state
-                                                if s is not None]).float()
+    non_final_mask = torch.tensor(
+        tuple(map(lambda s: s is not None, batch.next_state)),
+        device=device,
+        dtype=torch.bool,
+    )
+    non_final_next_states = torch.stack(
+        [s for s in batch.next_state if s is not None]
+    ).float()
 
     state_batch = torch.stack(batch.state).float()
     action_batch = torch.stack(batch.action)
@@ -203,11 +233,15 @@ def optimize_model(self):
     # compute the expected Q values
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
     with torch.no_grad():
-        next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0]
+        next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(
+            1
+        )[0]
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
     # compute loss
-    loss = nn.functional.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
+    loss = nn.functional.smooth_l1_loss(
+        state_action_values, expected_state_action_values.unsqueeze(1)
+    )
     self.logger.info(f"Loss of {loss}")
 
     # Add Q value to object
@@ -234,6 +268,8 @@ def optimize_model(self):
 
     # Dynamically adjust UPDATE_FREQUENCY via exp function only after the network has been updated once
     if self.memory.steps_since_last_update == 0:
-        self.memory.update_frequency = int(500 * np.exp(0.00001 * self.memory.steps_done))
+        self.memory.update_frequency = int(
+            500 * np.exp(0.00001 * self.memory.steps_done)
+        )
         # Ensure there's a maximum limit for UPDATE_FREQUENCY to prevent very infrequent updates
         self.memory.update_frequency = min(self.memory.update_frequency, 3500)

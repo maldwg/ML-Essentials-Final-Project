@@ -17,7 +17,7 @@ class Optimizer(Enum):
 
 
 class Memory(Enum):
-    REPLAY_MEMORY_SIZE = "capacity"    
+    REPLAY_MEMORY_SIZE = "capacity"
 
 
 class EpsilonGreedy(Enum):
@@ -33,5 +33,5 @@ class Train(Enum):
 
 def read_hyperparameters():
     with open("./parameters.json", "r") as f:
-       hyperparameters = json.load(f)
+        hyperparameters = json.load(f)
     return hyperparameters

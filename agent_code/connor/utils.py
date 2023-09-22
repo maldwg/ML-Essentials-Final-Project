@@ -14,8 +14,8 @@ game_rewards = {
     # killing goals
     e.KILLED_OPPONENT: 100,
     e.OPPONENT_ELIMINATED: -2,
-    e.KILLED_SELF: -50,
-    e.GOT_KILLED: -30,
+    e.KILLED_SELF: -200,
+    e.GOT_KILLED: -150,
     e.INVALID_ACTION: -10,
     # additional penalty when laying 2 bombs in a row
     c.UNALLOWED_BOMB: -10,
