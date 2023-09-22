@@ -163,7 +163,7 @@ def optimize_model(self):
     Method to perform the actual Q-Learning
     """
     GAMMA = 0.9
-    BATCHSIZE = 4
+    BATCHSIZE = 32
 
     if len(self.memory.episode_action_rewards) < BATCHSIZE:
         return
@@ -178,7 +178,7 @@ def optimize_model(self):
         # Compute the returns G_t for each timestep in the episode
         episode_loss = torch.zeros(len(episode))
         # compute loss for each step by using discounted reward (G) and log_prob
-        for idx, (log_prob, reward) in enumerate(episode):
+        for idx, (log_prob, _) in enumerate(episode):
             G = 0
             pw = 0
             for _, r in episode[idx:]:
@@ -189,7 +189,7 @@ def optimize_model(self):
         # append episode loss to batch loss tensor
         loss = torch.cat((loss, episode_loss), dim=0)
 
-    loss = loss.sum()
+    loss = loss.mean()
 
     self.loss = loss
 
