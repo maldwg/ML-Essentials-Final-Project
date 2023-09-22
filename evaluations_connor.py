@@ -43,6 +43,7 @@ else:
     stop_x_tick = rounded_max_x + 1
 
 epochs = range(1, len(mean_losses_after_episode) + 1)
+plt.figure(figsize=(12, 6), dpi=100)
 plt.plot(epochs, mean_losses_after_episode, label="Mean Loss after each episode")
 
 plt.title("Loss after Episodes")
@@ -64,7 +65,7 @@ plt.clf()
 def plot_weights(model):
     for name, param in model.named_parameters():
         if param.requires_grad and "bias" not in name:
-            plt.figure(figsize=(15, 4))
+            plt.figure(figsize=(12, 6), dpi=100)
             plt.title(name)
             plt.hist(param.data.cpu().numpy().flatten(), bins=100)
             plt.savefig(f"{figure_evaluation_dir}{AGENT_NAME}_{name}_weights.png")
@@ -89,6 +90,7 @@ if rounded_max_x < len(rewards):
 else:
     stop_x_tick = rounded_max_x + 1
 
+plt.figure(figsize=(12, 6), dpi=100)
 plt.title("Overall reward after Round")
 plt.xlabel("Round")
 plt.ylabel("Reward")
