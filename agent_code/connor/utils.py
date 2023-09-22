@@ -14,8 +14,8 @@ game_rewards = {
     # killing goals
     e.KILLED_OPPONENT: 100,
     e.OPPONENT_ELIMINATED: -2,
-    e.KILLED_SELF: -200,
-    e.GOT_KILLED: -150,
+    e.KILLED_SELF: -170,
+    e.GOT_KILLED: -100,
     e.INVALID_ACTION: -10,
     # additional penalty when laying 2 bombs in a row
     c.UNALLOWED_BOMB: -10,
@@ -27,16 +27,16 @@ game_rewards = {
     e.CRATE_DESTROYED: 7.5,
     c.CRATE_IN_EXPLOSION_ZONE: 10,
     c.NOT_KILLED_BY_OWN_BOMB: 7.5,
-    c.GUARANTEED_SUICIDE: -100,
+    c.GUARANTEED_SUICIDE: -120,
     # bomb related goals
     c.MOVED_TOWARDS_END_OF_EXPLOSION: 5,
-    c.LEFT_POTENTIAL_EXPLOSION_ZONE: 10,
+    c.LEFT_POTENTIAL_EXPLOSION_ZONE: 12,
     c.ENTERED_POTENTIAL_EXPLOSION_ZONE: -5,
     c.ATTACKED_ENEMY: 30,
-    e.MOVED_DOWN: -1.5,
-    e.MOVED_LEFT: -1.5,
-    e.MOVED_RIGHT: -1.5,
-    e.MOVED_UP: -1.5,
+    e.MOVED_DOWN: -2,
+    e.MOVED_LEFT: -2,
+    e.MOVED_RIGHT: -2,
+    e.MOVED_UP: -2,
     e.WAITED: -10,
     e.BOMB_DROPPED: -10,
 }
