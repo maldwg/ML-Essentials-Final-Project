@@ -68,6 +68,9 @@ q_values = []
 losses = []
 rewards = []
 hyperparameters = []
+scores = []
+# number of scores to look at each model
+x = 20
 
 # Iterate over each path
 for model_path in paths:
@@ -96,6 +99,9 @@ for model_path in paths:
 
         # Get rewards
         rewards.append(memory.rewards_after_round)
+
+        # get last x rounds of scores
+        scores.append(memory.rewards_after_round[-x:])
 
 for p in hyperparameters_paths:
     with open(p, "r") as f:
@@ -196,4 +202,28 @@ plt.ylabel("Reward")
 
 plt.legend(loc="best")
 plt.savefig(f"{figure_evaluation_dir}grid_search_top_10_rewards.png")
+plt.clf()
+
+
+
+model_numbers_plain = []
+for nr in model_numbers:
+    model_numbers_plain.append(nr.split(" ")[-1])
+
+
+# corlors for top five 
+bar_colors = ["blue", "orange", "green", "red", "purple"]
+mean_scores = [np.mean(model_scores) for model_scores in scores ]
+x_pos = np.arange(len(mean_scores))
+
+
+# Plot scores over last 20 episodes
+plt.figure(figsize=(12, 6), dpi=100)
+plt.bar(x_pos, mean_scores, align="center", color=bar_colors, width=0.5)
+plt.xticks(x_pos, model_numbers_plain)
+plt.ylabel(f"Mean score")
+plt.xlabel("Model number")
+plt.title(f"Mean score of models over last {x} rounds")
+plt.legend(loc="best")
+plt.savefig(f"{figure_evaluation_dir}mean_scores_top_10_models.png")
 plt.clf()

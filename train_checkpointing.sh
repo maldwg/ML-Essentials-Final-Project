@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# script to train th agent in a checkpointed way so that it does not get saved to many times in a row, and to have a intermediate result if the training fails 
 AGENT=baby_terminator
 # Different number of rounds to learn the game incrementally on each scenario
 # larger nr of round vs weak agents to learn the scenario deeper
