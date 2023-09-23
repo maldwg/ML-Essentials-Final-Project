@@ -159,4 +159,13 @@ def state_to_features(self, game_state: dict) -> np.array:
 
 
 def inPlayArea(field, x, y):
+    """
+    return if the given coordinates are within the game field.
+
+    :param field: Current game field
+    :param x: int position on the x-axis
+    :param y: int position on the y-axis
+
+    :return: True if the coordinates are within the game filed, else return False
+    """
     return (1 <= y < field.shape[0] - 1) and (1 <= x < field.shape[1] - 1)

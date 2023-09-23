@@ -12,42 +12,33 @@ from .utils import *
 
 import random
 
-
 def setup_training(self):
     """
-    Initialise self for training purpose.
+    Initialize the agent for training mode.
 
-    This is called after `setup` in callbacks.py.
+    This function is called after the `setup` function in `callbacks.py`.
 
-    :param self: This object is passed to all callbacks and you can set arbitrary values.
+    :param self: The agent instance.
     """
     self.logger.info("Enter train mode")
     self.loss = None
     self.number_of_executed_episodes = 0
 
 
-def game_events_occurred(
-    self,
-    old_game_state: dict,
-    self_action: str,
-    new_game_state: dict,
-    events: List[str],
-):
+
+def game_events_occurred(self, old_game_state, self_action, new_game_state, events):
     """
-    Called once per step to allow intermediate rewards based on game events.
+    Called once per step for intermediate rewards based on game events.
 
-    When this method is called, self.events will contain a list of all game
-    events relevant to your agent that occurred during the previous step. Consult
-    settings.py to see what events are tracked. You can hand out rewards to your
-    agent based on these events and your knowledge of the (new) game state.
+    This function is responsible for storing game events and rewards at each game step.
 
-    This is *one* of the places where you could update your agent.
-
-    :param self: This object is passed to all callbacks and you can set arbitrary values.
+    :param self: The agent instance.
     :param old_game_state: The state that was passed to the last call of `act`.
     :param self_action: The action that you took.
     :param new_game_state: The state the agent is in now.
-    :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
+    :param events: List of game events that occurred.
+
+    :return: None
     """
     custom_events = custom_game_events(
         self, old_game_state, new_game_state, events, self_action
@@ -76,18 +67,18 @@ def game_events_occurred(
         increment_event_counts(self, events)
 
 
-def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
+def end_of_round(self, last_game_state, last_action, events):
     """
-    Called at the end of each game or when the agent died to hand out final rewards.
-    This replaces game_events_occurred in this round.
+    Called at the end of each game or when the agent died for final rewards.
 
-    This is similar to game_events_occurred. self.events will contain all events that
-    occurred during your agent's final step.
+    This function is responsible for handling the end-of-round updates for the agent, including model optimization.
 
-    This is *one* of the places where you could update your agent.
-    This is also a good place to store an agent that you updated.
+    :param self: The agent instance.
+    :param last_game_state: The last state of the game.
+    :param last_action: The last action taken.
+    :param events: List of game events that occurred.
 
-    :param self: The same object that is passed to all of your callbacks.
+    :return: None
     """
     self.logger.debug(
         f'Encountered event(s) {", ".join(map(repr, events))} in final step'
@@ -139,11 +130,16 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
             )
         gc.enable()
 
-
-def reward_from_events(self, events: List[str]) -> int:
+def reward_from_events(self, events):
     """
-    Here you can modify the rewards your agent get so as to en/discourage
-    certain behavior.
+    Compute the reward based on game events.
+
+    This function computes the cumulative reward for the agent based on the game events.
+
+    :param self: The agent instance.
+    :param events: List of game events that occurred.
+
+    :return: int: The total reward.
     """
     reward_sum = 0
     rewarded_events = []
@@ -160,7 +156,13 @@ def reward_from_events(self, events: List[str]) -> int:
 
 def optimize_model(self):
     """
-    Method to perform the actual Q-Learning
+    Optimize the agent's policy network using Policy Gradient methods.
+
+    This function is responsible for optimizing the agent's policy network by computing the loss using the Policy Gradient method and performing backpropagation.
+
+    :param self: The agent instance.
+
+    :return: None
     """
     GAMMA = 0.9
     BATCHSIZE = 32
