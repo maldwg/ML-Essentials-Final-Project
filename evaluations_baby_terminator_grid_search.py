@@ -110,11 +110,6 @@ for params in hyperparameters:
     formatted_string = ""
     for dictionary in params:
         for key, value in dictionary.items():
-            # Add LaTeX formatting for GAMMA and EPS variables
-            # if key == "GAMMA" :
-            #     key = f"${key}$"
-            # if key.startswith("EPS"):
-            #     key = f"${key.split("")[0}$ + key.split("")[1}"
             formatted_string += f"{key.lower()}.: {value}, "
     params_as_strings += formatted_string + "\n"
 
@@ -138,13 +133,13 @@ for idx, mean_q_values_after_episode in enumerate(q_values):
     plt.xticks(np.arange(0, stop_x_tick, tick_interval))
 
 
-plt.title("Q Values after Episodes for top 10 Grid Search models")
-plt.xlabel("Episodes")
+plt.title("Average Q Values per Episode for Top 5 Models from Grid Search")
+plt.xlabel("Episode")
 plt.ylabel("Q Value")
 
 plt.legend(loc="best")
 
-plt.savefig(f"{figure_evaluation_dir}grid_search_top_10_q_values.png")
+plt.savefig(f"{figure_evaluation_dir}grid_search_top_5_q_values.png")
 plt.clf()
 
 # Plot loss values
@@ -165,12 +160,12 @@ for idx, mean_losses_after_episode in enumerate(losses):
     plt.plot(epochs, mean_losses_after_episode, label=label)
     plt.xticks(np.arange(0, stop_x_tick, tick_interval))
 
-plt.title("Loss after Episodes for top 10 Grid Search models")
-plt.xlabel("Episodes")
+plt.title("Average Loss per Episode for Top 5 Models from Grid Search")
+plt.xlabel("Episode")
 plt.ylabel("Loss")
 
 plt.legend(loc="best")
-plt.savefig(f"{figure_evaluation_dir}grid_search_top_10_loss.png")
+plt.savefig(f"{figure_evaluation_dir}grid_search_top_5_loss.png")
 plt.clf()
 
 # Plot rewards
@@ -191,12 +186,12 @@ for idx, rewards_after_round in enumerate(rewards):
     plt.plot(rounds, rewards_after_round, label=model_numbers[idx])
     plt.xticks(np.arange(0, stop_x_tick, tick_interval))
 
-plt.title("Overall reward after Round")
-plt.xlabel("Round")
+plt.title("Total Rewards per Episode for Top 5 Models from Grid Search")
+plt.xlabel("Episode")
 plt.ylabel("Reward")
 
 plt.legend(loc="best")
-plt.savefig(f"{figure_evaluation_dir}grid_search_top_10_rewards.png")
+plt.savefig(f"{figure_evaluation_dir}grid_search_top_5_rewards.png")
 plt.clf()
 
 
@@ -217,7 +212,7 @@ plt.bar(x_pos, mean_scores, align="center", color=bar_colors, width=0.5)
 plt.xticks(x_pos, model_numbers_plain)
 plt.ylabel(f"Mean score")
 plt.xlabel("Model number")
-plt.title(f"Mean score of models over last {x} rounds")
+plt.title(f"Mean Score of Top 5 Models from Grid Search in the Last {x} Episodes")
 plt.legend(loc="best")
-plt.savefig(f"{figure_evaluation_dir}mean_scores_top_10_models.png")
+plt.savefig(f"{figure_evaluation_dir}mean_scores_top_5_models.png")
 plt.clf()
