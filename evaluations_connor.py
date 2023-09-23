@@ -44,7 +44,7 @@ else:
 
 epochs = range(1, len(mean_losses_after_episode) + 1)
 plt.figure(figsize=(12, 6), dpi=100)
-plt.plot(epochs, mean_losses_after_episode, label="Loss after each Episode")
+plt.plot(epochs, mean_losses_after_episode, label="Loss after Episode")
 
 plt.title("Loss after Episodes")
 plt.xlabel("Episode")
@@ -91,11 +91,11 @@ else:
     stop_x_tick = rounded_max_x + 1
 
 plt.figure(figsize=(12, 6), dpi=100)
-plt.title("Overall reward after Episode")
+plt.title("Reward after Episodes")
 plt.xlabel("Episode")
 plt.ylabel("Reward")
 print(f"Length of overall trained rounds: {len(rewards)}")
-plt.plot(rounds, rewards, label="Reward of round")
+plt.plot(rounds, rewards, label="Reward after Episode")
 # Set the tick locations
 plt.xticks(np.arange(0, stop_x_tick, tick_interval))
 
