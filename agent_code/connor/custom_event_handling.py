@@ -1,5 +1,5 @@
 import numpy as np
-from agent_code.baby_terminator.path_finding import astar
+from agent_code.connor.path_finding import astar
 import events as e
 from . import custom_events as c
 from .utils import *
@@ -47,7 +47,7 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             custom_events.append(c.MOVED_AWAY_FROM_COIN)
 
         # update paths to all coins
-        update_coin_paths(self, new_game_state, events)
+        update_coin_paths(self, new_game_state)
 
         # check if there are bombs on the filed, if not skip calculations
         if old_game_state["bombs"]:

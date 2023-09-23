@@ -2,6 +2,20 @@ from torch import nn
 
 
 class Convolution(nn.Module):
+    """
+    A convolutional layer with dropout and leaky ReLU activation.
+
+    :param input_channels : int, Number of input channels.
+    :param output_channels : int, Number of output channels.
+    :param kernel_size : int, Size of the convolutional kernel.
+    :param stride : int, Stride of the convolution.
+    :param padding : int,  Padding for the convolution.
+    :param dropout : float, optional Dropout rate, default is 0.
+
+    :attribute conv : nn.Conv2d, The convolutional layer.
+    :attribute dropout : nn.Dropout, The dropout layer.
+
+    """
     def __init__(
         self, input_channels, output_channels, kernel_size, stride, padding, dropout=0
     ):
@@ -22,22 +36,53 @@ class Convolution(nn.Module):
         self.dropout = nn.Dropout(self.dropout)
 
     def forward(self, x):
+        """
+        Forward pass for the Convolution layer.
+
+        :param x : torch.Tensor, Input tensor.
+
+        :return: torch.Tensor, Output tensor after applying convolution, dropout, and activation.
+        """
         x = self.dropout(x)
         return nn.functional.leaky_relu(self.conv(x))
 
 
 class LinearWithDropout(nn.Module):
+    """
+    A linear layer with dropout.
+
+    :param input_size : int, Number of input features.
+    :param output_size : int, Number of output features.
+    :param dropout : float, Dropout rate.
+
+    :attribute dropout : nn.Dropout, The dropout layer.
+    :attribute linear : nn.Linear, The linear layer.
+    """
     def __init__(self, input_size, output_size, dropout):
         super(LinearWithDropout, self).__init__()
         self.dropout = nn.Dropout(dropout)
         self.linear = nn.Linear(input_size, output_size)
 
     def forward(self, x):
+        """
+        :param x: Input tensor.
+
+        :return: Output tensor after applying linear transformation and dropout.
+        """
         x = self.dropout(x)
         return self.linear(x)
 
 
 class QNetwork(nn.Module):
+    """
+    :param h: Height of the input.
+    :param w: Width of the input.
+    :param outputs: Number of output units.
+    :param convolutions: List of Convolution modules.
+    :param head_dropout: Dropout rate for the head (final) layer.
+
+    :return None: Initializes the QNetwork's attributes.
+    """
     def __init__(self, h, w, outputs, convolutions, head_dropout):
         super(QNetwork, self).__init__()
         self.convolutions = nn.ModuleList(convolutions)
@@ -49,7 +94,14 @@ class QNetwork(nn.Module):
             size, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding
         ):
             """
-            calculate the Output height or width of a convolutional layer
+            Calculates the output height or width of a convolutional layer.
+
+            :param size: Size of the input (height or width).
+            :param kernel_size: Size of the convolutional kernel.
+            :param stride: Stride of the convolution.
+            :param padding: Padding for the convolution.
+            
+            :return: Output size (height or width) after the convolution.
             """
             return (padding * 2 + size - kernel_size + stride) // stride
 
@@ -60,6 +112,11 @@ class QNetwork(nn.Module):
         self.head = LinearWithDropout(linear_input_size, outputs, head_dropout)
 
     def forward(self, x):
+        """
+        :param x: Input tensor.
+
+        :return: Output tensor after passing through the network.
+        """
         for conv in self.convolutions:
             x = conv(x)
 
@@ -68,6 +125,9 @@ class QNetwork(nn.Module):
 
     class Builder:
         def __init__(self):
+            """
+            :return None: Initializes the Builder class's attributes.
+            """
             self.convolutions = []
             self.h = None
             self.w = None
@@ -76,6 +136,16 @@ class QNetwork(nn.Module):
             self.head_dropout = None
 
         def input_output_dimensions(self, h, w, channels, out_dim):
+            """
+            Sets the dimensions for the input and output of the network.
+            
+            :param h: Height of the input.
+            :param w: Width of the input.
+            :param channels: Number of input channels.
+            :param out_dim: Number of output dimensions.
+            
+            :return: Returns the Builder object for method chaining.
+            """
             self.h = h
             self.w = w
             self.channels = channels
@@ -83,12 +153,30 @@ class QNetwork(nn.Module):
             return self
 
         def set_head_dropout(self, head_dropout):
+            """
+            Sets the dropout rate for the head (final) layer.
+            
+            :param head_dropout: Dropout rate for the head layer.
+            
+            :return: Returns the Builder object for method chaining.
+            """
             self.head_dropout = head_dropout
             return self
 
         def add_convolution(
             self, output_channels, kernel_size, stride, padding, dropout=0
         ):
+            """
+            Adds a convolution layer to the network.
+            
+            :param output_channels: Number of output channels.
+            :param kernel_size: Size of the convolutional kernel.
+            :param stride: Stride of the convolution.
+            :param padding: Padding for the convolution.
+            :param dropout: Dropout rate, optional (default is 0).
+            
+            :return: Returns the Builder object for method chaining.
+            """
             if len(self.convolutions) == 0:
                 self.convolutions.append(
                     Convolution(
@@ -114,6 +202,9 @@ class QNetwork(nn.Module):
             return self
 
         def is_valid_network(self):
+            """
+            :return: True if the network can be built, False otherwise.
+            """
             valid_convolutions = len(self.convolutions) > 0
             valid_dimensions = (
                 self.h is not None
@@ -125,6 +216,11 @@ class QNetwork(nn.Module):
             return valid_convolutions and valid_dimensions and valid_head
 
         def build(self):
+            """
+            :return: The built QNetwork if the network can be built.
+
+            :raises ValueError: If the network cannot be built with the current parameters.
+            """
             if self.is_valid_network():
                 return QNetwork(
                     self.h, self.w, self.out_dim, self.convolutions, self.head_dropout
@@ -133,25 +229,3 @@ class QNetwork(nn.Module):
                 raise ValueError(
                     "One or more values for creating a QNetwork are missing!"
                 )
-
-
-import torch.nn.functional as F
-
-
-class FullyConnectedQNetwork(nn.Module):
-    def __init__(self, input_size, outputs):
-        super(FullyConnectedQNetwork, self).__init__()
-
-        # Define the size of the hidden layers
-        hidden_1 = 60
-        output_size = 6
-
-        # Fully connected layers
-        self.fc1 = nn.Linear(input_size, hidden_1)
-        self.fc2 = nn.Linear(hidden_1, output_size)
-
-    def forward(self, x):
-        x = x.view(x.size(0), -1)  # Flatten the input
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x

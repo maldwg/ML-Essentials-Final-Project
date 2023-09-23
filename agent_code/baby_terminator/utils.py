@@ -2,7 +2,6 @@ import torch
 from collections import namedtuple
 import events as e
 from . import custom_events as c
-import functools
 import numpy as np
 import math
 import json
@@ -12,45 +11,9 @@ ACTIONS = ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"]
 device = torch.device("cpu")
 Transition = namedtuple("Transition", ("state", "action", "next_state", "reward"))
 
-
-def z_normalize_rewards(rewards: dict) -> dict:
-    """
-    Z-normalizes a dictionary of rewards using the standard score (z-score).
-
-    Args:
-        rewards (dict): A dictionary containing rewards.
-
-    Returns:
-        dict: A dictionary of rewards with values normalized using the z-score.
-
-    Example:
-        >>> rewards = {
-        ...     'reward_1': 100,
-        ...     'reward_2': 200,
-        ...     'reward_3': 300
-        ... }
-        >>> z_normalized = z_normalize_rewards(rewards)
-    """
-    # Extract the reward values
-    reward_values = list(rewards.values())
-
-    # Calculate mean and standard deviation
-    mean = np.mean(reward_values)
-    std_dev = np.std(reward_values)
-
-    # Normalize the rewards using z-score
-    normalized_rewards = {
-        key: (value - mean) / std_dev for key, value in rewards.items()
-    }
-
-    return normalized_rewards
-
-
-game_rewards_not_normalized = {
+game_rewards = {
     # long term goal
     e.SURVIVED_ROUND: 100,
-    c.SCORE_REWARD: 20,
-    c.PLACEMENT_REWARD: 150,
     # killing goals
     # killing an opponent should give less points than killing yourself otherwise the agent will suicide bomb an enemy
     e.KILLED_OPPONENT: 100,
@@ -93,12 +56,11 @@ def increment_event_counts(self, events):
     """
     Increments the count of each event in the memory based on the provided events list.
 
-    Args:
-        self: The object instance.
-        events (list): List of events to be counted.
+    
+    :param self: The object instance.
+    :param events (list): List of events to be counted.
 
-    Returns:
-        None. Updates the event counts in the memory in-place.
+    :return None: Updates the event counts in the memory in-place.
     """
     # self.logger.info("Increment count of events in memory")
     for event in events:
@@ -112,12 +74,11 @@ def is_blocked(position, field):
     """
     Determines if a given position is blocked by walls or crates in the game state.
 
-    Args:
-        position (tuple): A tuple representing the x and y coordinates.
-        game_state (dict): The current game state.
+   
+    :param position (tuple): A tuple representing the x and y coordinates.
+    :param game_state (dict): The current game state.
 
-    Returns:
-        bool: True if the position is blocked, False otherwise.
+    :return bool: True if the position is blocked, False otherwise.
     """
     x, y = position
     return field[x, y] == -1 or field[x, y] == 1
@@ -127,13 +88,11 @@ def is_action_valid(self, state, action):
     """
     Checks if a given action is valid based on the current state of the game.
 
-    Args:
-        self: The object instance.
-        state (dict): The current game state.
-        action (str): The action to be checked ('UP', 'DOWN', 'RIGHT', 'LEFT', 'WAIT', 'BOMB').
+    :param self: The object instance.
+    :param state (dict): The current game state.
+    :param action (str): The action to be checked ('UP', 'DOWN', 'RIGHT', 'LEFT', 'WAIT', 'BOMB').
 
-    Returns:
-        bool: True if the action is valid in the current state, False otherwise.
+    :return bool: True if the action is valid in the current state, False otherwise.
     """
     field = state["field"]
 
@@ -164,13 +123,35 @@ def is_action_valid(self, state, action):
     return empty_spot and valid_bomb_dropped
 
 
+import math
+import json
+
 def calculate_eps_threshold(self, EPS_START, EPS_END, EPS_DECAY):
+    """
+    Calculate the epsilon threshold for epsilon-greedy action selection.
+
+    This function calculates the epsilon value based on the exponential decay formula,
+    which decays from EPS_START to EPS_END as the number of steps increases.
+
+    :param self : The object that contains the memory attribute, which in turn contains the steps_done attribute.
+    :param EPS_START : float,  The initial epsilon value.
+    :param EPS_END : float, The final epsilon value.
+    :param EPS_DECAY : float, The rate at which epsilon decays.
+
+    :return float: The calculated epsilon threshold.
+    """
     return EPS_END + (EPS_START - EPS_END) * math.exp(
         -1.0 * self.memory.steps_done / EPS_DECAY
     )
 
-
 def read_hyperparameters():
+    """
+    Read hyperparameters from a JSON file.
+
+    This function reads a JSON file containing hyperparameters and returns them as a dictionary.
+
+    :return dict: A dictionary containing the hyperparameters.
+    """
     with open("./parameters.json", "r") as f:
         hyperparameters = json.load(f)
     return hyperparameters
