@@ -5,6 +5,7 @@ import numpy as np
 DIRECTIONS = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 ACTIONS = ["UP", "DOWN", "RIGHT", "LEFT"]
 
+
 def heuristic(a, b):
     """
     Compute the Manhattan distance between two points a and b.
@@ -16,6 +17,7 @@ def heuristic(a, b):
     """
     # Calculate Manhattan distance
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
 
 def astar(start, goal, field):
     """
@@ -34,7 +36,7 @@ def astar(start, goal, field):
     # Initialize the open set with the start node
     open_set = []
     heapq.heappush(open_set, (0, start))
-    
+
     # Initialize came_from and cost dictionaries
     came_from = {}
     g_score = {tuple(point): float("inf") for point in grid}

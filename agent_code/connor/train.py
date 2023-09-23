@@ -12,6 +12,7 @@ from .utils import *
 
 import random
 
+
 def setup_training(self):
     """
     Initialize the agent for training mode.
@@ -23,7 +24,6 @@ def setup_training(self):
     self.logger.info("Enter train mode")
     self.loss = None
     self.number_of_executed_episodes = 0
-
 
 
 def game_events_occurred(self, old_game_state, self_action, new_game_state, events):
@@ -129,6 +129,7 @@ def end_of_round(self, last_game_state, last_action, events):
                 protocol=pickle.HIGHEST_PROTOCOL,
             )
         gc.enable()
+
 
 def reward_from_events(self, events):
     """

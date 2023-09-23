@@ -1,5 +1,6 @@
 from .utils import game_rewards
 
+
 class ReplayMemory:
     """
     A class for storing and managing replay memory for reinforcement learning.

@@ -16,6 +16,7 @@ class Convolution(nn.Module):
     :attribute dropout : nn.Dropout, The dropout layer.
 
     """
+
     def __init__(
         self, input_channels, output_channels, kernel_size, stride, padding, dropout=0
     ):
@@ -58,6 +59,7 @@ class LinearWithDropout(nn.Module):
     :attribute dropout : nn.Dropout, The dropout layer.
     :attribute linear : nn.Linear, The linear layer.
     """
+
     def __init__(self, input_size, output_size, dropout):
         super(LinearWithDropout, self).__init__()
         self.dropout = nn.Dropout(dropout)
@@ -83,6 +85,7 @@ class QNetwork(nn.Module):
 
     :return None: Initializes the QNetwork's attributes.
     """
+
     def __init__(self, h, w, outputs, convolutions, head_dropout):
         super(QNetwork, self).__init__()
         self.convolutions = nn.ModuleList(convolutions)
@@ -100,7 +103,7 @@ class QNetwork(nn.Module):
             :param kernel_size: Size of the convolutional kernel.
             :param stride: Stride of the convolution.
             :param padding: Padding for the convolution.
-            
+
             :return: Output size (height or width) after the convolution.
             """
             return (padding * 2 + size - kernel_size + stride) // stride
@@ -138,12 +141,12 @@ class QNetwork(nn.Module):
         def input_output_dimensions(self, h, w, channels, out_dim):
             """
             Sets the dimensions for the input and output of the network.
-            
+
             :param h: Height of the input.
             :param w: Width of the input.
             :param channels: Number of input channels.
             :param out_dim: Number of output dimensions.
-            
+
             :return: Returns the Builder object for method chaining.
             """
             self.h = h
@@ -155,9 +158,9 @@ class QNetwork(nn.Module):
         def set_head_dropout(self, head_dropout):
             """
             Sets the dropout rate for the head (final) layer.
-            
+
             :param head_dropout: Dropout rate for the head layer.
-            
+
             :return: Returns the Builder object for method chaining.
             """
             self.head_dropout = head_dropout
@@ -168,13 +171,13 @@ class QNetwork(nn.Module):
         ):
             """
             Adds a convolution layer to the network.
-            
+
             :param output_channels: Number of output channels.
             :param kernel_size: Size of the convolutional kernel.
             :param stride: Stride of the convolution.
             :param padding: Padding for the convolution.
             :param dropout: Dropout rate, optional (default is 0).
-            
+
             :return: Returns the Builder object for method chaining.
             """
             if len(self.convolutions) == 0:

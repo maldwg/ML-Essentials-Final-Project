@@ -19,7 +19,7 @@ class ReplayMemory:
         Initializes a new ReplayMemory object.
 
         :param capacity: The maximum number of transitions to store.
-        
+
         :attribute capacity (int): The maximum capacity of the replay memory.
         :attribute memory (list): List to hold the transitions.
         :attribute position (int): The next position to insert a transition.
@@ -67,7 +67,7 @@ class ReplayMemory:
     def push(self, *args):
         """
         Saves a transition to the replay memory.
-        
+
         :param args: A tuple containing the state, action, next_state, and reward.
         """
         if len(self.memory) < self.capacity:
@@ -78,9 +78,9 @@ class ReplayMemory:
     def sample(self, batch_size):
         """
         Samples a batch of transitions from the replay memory.
-        
+
         :param batch_size: Number of transitions to sample.
-        
+
         :return: A list of sampled transitions.
         """
         # Exclude None values from sampled data
@@ -89,7 +89,7 @@ class ReplayMemory:
     def __len__(self):
         """
         Returns the current size of the replay memory.
-        
+
         :return: The length of the replay memory.
         """
         return len(self.memory)

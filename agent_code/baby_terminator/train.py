@@ -146,6 +146,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
             )
         gc.enable()
 
+
 def reward_from_events(self, events: List[str]) -> int:
     """
     Compute the reward based on game events.

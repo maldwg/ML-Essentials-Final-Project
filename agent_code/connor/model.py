@@ -1,6 +1,7 @@
 from torch import nn
 import torch.nn.functional as F
 
+
 class PolicyGradientNetwork(nn.Module):
     """
     Neural network architecture for the Policy Gradient model.
@@ -9,9 +10,10 @@ class PolicyGradientNetwork(nn.Module):
     :param w: Width of the input image.
     :param outputs: Number of output classes (actions).
     """
+
     def __init__(self, h, w, outputs):
         super(PolicyGradientNetwork, self).__init__()
-        
+
         # Define convolutional layer parameters
         self.kernel_size = 3
         self.stride = 1
@@ -36,10 +38,7 @@ class PolicyGradientNetwork(nn.Module):
         )
 
         def conv2d_size_out(
-            size, 
-            kernel_size=self.kernel_size, 
-            stride=self.stride, 
-            padding=self.padding
+            size, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding
         ):
             """
             Calculate the output height or width of a convolutional layer.

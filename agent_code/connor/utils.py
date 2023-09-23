@@ -55,6 +55,7 @@ def increment_event_counts(self, events):
         if event in self.memory.rewarded_event_counts:
             self.memory.rewarded_event_counts[event] += 1
 
+
 def is_action_valid(self, state, action):
     """
     Checks if a given action is valid based on the current state of the game.
@@ -65,13 +66,13 @@ def is_action_valid(self, state, action):
 
     : return bool: Returns True if the action is valid in the current state, else False.
     """
-    field = state['field']
+    field = state["field"]
 
-    bomb_positions = [pos[0] for pos in state['bombs']]
-    enemy_positions = [pos[0] for pos in state['others']]
+    bomb_positions = [pos[0] for pos in state["bombs"]]
+    enemy_positions = [pos[0] for pos in state["others"]]
 
-    bomb_allowed = state['self'][2]
-    position = np.array(state['self'][-1])
+    bomb_allowed = state["self"][2]
+    position = np.array(state["self"][-1])
 
     action_dict = {
         "UP": np.array([0, -1]),
@@ -79,13 +80,15 @@ def is_action_valid(self, state, action):
         "RIGHT": np.array([1, 0]),
         "LEFT": np.array([-1, 0]),
         "BOMB": np.array([0, 0]),
-        "WAIT": np.array([0, 0])
+        "WAIT": np.array([0, 0]),
     }
 
     position += action_dict[action]
-    empty_spot = not (field[position[0], position[1]] in [-1, 1]) and \
-                 not ((position[0], position[1]) in bomb_positions) and \
-                 not ((position[0], position[1]) in enemy_positions)
+    empty_spot = (
+        not (field[position[0], position[1]] in [-1, 1])
+        and not ((position[0], position[1]) in bomb_positions)
+        and not ((position[0], position[1]) in enemy_positions)
+    )
     valid_bomb_dropped = bomb_allowed if action == "BOMB" else True
 
     return empty_spot and valid_bomb_dropped

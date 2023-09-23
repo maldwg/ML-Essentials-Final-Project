@@ -56,7 +56,7 @@ def increment_event_counts(self, events):
     """
     Increments the count of each event in the memory based on the provided events list.
 
-    
+
     :param self: The object instance.
     :param events (list): List of events to be counted.
 
@@ -74,7 +74,7 @@ def is_blocked(position, field):
     """
     Determines if a given position is blocked by walls or crates in the game state.
 
-   
+
     :param position (tuple): A tuple representing the x and y coordinates.
     :param game_state (dict): The current game state.
 
@@ -126,6 +126,7 @@ def is_action_valid(self, state, action):
 import math
 import json
 
+
 def calculate_eps_threshold(self, EPS_START, EPS_END, EPS_DECAY):
     """
     Calculate the epsilon threshold for epsilon-greedy action selection.
@@ -143,6 +144,7 @@ def calculate_eps_threshold(self, EPS_START, EPS_END, EPS_DECAY):
     return EPS_END + (EPS_START - EPS_END) * math.exp(
         -1.0 * self.memory.steps_done / EPS_DECAY
     )
+
 
 def read_hyperparameters():
     """

@@ -9,16 +9,12 @@ import subprocess
 
 
 # parten directory containing all model files
-parent_directory = (
-    "agent_code/baby_terminator/top-five-models/"
-)
+parent_directory = "agent_code/baby_terminator/top-five-models/"
 pattern = "my-saved-model.pkl.gz"
 hyperparameters_pattern = "parameters.json"
 
 # dir for evaluation plots
-figure_evaluation_dir = (
-    "agent_code/baby_terminator/top-five-models/"
-)
+figure_evaluation_dir = "agent_code/baby_terminator/top-five-models/"
 create_directory_if_not_exists(figure_evaluation_dir)
 
 model_result = subprocess.run(
@@ -41,7 +37,6 @@ if hyperparameters_result.returncode == 0:
     hyperparameters_paths = hyperparameters_result.stdout.strip().split("\n")
 else:
     print("Error occurred while searching for files.")
-
 
 
 model_numbers = subprocess.run(
@@ -120,7 +115,7 @@ for params in hyperparameters:
             #     key = f"${key}$"
             # if key.startswith("EPS"):
             #     key = f"${key.split("")[0}$ + key.split("")[1}"
-            formatted_string += f"{key.lower()}.: {value}, " 
+            formatted_string += f"{key.lower()}.: {value}, "
     params_as_strings += formatted_string + "\n"
 
 print(params_as_strings)
@@ -205,15 +200,14 @@ plt.savefig(f"{figure_evaluation_dir}grid_search_top_10_rewards.png")
 plt.clf()
 
 
-
 model_numbers_plain = []
 for nr in model_numbers:
     model_numbers_plain.append(nr.split(" ")[-1])
 
 
-# corlors for top five 
+# corlors for top five
 bar_colors = ["blue", "orange", "green", "red", "purple"]
-mean_scores = [np.mean(model_scores) for model_scores in scores ]
+mean_scores = [np.mean(model_scores) for model_scores in scores]
 x_pos = np.arange(len(mean_scores))
 
 

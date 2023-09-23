@@ -211,6 +211,7 @@ def state_to_features(self, game_state: dict) -> np.array:
 
     return features_tensor
 
+
 def inPlayArea(field, x, y):
     """
     return if the given coordinates are within the game field.
