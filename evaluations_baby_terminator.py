@@ -50,6 +50,7 @@ else:
 
 # Generate a sequence of integers to represent the epoch numbers
 epochs = range(1, len(mean_q_values_after_episode) + 1)
+plt.figure(figsize=(12, 6), dpi=100)
 plt.plot(epochs, mean_q_values_after_episode, label="Mean Q Value after each episode")
 
 # Add in a title and axes labels
@@ -78,6 +79,7 @@ for batch_loss in loss_after_episode:
         mean_loss_after_episode = torch.mean(batch_loss).item()
         mean_losses_after_episode.append(mean_loss_after_episode)
 
+plt.figure(figsize=(12, 6), dpi=100)
 plt.title("Loss after Episodes")
 plt.xlabel("Episodes")
 plt.ylabel("Loss")
@@ -97,7 +99,7 @@ plt.clf()
 def plot_weights(model):
     for name, param in model.named_parameters():
         if param.requires_grad and "bias" not in name:
-            plt.figure(figsize=(15, 4))
+            plt.figure(figsize=(12, 6), dpi=100)
             plt.title(name)
             plt.hist(param.data.cpu().numpy().flatten(), bins=100)
             plt.savefig(f"{figure_evaluation_dir}{AGENT_NAME}_{name}_weights.png")
@@ -122,6 +124,7 @@ if rounded_max_x < len(mean_q_values_after_episode):
 else:
     stop_x_tick = rounded_max_x + 1
 
+plt.figure(figsize=(12, 6), dpi=100)
 plt.title("Overall reward after Round")
 plt.xlabel("Round")
 plt.ylabel("Reward")
