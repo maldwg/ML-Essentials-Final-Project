@@ -1,15 +1,16 @@
-from collections import namedtuple, deque
+from collections import deque
 
 import pickle
+import gc
 import gzip
 from typing import List
 
-import events as e
-from . import additional_events as ad
-from .callbacks import state_to_features
+import numpy as np
+from agent_code.baby_terminator.custom_event_handling import custom_game_events
 
-from .model import QNetwork
-from .memory import ReplayMemory
+import events as e
+from . import custom_events as ad
+from .callbacks import state_to_features
 
 import torch
 from torch import nn
@@ -19,6 +20,7 @@ from .utils import *
 # Hyper parameters -- DO modify
 TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
+
 
 def setup_training(self):
     """
@@ -34,10 +36,16 @@ def setup_training(self):
     self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
     self.q_value = None
     self.loss = None
+    self.number_of_executed_episodes = 0
 
 
-
-def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
+def game_events_occurred(
+    self,
+    old_game_state: dict,
+    self_action: str,
+    new_game_state: dict,
+    events: List[str],
+):
     """
     Called once per step to allow intermediate rewards based on game events.
 
@@ -54,27 +62,37 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
-    custom_events = custom_game_events(self, old_game_state, new_game_state, events, self_action)
+    custom_events = custom_game_events(
+        self, old_game_state, new_game_state, events, self_action
+    )
     events.extend(custom_events)
     self.logger.info("Game events occurred")
-    self.logger.debug(f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}')
+    self.logger.debug(
+        f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}'
+    )
     if old_game_state is None:
         self.logger.info("State is none in game events occurred")
         return
-    self.logger.info(f"Game field:\n{old_game_state}")
     # get the input for the CNN
     state = state_to_features(self, old_game_state)
     if state is not None:
         action = torch.tensor([ACTIONS.index(self_action)], device=device)
         reward = reward_from_events(self, events)
+        self.memory.rewards_of_round.append(reward)
         if new_game_state is None:
             next_state = None
         else:
             next_state = state_to_features(self, new_game_state)
+        self.logger.info(f"overall reward of step {reward}")
         reward = torch.tensor(reward, device=device)
-        # push the state to the memory in order to be able to learn from it 
+        # push the state to the memory in order to be able to learn from it
         self.memory.push(state, action, next_state, reward)
+
+        # needs to be before optimize otherwise the events occured are not taken into account
+        increment_event_counts(self, events)
+
         optimize_model(self)
+
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
     """
@@ -89,155 +107,76 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     :param self: The same object that is passed to all of your callbacks.
     """
-    self.logger.debug(f'Encountered event(s) {", ".join(map(repr, events))} in final step')
+    self.logger.debug(
+        f'Encountered event(s) {", ".join(map(repr, events))} in final step'
+    )
     custom_events = custom_game_events(self, None, last_game_state, events, last_action)
     events.extend(custom_events)
+
     state = state_to_features(self, last_game_state)
     action = torch.tensor([ACTIONS.index(last_action)], device=device)
     reward = reward_from_events(self, events)
+    # only give end of round rewards if the round was sufficiently long, agent did not kill himslef, all other agents are dead
+    if (
+        last_game_state["step"] > 401
+        and (not last_game_state["others"] and e.OPPONENT_ELIMINATED in events)
+        and e.KILLED_SELF not in events
+    ):
+        reward += after_game_rewards(self, last_game_state)
+    self.memory.rewards_of_round.append(reward)
+    overall_reward = sum(self.memory.rewards_of_round)
+    self.logger.info(f"Overall reward at end of round: {overall_reward}")
+    self.memory.rewards_after_round.append(overall_reward)
+    # reset memory for next round
+    self.memory.rewards_of_round = []
+
     reward = torch.tensor(reward, device=device)
     self.memory.push(state, action, None, reward)
+    self.logger.info(f"Round ended --> newest shortest path was reset")
+    self.memory.shortest_paths_out_of_explosion = []
+    self.memory.shortest_paths_to_coin = []
+    self.memory.shortest_paths_to_enemy = []
+    self.memory.shortest_paths_to_crate = []
+    self.memory.left_explosion_zone = False
+    optimize_model(self)
 
-    # # synch the target network with the policy network 
-    # self.target_net.load_state_dict(self.policy_net.state_dict())
-    # self.target_net.eval()
-
-    # Store the model
-
-    with gzip.open('my-saved-model.pkl.gz', 'wb') as f:
-        pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], f)
-    # with open("my-saved-model.pt", "wb") as file:
-    #     pickle.dump([self.policy_net, self.target_net, self.optimizer, self.memory], file)
+    # increment episode count
+    self.number_of_executed_episodes += 1
 
     # Add Q value to memory
     self.memory.q_value_after_episode.append(self.q_value)
     # Add loss to memory
     self.memory.loss_after_episode.append(self.loss)
 
+    # Store the model
+    if self.number_of_executed_episodes == last_game_state["number_rounds"]:
+        gc.disable()
+        with gzip.open("my-saved-model.pkl.gz", "wb") as f:
+            pickle.dump(
+                [self.policy_net, self.target_net, self.optimizer, self.memory],
+                f,
+                protocol=pickle.HIGHEST_PROTOCOL,
+            )
+        gc.enable()
 
 
-def custom_game_events(self, old_game_state, new_game_state, events, self_action):
-    custom_events = []
-    valid_move = e.INVALID_ACTION not in events
-    in_old_explosion_zone = False
-    in_new_explosion_zone = False
-    # init with high value so if no bomb was in old state but one is discovered in new one, there is no penalty since 0 would be < distance to bomb
-    old_distance_to_bomb = 1000
-    new_distance_to_bomb = 1000
-    # init with high value as safe space is set to ~3
-    closest_bomb = 1000
-    safe_distance = 2
-    # init with high value so if no coin was in old state but one is discovered in new one, there is no penalty since 0 would be < distance to coin
-    old_distance_to_coin = 1000
-    new_distance_to_coin = 1000
-    old_distance_to_enemy = 1000
-    new_distance_to_enemy = 1000
-
-    # if new is none something went wrong
-    if new_game_state is None:
-        return custom_events
-
-    # append only the events that can also be calculated for the lats step
-    if e.BOMB_EXPLODED in events and not e.KILLED_SELF in events:
-        custom_events.append(ad.NOT_KILLED_BY_OWN_BOMB)
-
-
-    # if old is none --> Last round occured
-    # append all events that can be calculated in the steps before the last one
-    if old_game_state is not None:
-
-        if self_action == "BOMB" and old_game_state["self"][2] == False:
-            custom_events.append(ad.UNALLOWED_BOMB)
-
-        old_agent_pos = old_game_state["self"][-1]
-        new_agent_pos = new_game_state["self"][-1]
-        agent_moved = old_agent_pos != new_agent_pos
-
-        if old_game_state["coins"]:
-            old_distance_to_coin = min([abs(coin[0] - old_agent_pos[0]) + abs(coin[1] - old_agent_pos[1]) for coin in old_game_state["coins"]])
-        if new_game_state["coins"]:
-            new_distance_to_coin = min([abs(coin[0] - new_agent_pos[0]) + abs(coin[1] - new_agent_pos[1]) for coin in new_game_state["coins"]])
-
-        if new_distance_to_coin < old_distance_to_coin and agent_moved:
-            self.logger.info(f"COIN DISTANCE DECREASED: {new_distance_to_coin} < {old_distance_to_coin}")
-            custom_events.append("DISTANCE_TO_COIN_DECREASED")
-        elif new_distance_to_coin > old_distance_to_coin and agent_moved:
-            self.logger.info(f"COIN DISTANCE INCREASED: {new_distance_to_coin} > {old_distance_to_coin}")
-            custom_events.append("DISTANCE_TO_COIN_INCREASED")
-
-
-
-        def explosion_zones(bomb_pos, explosion_radius=3):
-            """Returns a list of coordinates that will be affected by the bomb's explosion."""
-            x, y = bomb_pos
-            zones = []
-
-            # Add tiles for each direction until the explosion radius is reached
-            for i in range(0, explosion_radius + 1):
-                zones.extend([(x+i, y), (x-i, y), (x, y+i), (x, y-i)])
-                
-            return zones
-
-        # check if there are bombs on the filed, if not skip calculations
-        if old_game_state["bombs"]:
-            old_distance_to_bomb = min([abs(bomb[0][0] - old_agent_pos[0]) + abs(bomb[0][1] - old_agent_pos[1]) for bomb in old_game_state["bombs"]])
-            in_old_explosion_zone = any([old_agent_pos in explosion_zones(bomb_pos) for bomb_pos, _ in old_game_state["bombs"]])
-
-        if new_game_state["bombs"]:
-            new_distance_to_bomb = min([abs(bomb[0][0] - new_agent_pos[0]) + abs(bomb[0][1] - new_agent_pos[1]) for bomb in new_game_state["bombs"]])
-            in_new_explosion_zone = any([new_agent_pos in explosion_zones(bomb_pos) for bomb_pos, _ in new_game_state["bombs"]])
-            # preemptively calculate the closest bomb 
-            closest_bomb = min([abs(bomb_pos[0] - new_agent_pos[0]) + abs(bomb_pos[1] - new_agent_pos[1]) for bomb_pos, _ in new_game_state["bombs"]], default=safe_distance)
-
-        if not in_old_explosion_zone and in_new_explosion_zone and agent_moved:
-            self.logger.info(f"EXPLOSION ZONE ENTERED: {in_new_explosion_zone} < {in_old_explosion_zone}")
-            custom_events.append("ENTERED_POTENTIAL_EXPLOSION_ZONE")
-        elif in_old_explosion_zone and not in_new_explosion_zone and agent_moved:
-            self.logger.info(f"EXPLOSION ZONE LEFT: {in_new_explosion_zone} < {in_old_explosion_zone}")
-            custom_events.append("LEFT_POTENTIAL_EXPLOSION_ZONE")
-
-        # agent moved not neccessary since enemy can plant bomb nearby and a wait does decrease distance in this case
-        if new_distance_to_bomb > old_distance_to_bomb and agent_moved:
-            self.logger.info(f"BOMB DISTANCE INCREASED: {new_distance_to_bomb} > {old_distance_to_bomb}")
-            custom_events.append("DISTANCE_FROM_BOMB_INCREASED")
-        elif new_distance_to_bomb < old_distance_to_bomb and agent_moved:
-            self.logger.info(f"BOMB DISTANCE DECREASED: {new_distance_to_bomb} < {old_distance_to_bomb}")
-            custom_events.append("DISTANCE_FROM_BOMB_DECREASED")
-
-        if new_game_state["others"]: 
-            old_distance_to_enemy = min([abs(enemy[-1][0] - old_agent_pos[0]) + abs(enemy[-1][1] - old_agent_pos[1]) for enemy in old_game_state["others"]])
-            new_distance_to_enemy = min([abs(enemy[-1][0] - new_agent_pos[0]) + abs(enemy[-1][1] - new_agent_pos[1]) for enemy in new_game_state["others"]])
-        # a wait might decrease the distance if the enemy approaches
-        if new_distance_to_enemy < old_distance_to_enemy and agent_moved:
-            self.logger.info(f"ENEMY DISTANCE DECREASED: {new_distance_to_enemy} < {old_distance_to_enemy}")
-            custom_events.append("APPROACHED_ENEMY")
-        elif new_distance_to_enemy > old_distance_to_enemy and agent_moved:
-            self.logger.info(f"ENEMY DISTANCE DECREASED: {new_distance_to_enemy} < {old_distance_to_enemy}")
-            custom_events.append("DISAPPROACHED_ENEMY")
-
-
-        # Helper function to check if a position is blocked by walls or crates
-        def is_blocked(position, game_state):
-            x,y  = position
-            return game_state['field'][x, y] == -1 or game_state['field'][x, y] == 1
-
-        # Agent Cornered
-        adjacent_positions = [(new_agent_pos[0] + dx, new_agent_pos[1] + dy) for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]]
-        blocked_directions = sum([is_blocked(pos, new_game_state) for pos in adjacent_positions])
-        if blocked_directions >= 3:
-            self.logger.info(f"Agent is blocked by {blocked_directions} tiles")
-            custom_events.append("AGENT_CORNERED")
-
-
-        # Safe Zone: No bombs or enemies nearby
-        closest_enemy = min([abs(enemy[-1][0] - new_agent_pos[0]) + abs(enemy[-1][1] - new_agent_pos[1]) for enemy in new_game_state["others"]], default=safe_distance)
-        if closest_bomb >= safe_distance and closest_enemy >= safe_distance:
-            self.logger.info(f"IN SAFE ZONE {closest_bomb} > {safe_distance} and {closest_enemy} > {safe_distance}")
-            custom_events.append("IN_SAFE_ZONE")
-
-    return custom_events
-
-
+def after_game_rewards(self, last_game_state):
+    self.logger.info("Add end of round rewards")
+    score = last_game_state["self"][1]
+    scores = [agent[1] for agent in last_game_state["others"]]
+    scores.append(score)
+    placement = np.argsort(scores)[-1]
+    self.logger.info(f"Reached {placement + 1} place")
+    if placement + 1 < 3:
+        placement_reward = (
+            1 / (placement + 1) * self.memory.game_rewards[ad.PLACEMENT_REWARD]
+        )
+    else:
+        placement_reward = 0
+    score_reward = score * self.memory.game_rewards[ad.SCORE_REWARD]
+    self.logger.info(f"Score reward: {score_reward}")
+    self.logger.info(f"placement reward: {placement_reward}")
+    return placement_reward + score_reward
 
 
 def reward_from_events(self, events: List[str]) -> int:
@@ -247,12 +186,16 @@ def reward_from_events(self, events: List[str]) -> int:
     Here you can modify the rewards your agent get so as to en/discourage
     certain behavior.
     """
-    
+
     reward_sum = 0
+    rewarded_events = []
     for event in events:
-        if event in game_rewards:
-            reward_sum += game_rewards[event]
-    self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
+        if event in self.memory.game_rewards:
+            reward_sum += self.memory.game_rewards[event]
+            rewarded_events.append(event)
+    self.logger.info(
+        f"Awarded {reward_sum} for the {len(rewarded_events)} events {', '.join(rewarded_events)}"
+    )
     return reward_sum
 
 
@@ -262,40 +205,43 @@ def optimize_model(self):
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
-    BATCH_SIZE = 128
-    GAMMA = 0.999
-    UPDATE_FREQUENCY = 2500
+    BATCH_SIZE, GAMMA = self.memory.train_params.values()
+
     if len(self.memory) < BATCH_SIZE:
         # if the memory does not contain enough information (< BATCH_SIZE) than do not learn
         return
-    transitions = self.memory.sample(BATCH_SIZE -1 )
-    # todo activate online learning approach --> you will need a larger memory for that > 1000000
-    # "online learning"
-    transitions.append(self.memory.memory[-1])
+    transitions = self.memory.sample(BATCH_SIZE)
+    # "online learning" by always including the last step to ensure we learn from this experience
     batch = Transition(*zip(*transitions))
 
-    non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
-                                          batch.next_state)), device=device, dtype=torch.bool)
-    non_final_next_states = torch.stack([s for s in batch.next_state
-                                                if s is not None]).float()
+    non_final_mask = torch.tensor(
+        tuple(map(lambda s: s is not None, batch.next_state)),
+        device=device,
+        dtype=torch.bool,
+    )
+    non_final_next_states = torch.stack(
+        [s for s in batch.next_state if s is not None]
+    ).float()
 
     state_batch = torch.stack(batch.state).float()
     action_batch = torch.stack(batch.action)
     reward_batch = torch.stack(batch.reward)
 
-    # self.logger.info(f"Action-batch: {action_batch} | reward-batch: {reward_batch}")
-    # Construct Q value for the current state
+    # Compute Q value for all actions taken in the batch
     state_action_values = self.policy_net(state_batch).gather(1, action_batch)
 
     # compute the expected Q values
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
     with torch.no_grad():
-        next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0]
+        next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(
+            1
+        )[0]
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
     # compute loss
-    loss = nn.functional.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
-    self.logger.info(f"Q value of: {expected_state_action_values}")
+    loss = nn.functional.smooth_l1_loss(
+        state_action_values, expected_state_action_values.unsqueeze(1)
+    )
     self.logger.info(f"Loss of {loss}")
 
     # Add Q value to object
@@ -306,11 +252,24 @@ def optimize_model(self):
     # back propagation
     self.optimizer.zero_grad()
     loss.backward()
-    torch.nn.utils.clip_grad_value(self.policy_net.parameters(), 100)
+    torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
     self.optimizer.step()
 
-    # update the target net each C steps to be in synch with the policy net 
-    if len(self.memory) % UPDATE_FREQUENCY == 0:
+    # Check if it's time to update the target network
+    if self.memory.steps_since_last_update >= self.memory.update_frequency:
         self.logger.info("Update target network")
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
+        # Reset the steps since last update
+        self.memory.steps_since_last_update = 0
+    else:
+        # Increment the counter
+        self.memory.steps_since_last_update += 1
+
+    # Dynamically adjust UPDATE_FREQUENCY via exp function only after the network has been updated once
+    if self.memory.steps_since_last_update == 0:
+        self.memory.update_frequency = int(
+            500 * np.exp(0.00001 * self.memory.steps_done)
+        )
+        # Ensure there's a maximum limit for UPDATE_FREQUENCY to prevent very infrequent updates
+        self.memory.update_frequency = min(self.memory.update_frequency, 3500)
