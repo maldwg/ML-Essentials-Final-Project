@@ -12,7 +12,6 @@ currentdatetime=$(date +"%Y%m%d%H%M")
 PARENT_DIR=agent_code/$AGENT/checkpoints/$currentdatetime
 mkdir -p $PARENT_DIR
 
-
 currentdatetime=$(date +"%Y%m%d%H%M")
 for idx in {1..4}
 do

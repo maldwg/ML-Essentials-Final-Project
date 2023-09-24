@@ -29,7 +29,7 @@ intervals = {
     hyperparameters.EpsilonGreedy.EPS_END.value: [0.05, 0.01],
     hyperparameters.EpsilonGreedy.EPS_DECAY.value: [100, 1e3],
     hyperparameters.Train.BATCH_SIZE.value: [128],
-    hyperparameters.Train.GAMMA.value: [0.9, 0.999],
+    hyperparameters.Train.GAMMA.value: [0.333, 0.666, 0.9, 0.999],
 }
 
 
