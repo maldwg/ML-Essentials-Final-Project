@@ -2,9 +2,20 @@ import numpy as np
 from agent_code.baby_terminator.path_finding import astar
 import events as e
 from . import custom_events as c
+from .utils import *
 
 
 def custom_game_events(self, old_game_state, new_game_state, events, self_action):
+    """
+    Generate custom events based on game states and actions.
+
+    :param self: The agent object
+    :param old_game_state: Previous game state
+    :param new_game_state: Current game state
+    :param events: List of events occurred
+    :param self_action: The action taken by the agent
+    :return: List of custom events
+    """
     custom_events = []
     in_old_explosion_zone = False
     in_new_explosion_zone = False
@@ -28,8 +39,6 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
         old_agent_pos = agent_position(old_game_state)
         new_agent_pos = agent_position(new_game_state)
         agent_moved = has_agent_moved(old_game_state, new_game_state)
-        self.logger.info(f"Old agent position: {old_agent_pos}")
-        self.logger.info(f"New agent position: {new_agent_pos}")
 
         # Check if agent took one of the optimal paths towards a coin
         if moved_towards_coin(self, old_game_state, new_game_state):
@@ -38,7 +47,7 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             custom_events.append(c.MOVED_AWAY_FROM_COIN)
 
         # update paths to all coins
-        update_coin_paths(self, new_game_state, events)
+        update_coin_paths(self, new_game_state)
 
         # check if there are bombs on the filed, if not skip calculations
         if old_game_state["bombs"]:
@@ -68,7 +77,6 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
         potential_explosions = get_potential_explosions(new_game_state)
         # calculate astar to the shortest way out of explosion zone
         if (agent_x, agent_y) in potential_explosions:
-            self.logger.info("agent in explosion zone")
             if moved_towards_end_of_explosion(self, old_game_state, new_game_state):
                 custom_events.append(c.MOVED_TOWARDS_END_OF_EXPLOSION)
             # if agent did not move towards end of explosion, he might did an invalid action or a bad action
@@ -78,17 +86,10 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
                 c.ENTERED_POTENTIAL_EXPLOSION_ZONE not in custom_events
                 and e.BOMB_DROPPED not in events
             ):
-                self.logger.info("Did not move towards end of explosion")
-                self.logger.info(
-                    f"game-board: {new_game_state['field']}, agent: {new_game_state['self'][-1]}, bomb-pos: {new_game_state['bombs']}"
-                )
                 custom_events.append(c.STAYED_IN_EXPLOSION_RADIUS)
             update_paths_out_of_explosion(self, new_game_state)
-        else:
-            self.logger.info("agent not in explosion zone of bombs")
 
         # check if bomb was placed so that enemy can be hit
-        # check if layed bomb
         if e.BOMB_DROPPED in events:
             # check if enemy in explosion radius
             potential_explosion = explosion_zones(
@@ -96,97 +97,86 @@ def custom_game_events(self, old_game_state, new_game_state, events, self_action
             )
             for agent in new_game_state["others"]:
                 if agent[-1] in potential_explosion:
-                    self.logger.info("attacked enemy")
                     events.append(c.ATTACKED_ENEMY)
             for x, y in potential_explosion:
                 if new_game_state["field"][x, y] == 1:
-                    self.logger.info("crate in explosion zone")
                     events.append(c.CRATE_IN_EXPLOSION_ZONE)
 
         if e.BOMB_DROPPED in events:
             # since the agent dropped the bomb the bomb is ath the agents position
             bomb_position = (agent_x, agent_y)
-            self.logger.info("check if agent is trapped by the explosion")
             if agent_trapped_by_explosion(self, new_game_state["field"], bomb_position):
-                self.logger.info("Guaranteed Suicide detected")
-                # self.logger.info(f"game-board: {new_game_state['field']}, agent: {new_game_state['self'][-1]}, bomb-pos: {bomb_position}")
                 custom_events.append(c.GUARANTEED_SUICIDE)
 
     return custom_events
 
 
-def agent_stayed_outside_explosion_zone(new_game_state):
-    """
-    Checks whether the stayed outside an active explosion after it left the radius or is adjacent to an explosion.
-    """
-    agent_x, agent_y = agent_position(new_game_state)
-    active_explosions = new_game_state["explosion_map"]
-    return active_explosions[agent_x, agent_y] == 0
-
-
 def agent_trapped_by_explosion(self, field, bomb_position):
     """
-    We need to check each direction individually because otherwise we either need a star to know if a tile is reachable or
-    we need range(-3,4) which does not work because we will start at the outer layyer of the explosion and hence might produce
-    false results
+    Checks if the agent is trapped by an explosion.
+
+    :param self: The agent object
+    :param field: The game field
+    :param bomb_position: The position of the bomb
+    :return: True if trapped, False otherwise
     """
     explosion_tiles = explosion_zones(field, bomb_position)
     x, y = bomb_position
 
     for left in range(1, 5):
-        self.logger.info(f"next check left: {(x - left, y)}")
         if field[x - left, y] in [-1, 1]:
-            self.logger.info(f"found wall or crate")
             break
         if free_neighbour(self, field, (x - left, y), explosion_tiles):
             return False
     for right in range(1, 4):
-        self.logger.info(f"next check right: {(x + right, y)}")
         if field[x + right, y] in [-1, 1]:
-            self.logger.info(f"found wall or crate")
             break
         if free_neighbour(self, field, (x + right, y), explosion_tiles):
             return False
     for up in range(1, 4):
-        self.logger.info(f"next check up: {(x, y - up)}")
         if field[x, y - up] in [-1, 1]:
-            self.logger.info(f"found wall or crate")
             break
         if free_neighbour(self, field, (x, y - up), explosion_tiles):
             return False
     for down in range(1, 4):
-        self.logger.info(f"next check down: {(x, y + down)}")
         if field[x, y + down] in [-1, 1]:
-            self.logger.info(f"found wall or crate")
             break
         if free_neighbour(self, field, (x, y + down), explosion_tiles):
             return False
-    self.logger.info("Did not find a free neighbouring tile")
     return True
 
 
 def free_neighbour(self, field, position, explosion_tiles):
     """
-    Function to check if a tile has a free neighbour
+    Checks if a tile has a free neighbour.
+
+    :param self: The agent object
+    :param field: The game field
+    :param position: The position to check
+    :param explosion_tiles: Tiles affected by explosion
+    :return: True if has a free neighbour, False otherwise
     """
     x, y = position
     for dx in range(-1, 2):
         for dy in range(-1, 2):
             if dx * dy == 0:
-                self.logger.info(f"check if tile {x+dx, y+dy} is free")
                 if (
                     field[x + dx, y + dy] == 0
                     and (x + dx, y + dy) not in explosion_tiles
                 ):
-                    self.logger.info(f"Found a free neighbour {(x+dx, y+dy)}")
                     return True
-    self.logger.info(
-        f"Did not find a free neighbour that is not in the explosion radius for tile {(x, y)}"
-    )
     return False
 
 
 def free_tiles_beneath_explosion(self, field, potential_explosions):
+    """
+    Find free tiles that are not affected by the explosion.
+
+    :param self: The agent object
+    :param field: The game field
+    :param potential_explosions: Tiles potentially affected by explosions
+    :return: List of free tiles
+    """
     neighbours = []
     for x, y in potential_explosions:
         for dx in range(-1, 2):
@@ -201,7 +191,13 @@ def free_tiles_beneath_explosion(self, field, potential_explosions):
 
 
 def explosion_zones(field, bomb_pos):
-    """Returns a list of coordinates that will be affected by the bomb's explosion."""
+    """
+    Get the tiles affected by a bomb explosion.
+
+    :param field: The game field
+    :param bomb_pos: The position of the bomb
+    :return: List of affected tiles
+    """
     x, y = bomb_pos
     # the position of the bomb is also an explosion so add it directly
     zones = [(x, y)]
@@ -226,6 +222,12 @@ def explosion_zones(field, bomb_pos):
 
 
 def update_paths_out_of_explosion(self, new_game_state):
+    """
+    Update the paths to escape an explosion.
+
+    :param self: The agent object
+    :param new_game_state: Current game state
+    """
     paths_out_of_explosion = get_all_paths_out_of_explosions(self, new_game_state)
 
     if len(paths_out_of_explosion):
@@ -249,13 +251,14 @@ def update_paths_out_of_explosion(self, new_game_state):
                 shortest_paths_out_of_explosion
             )
 
-        self.logger.info(
-            f"shortest path out of explosion: {shortest_paths_out_of_explosion}"
-        )
-        self.logger.info(min(paths_out_of_explosion, key=len))
 
+def update_coin_paths(self, new_game_state):
+    """
+    Update the paths to collect coins.
 
-def update_coin_paths(self, new_game_state, events):
+    :param self: The agent object
+    :param new_game_state: Current game state
+    """
     paths_to_coins = get_all_paths_to_coins(new_game_state)
     # check if there is a coin reachable
     if len(paths_to_coins):
@@ -264,13 +267,19 @@ def update_coin_paths(self, new_game_state, events):
         minimum_path_length = path_lengths.min()
         minimum_path_indices = np.where(path_lengths == minimum_path_length)
         shortest_paths_to_coin = [paths_to_coins[i] for i in minimum_path_indices[0]]
-        self.logger.info(f"New shortest paths to coin: {shortest_paths_to_coin}")
 
         # update memory
         self.memory.shortest_paths_to_coin = shortest_paths_to_coin
 
 
 def get_all_paths_out_of_explosions(self, new_game_state):
+    """
+    Get all possible paths to escape explosions.
+
+    :param self: The agent object
+    :param new_game_state: Current game state
+    :return: List of paths to escape explosions
+    """
     agent_x, agent_y = agent_position(new_game_state)
 
     potential_explosions = get_potential_explosions(new_game_state)
@@ -282,14 +291,20 @@ def get_all_paths_out_of_explosions(self, new_game_state):
         astar(start=(agent_x, agent_y), goal=(x, y), field=new_game_state["field"])
         for x, y in neighbour_tiles_out_of_explosion
     ]
-    # filter all invalid (none) paths
     paths_out_of_explosions = list(
         filter(lambda item: item is not None, paths_out_of_explosions)
     )
+
     return paths_out_of_explosions
 
 
 def get_all_paths_to_coins(new_game_state):
+    """
+    Get all possible paths to coins.
+
+    :param new_game_state: Current game state
+    :return: List of paths to coins
+    """
     agent_x, agent_y = agent_position(new_game_state)
     paths_to_coins = [
         astar(start=(agent_x, agent_y), goal=(x, y), field=new_game_state["field"])
@@ -301,42 +316,27 @@ def get_all_paths_to_coins(new_game_state):
 
 
 def get_potential_explosions(new_game_state):
+    """
+    Get tiles that could be affected by a bomb explosion.
+
+    :param new_game_state: Current game state
+    :return: List of potentially affected tiles
+    """
     potential_explosions = []
     for (x, y), t in new_game_state["bombs"]:
         potential_explosions.extend(explosion_zones(new_game_state["field"], (x, y)))
     return potential_explosions
 
 
-def agent_was_adjacent_to_active_explosion(self, old_game_state):
-    old_agent_position = list(agent_position(old_game_state))
-    explosion_map = old_game_state["explosion_map"]
-
-    for diff in range(-1, 2, 2):
-        x_adjacent = (old_agent_position[0] + diff, old_agent_position[1])
-        y_adjacent = (old_agent_position[0], old_agent_position[1] + diff)
-
-        for adjacent_tile in [x_adjacent, y_adjacent]:
-            adjacent_explosion_value = explosion_map[adjacent_tile[0], adjacent_tile[1]]
-            self.logger.info(
-                f"Explosion map value on agent adjacent tile {adjacent_tile} = {adjacent_explosion_value}"
-            )
-            if adjacent_explosion_value != 0:
-                return True
-    return False
-
-
-def agent_in_front_of_crate(self, field, agent_pos):
-    agent_x, agent_y = agent_pos[0], agent_pos[1]
-    for dx in [-1, 0, 1]:
-        for dy in [-1, 0, 1]:
-            # check only vertical and horizontal lines
-            if dx * dy == 0:
-                if field[dx + agent_x][dy + agent_y] == 1:
-                    return True
-    return False
-
-
 def moved_towards_end_of_explosion(self, old_game_state, new_game_state):
+    """
+    Check if the agent moved towards the end of an explosion.
+
+    :param self: The agent object
+    :param old_game_state: Previous game state
+    :param new_game_state: Current game state
+    :return: True if moved towards end, False otherwise
+    """
     agent_x, agent_y = agent_position(new_game_state)
     if (
         has_agent_moved(old_game_state, new_game_state)
@@ -349,29 +349,62 @@ def moved_towards_end_of_explosion(self, old_game_state, new_game_state):
 
 
 def moved_towards_coin(self, old_game_state, new_game_state):
+    """
+    Check if the agent moved towards a coin.
+
+    :param self: The agent object
+    :param old_game_state: Previous game state
+    :param new_game_state: Current game state
+    :return: True if moved towards coin, False otherwise
+    """
     agent_pos = agent_position(new_game_state)
     if (
         has_agent_moved(old_game_state, new_game_state)
         and len(self.memory.shortest_paths_to_coin) > 0
     ):
         for path in self.memory.shortest_paths_to_coin:
-            self.logger.info(f"Compared path: {path} with position {agent_pos}")
             if agent_pos == path[1]:
                 return True
     return False
 
 
 def not_killed_by_own_bomb(events):
+    """
+    Check if the agent was not killed by their own bomb.
+
+    :param events: List of events occurred
+    :return: True if not killed by own bomb, False otherwise
+    """
     return e.BOMB_EXPLODED in events and not e.KILLED_SELF in events
 
 
 def unallowed_bomb(self_action, old_game_state):
+    """
+    Check if the agent placed an unallowed bomb.
+
+    :param self_action: The action taken by the agent
+    :param old_game_state: Previous game state
+    :return: True if unallowed, False otherwise
+    """
     return self_action == "BOMB" and old_game_state["self"][2] == False
 
 
 def has_agent_moved(old_game_state, new_game_state):
+    """
+    Check if the agent has moved between states.
+
+    :param old_game_state: Previous game state
+    :param new_game_state: Current game state
+    :return: True if agent moved, False otherwise
+    """
     return agent_position(old_game_state) != agent_position(new_game_state)
 
 
 def agent_position(game_state):
+    """
+    Get the current position of the agent.
+
+    :param game_state: Current game state
+    :return: Tuple representing the agent's position
+    """
     return game_state["self"][-1]

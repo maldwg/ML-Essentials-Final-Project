@@ -100,7 +100,6 @@ def act(self, game_state: dict) -> str:
     :param game_state: The dictionary that describes everything on the board.
     :return: The action to take as a string.
     """
-    self.logger.info(50 * "----")
     # Exploration vs exploitation
     if self.train:
         # Use epsilon greedy strategy to determine whether to exploit or explore
@@ -108,7 +107,6 @@ def act(self, game_state: dict) -> str:
         sample = random.random()
 
         if sample > eps_threshold:
-            self.logger.info("Exploitation")
             with torch.no_grad():
                 state_features = state_to_features(self, game_state)
                 state_features = state_features.unsqueeze(0).to(device)
@@ -122,7 +120,6 @@ def act(self, game_state: dict) -> str:
                 self.memory.steps_done += 1
                 return ACTIONS[action.item()]
         else:
-            self.logger.info("Exploration")
             action = np.random.choice(ACTIONS, p=[0.2, 0.2, 0.2, 0.2, 0.1, 0.1])
             while not is_action_valid(self, game_state, action):
                 self.logger.info(f"{action} is invalid... choosing again")
@@ -133,7 +130,6 @@ def act(self, game_state: dict) -> str:
 
     else:
         # exploit only in test mode
-        self.logger.info("Exploitation")
         with torch.no_grad():
             state_features = state_to_features(self, game_state)
             state_features = state_features.unsqueeze(0).to(device)
@@ -216,33 +212,14 @@ def state_to_features(self, game_state: dict) -> np.array:
     return features_tensor
 
 
-def channelwise_normalize_data(data):
-    """
-    Normalizes the data using Z-score normalization to not rely on batchnorm
-    Args:
-    - data (numpy.ndarray or torch.Tensor): Input data to be normalized.
-    Returns:
-    - normalized_data (numpy.ndarray or torch.Tensor): Normalized data.
-    """
-    mean = data.mean(dim=(1, 2), keepdim=True)
-    std = data.std(dim=(1, 2), keepdim=True)
-
-    normalized_data = (data - mean) / (
-        std + 1e-7
-    )  # Adding a small value to prevent division by zero
-
-    return normalized_data
-
-
-def min_max_scale(data):
-    """
-    Normalize the data by using a min max scaler strategie
-    """
-    minimum = torch.min(data)
-    maximum = torch.max(data)
-
-    return (data - minimum) / (maximum - minimum)
-
-
 def inPlayArea(field, x, y):
+    """
+    return if the given coordinates are within the game field.
+
+    :param field: Current game field
+    :param x: int position on the x-axis
+    :param y: int position on the y-axis
+
+    :return: True if the coordinates are within the game filed, else return False
+    """
     return (1 <= y < field.shape[0] - 1) and (1 <= x < field.shape[1] - 1)
