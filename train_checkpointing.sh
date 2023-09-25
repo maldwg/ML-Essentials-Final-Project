@@ -37,7 +37,7 @@ do
     echo "new upper bound is ${rounds} rounds"
     mkdir -p  $PARENT_DIR/$rounds
     echo "Train the agent... ))"
-    python main.py play --agents baby_terminator peaceful_agent peaceful_agent random_agent --n-rounds=$CHECKPOINT --train 1 --scenario coin-heaven --no-gui
+    python main.py play --agents baby_terminator peaceful_agent peaceful_agent coin_collector_agent --n-rounds=$CHECKPOINT --train 1 --scenario coin-heaven --no-gui
     sleep 30
     echo "Training finished"
     echo "copy the old model"
@@ -55,24 +55,6 @@ do
     echo "new upper bound is ${rounds} rounds"
     mkdir -p  $PARENT_DIR/$rounds
     echo "Train the agent... ))"
-    python main.py play --agents baby_terminator coin_collector_agent random_agent peaceful_agent --n-rounds=$CHECKPOINT --train 1 --scenario coin-heaven --no-gui
-    sleep 30
-    echo "Training finished"
-    echo "copy the old model"
-    cp $PARENT_DIR/../../my-saved-model.pkl.gz $PARENT_DIR/$currentdatetime/$rounds/
-    echo "evaluate the agent"
-    python evaluations_$AGENT.py
-    cat agent_code/$AGENT/logs/$AGENT.log >> agent_code/$AGENT/logs/all.log
-    echo "---------------------------------------------------"
-done
-
-currentdatetime=$(date +"%Y%m%d%H%M")
-for idx in {9..10}
-do
-    rounds=$(( CHECKPOINT * idx ))
-    echo "new upper bound is ${rounds} rounds"
-    mkdir -p  $PARENT_DIR/$rounds
-    echo "Train the agent... ))"
     python main.py play --agents baby_terminator coin_collector_agent coin_collector_agent rule_based_agent --n-rounds=$CHECKPOINT --train 1 --scenario coin-heaven --no-gui
     sleep 30
     echo "Training finished"
@@ -85,7 +67,7 @@ do
 done
 
 currentdatetime=$(date +"%Y%m%d%H%M")
-for idx in {11..12}
+for idx in {9..10}
 do
     rounds=$(( CHECKPOINT * idx ))
     echo "new upper bound is ${rounds} rounds"
