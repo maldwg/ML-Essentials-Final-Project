@@ -1,9 +1,9 @@
 import torch
-from collections import namedtuple
 import events as e
 from . import custom_events as c
 import numpy as np
 
+# Constants for directions and actions
 DIRECTIONS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 ACTIONS = ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"]
 device = torch.device("cpu")
@@ -44,14 +44,12 @@ game_rewards = {
 
 def increment_event_counts(self, events):
     """
-    Increments the count of each event in the memory based on the provided events list.
+    Increment the count of each event in the memory based on the provided events list.
 
-    Args:
-        self: The object instance.
-        events (list): List of events to be counted.
+    :param self: The object instance.
+    :param events (list): List of events to be counted.
 
-    Returns:
-        None. Updates the event counts in the memory in-place.
+    : return: None, Updates the event counts in memory in-place.
     """
     for event in events:
         if event in self.memory.rewarded_event_counts:
@@ -62,13 +60,11 @@ def is_action_valid(self, state, action):
     """
     Checks if a given action is valid based on the current state of the game.
 
-    Args:
-        self: The object instance.
-        state (dict): The current game state.
-        action (str): The action to be checked ('UP', 'DOWN', 'RIGHT', 'LEFT', 'WAIT', 'BOMB').
+    :param self: The object instance.
+    :param state (dict): The current game state, containing information like field, bombs, etc.
+    :param action (str): The action to be checked, one of "UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB".
 
-    Returns:
-        bool: True if the action is valid in the current state, False otherwise.
+    : return bool: Returns True if the action is valid in the current state, else False.
     """
     field = state["field"]
 

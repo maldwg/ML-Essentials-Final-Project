@@ -1,1 +1,0 @@
-[{"output_channels": 16, "kernel_size": 3, "stride": 1, "padding": 2, "dropout": 0}, {"output_channels": 32, "kernel_size": 3, "stride": 1, "padding": 2, "dropout": 0}, {"lr": 0.001, "weight_decay": 1e-05}, {"capacity": 100000.0}, {"EPS_START": 0.25, "EPS_END": 0.01, "EPS_DECAY": 100}, {"BATCH_SIZE": 128, "GAMMA": 0.9}]

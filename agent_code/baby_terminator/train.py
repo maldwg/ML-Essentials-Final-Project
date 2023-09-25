@@ -8,8 +8,6 @@ from typing import List
 import numpy as np
 from agent_code.baby_terminator.custom_event_handling import custom_game_events
 
-import events as e
-from . import custom_events as ad
 from .callbacks import state_to_features
 
 import torch
@@ -30,8 +28,6 @@ def setup_training(self):
 
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
-    # Example: Setup an array that will note transition tuples
-    # (s, a, r, s')
     self.logger.info("Enter train mode")
     self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
     self.q_value = None
@@ -66,12 +62,10 @@ def game_events_occurred(
         self, old_game_state, new_game_state, events, self_action
     )
     events.extend(custom_events)
-    self.logger.info("Game events occurred")
     self.logger.debug(
         f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}'
     )
     if old_game_state is None:
-        self.logger.info("State is none in game events occurred")
         return
     # get the input for the CNN
     state = state_to_features(self, old_game_state)
@@ -116,13 +110,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     state = state_to_features(self, last_game_state)
     action = torch.tensor([ACTIONS.index(last_action)], device=device)
     reward = reward_from_events(self, events)
-    # only give end of round rewards if the round was sufficiently long, agent did not kill himslef, all other agents are dead
-    if (
-        last_game_state["step"] > 401
-        and (not last_game_state["others"] and e.OPPONENT_ELIMINATED in events)
-        and e.KILLED_SELF not in events
-    ):
-        reward += after_game_rewards(self, last_game_state)
+
     self.memory.rewards_of_round.append(reward)
     overall_reward = sum(self.memory.rewards_of_round)
     self.logger.info(f"Overall reward at end of round: {overall_reward}")
@@ -132,7 +120,6 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     reward = torch.tensor(reward, device=device)
     self.memory.push(state, action, None, reward)
-    self.logger.info(f"Round ended --> newest shortest path was reset")
     self.memory.shortest_paths_out_of_explosion = []
     self.memory.shortest_paths_to_coin = []
     self.memory.shortest_paths_to_enemy = []
@@ -160,31 +147,16 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         gc.enable()
 
 
-def after_game_rewards(self, last_game_state):
-    self.logger.info("Add end of round rewards")
-    score = last_game_state["self"][1]
-    scores = [agent[1] for agent in last_game_state["others"]]
-    scores.append(score)
-    placement = np.argsort(scores)[-1]
-    self.logger.info(f"Reached {placement + 1} place")
-    if placement + 1 < 3:
-        placement_reward = (
-            1 / (placement + 1) * self.memory.game_rewards[ad.PLACEMENT_REWARD]
-        )
-    else:
-        placement_reward = 0
-    score_reward = score * self.memory.game_rewards[ad.SCORE_REWARD]
-    self.logger.info(f"Score reward: {score_reward}")
-    self.logger.info(f"placement reward: {placement_reward}")
-    return placement_reward + score_reward
-
-
 def reward_from_events(self, events: List[str]) -> int:
     """
-    *This is not a required function, but an idea to structure your code.*
+    Compute the reward based on game events.
 
-    Here you can modify the rewards your agent get so as to en/discourage
-    certain behavior.
+    This function computes the cumulative reward for the agent based on the game events.
+
+    :param self: The agent instance.
+    :param events: List of game events that occurred.
+
+    :return: int: The total reward.
     """
 
     reward_sum = 0
@@ -201,7 +173,13 @@ def reward_from_events(self, events: List[str]) -> int:
 
 def optimize_model(self):
     """
-    Method to perform the actual Q-Learning
+    Optimize the agent's policy network using Q-Learning methods.
+
+    This function is responsible for optimizing the agent's policy network by computing the loss using the Q-Learning method and performing backpropagation.
+
+    :param self: The agent instance.
+
+    :return: None
     """
     self.logger.info("Optimizing model")
     # Adapt the hyper parameters
