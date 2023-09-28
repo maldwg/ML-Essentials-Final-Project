@@ -1,10 +1,10 @@
 import os
-import pickle 
+import pickle
 import random
 import gc
 
 import numpy as np
-import gzip 
+import gzip
 
 from .model import QNetwork, FullyConnectedQNetwork
 import torch
@@ -17,7 +17,10 @@ import math
 from .utils import ACTIONS, device, DIRECTIONS, is_action_valid
 from .path_finding import astar
 
-from .custom_event_handling import get_all_paths_out_of_explosions, get_all_paths_to_coins
+from .custom_event_handling import (
+    get_all_paths_out_of_explosions,
+    get_all_paths_to_coins,
+)
 
 
 def setup(self):
@@ -39,12 +42,14 @@ def setup(self):
         self.logger.info("Training mode selected")
         if not os.path.isfile("my-saved-model.pkl.gz"):
             self.logger.info("Setting up model from scratch.")
-            # init policy and target network 
+            # init policy and target network
             self.policy_net = QNetwork(17, 17, 6).to(device)
             self.target_net = QNetwork(17, 17, 6).to(device)
             self.target_net.load_state_dict(self.policy_net.state_dict())
             self.target_net.eval()
-            self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.0001, weight_decay=1e-5)
+            self.optimizer = optim.Adam(
+                self.policy_net.parameters(), lr=0.001, weight_decay=1e-5
+            )
             self.memory = ReplayMemory(1500)
 
             weights = np.random.rand(len(ACTIONS))
@@ -54,16 +59,23 @@ def setup(self):
             # with open("my-saved-model.pt", "rb") as file:
             #     self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
             gc.disable()
-            with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
-                self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(f)
+            with gzip.open("my-saved-model.pkl.gz", "rb") as f:
+                (
+                    self.policy_net,
+                    self.target_net,
+                    self.optimizer,
+                    self.memory,
+                ) = pickle.load(f)
             gc.enable()
     else:
         self.logger.info("Loading model from saved state, no training")
         # with open("my-saved-model.pt", "rb") as file:
         #     self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(file)
         gc.disable()
-        with gzip.open('my-saved-model.pkl.gz', 'rb') as f:
-            self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(f)
+        with gzip.open("my-saved-model.pkl.gz", "rb") as f:
+            self.policy_net, self.target_net, self.optimizer, self.memory = pickle.load(
+                f
+            )
         gc.enable()
 
 
@@ -76,7 +88,7 @@ def act(self, game_state: dict) -> str:
     :param game_state: The dictionary that describes everything on the board.
     :return: The action to take as a string.
     """
-    self.logger.info(50*"----")
+    self.logger.info(50 * "----")
     # Exploration vs exploitation
     # self.logger.info(game_state)
     if self.train:
@@ -85,7 +97,9 @@ def act(self, game_state: dict) -> str:
         EPS_END = 0.05
         EPS_DECAY = 500
         sample = random.random()
-        eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.memory.steps_done / EPS_DECAY)
+        eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(
+            -1.0 * self.memory.steps_done / EPS_DECAY
+        )
         self.memory.steps_done += 1
 
         if sample > eps_threshold:
@@ -97,16 +111,18 @@ def act(self, game_state: dict) -> str:
                 # self.logger.info(state_features)
                 # Pass features through policy network
                 q_values = self.policy_net(state_features)
-                self.logger.info(f"Q-values: {q_values} | Max Value chosen: {q_values.max(1)[1]} | Chosen view: {q_values.max(1)[1].view(1,1)} | Item: {q_values.max(1)[1].view(1,1).item()}")
+                self.logger.info(
+                    f"Q-values: {q_values} | Max Value chosen: {q_values.max(1)[1]} | Chosen view: {q_values.max(1)[1].view(1,1)} | Item: {q_values.max(1)[1].view(1,1).item()}"
+                )
                 action = q_values.max(1)[1].view(1, 1)
                 self.logger.info(f"Chose {ACTIONS[action.item()]} as best value ")
                 return ACTIONS[action.item()]
         else:
             self.logger.info("Exploration")
-            action = np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
+            action = np.random.choice(ACTIONS, p=[0.2, 0.2, 0.2, 0.2, 0.1, 0.1])
             while not is_action_valid(self, game_state, action):
                 self.logger.info(f"{action} is invalid... choosing again")
-                action = np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
+                action = np.random.choice(ACTIONS, p=[0.2, 0.2, 0.2, 0.2, 0.1, 0.1])
             self.logger.info(f"Choose random action {action}")
             return action
 
@@ -116,12 +132,15 @@ def act(self, game_state: dict) -> str:
         with torch.no_grad():
             state_features = state_to_features(self, game_state)
             state_features = state_features.unsqueeze(0).to(device)
-            # Pass features through policy network           
+            # Pass features through policy network
             q_values = self.policy_net(state_features)
-            self.logger.info(f"Q-values: {q_values} | Max Value chosen: {q_values.max(1)[1]} | Chosen view: {q_values.max(1)[1].view(1,1)} | Item: {q_values.max(1)[1].view(1,1).item()}")
+            self.logger.info(
+                f"Q-values: {q_values} | Max Value chosen: {q_values.max(1)[1]} | Chosen view: {q_values.max(1)[1].view(1,1)} | Item: {q_values.max(1)[1].view(1,1).item()}"
+            )
             action = q_values.max(1)[1].view(1, 1)
             self.logger.info(f"Chose {ACTIONS[action.item()]} as best value ")
             return ACTIONS[action.item()]
+
 
 def state_to_features(self, game_state: dict) -> np.array:
     """
@@ -139,11 +158,11 @@ def state_to_features(self, game_state: dict) -> np.array:
     """
     if game_state is None:
         return None
-    
-    field = game_state['field'].astype(np.float32)
-    field[field == 1.] = 11.
 
-    # The RGB map should contain:  
+    field = game_state["field"].astype(np.float32)
+    field[field == 1.0] = 11.0
+
+    # The RGB map should contain:
     # w = wall, e = empty, c = crate, a = agent, oa = other agents, b = bombs, co = coins
     # Define a mapping for the values: red, black and brown
     value_to_color = {-1: [255, 0, 0], 0: [0, 0, 0], 1: [210, 105, 30]}
@@ -164,31 +183,32 @@ def state_to_features(self, game_state: dict) -> np.array:
     rgb_map[:, agent_x, agent_y] = [1, 0, 255]
 
     # Add other agents at the specified coordinates with the color [249, 0, 249] = pink
-    for _, _, _, (x, y) in game_state['others']:
+    for _, _, _, (x, y) in game_state["others"]:
         rgb_map[:, x, y] = [249, 0, 249]
 
     # Add coins with the color [255, 255, 0] = yellow
-    for (x, y) in game_state['coins']:
+    for x, y in game_state["coins"]:
         rgb_map[:, x, y] = [255, 255, 0]
 
     # Add not exploded bombs with the color [0, 255, 0] = green and exploding bombs with explosion zone [0, 255, 222] = türkis
-    for ((x, y), t) in game_state['bombs']:
+    for (x, y), t in game_state["bombs"]:
         if t > 0:
             rgb_map[:, x, y] = [0, 255, 0]
         else:
             for dx in range(-3, 4):
-                for dy in range(-3, 4): 
-                    if inPlayArea(field, x+dx, y+dy) and (dx*dy == 0 and field[x+dx, y+dy] != 9):
-                        rgb_map[:, x+dx, y+dy] = [0, 255, 222]
-
+                for dy in range(-3, 4):
+                    if inPlayArea(field, x + dx, y + dy) and (
+                        dx * dy == 0 and field[x + dx, y + dy] != 9
+                    ):
+                        rgb_map[:, x + dx, y + dy] = [0, 255, 222]
 
     # agent_x, agent_y = game_state["self"][-1]
-    
+
     # paths_to_coins = get_all_paths_to_coins(self, game_state)
 
     # paths_out_of_explosions = get_all_paths_out_of_explosions(self, game_state)
 
-    # add shortest path of coin to map 
+    # add shortest path of coin to map
     # for path in self.memory.shortest_paths_to_coin:
     #     rgb_map[:, path[1][0],path[1][1] ] = [155, 255, 0]
 
@@ -221,9 +241,11 @@ def channelwise_normalize_data(data):
     """
     mean = data.mean(dim=(1, 2), keepdim=True)
     std = data.std(dim=(1, 2), keepdim=True)
-    
-    normalized_data = (data - mean) / (std + 1e-7)  # Adding a small value to prevent division by zero
-    
+
+    normalized_data = (data - mean) / (
+        std + 1e-7
+    )  # Adding a small value to prevent division by zero
+
     return normalized_data
 
 
@@ -235,6 +257,7 @@ def min_max_scale(data):
     maximum = torch.max(data)
 
     return (data - minimum) / (maximum - minimum)
+
 
 def inPlayArea(field, x, y):
     return (1 <= y < field.shape[0] - 1) and (1 <= x < field.shape[1] - 1)
